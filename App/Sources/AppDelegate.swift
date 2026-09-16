@@ -1,7 +1,11 @@
 import AppKit
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
-    @MainActor let model = AppModel()
+    /// Created on first use, after data from the voicemode era has moved to the new bundle id.
+    @MainActor lazy var model: AppModel = {
+        LegacyMigration.run()
+        return AppModel()
+    }()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         MainActor.assumeIsolated {
