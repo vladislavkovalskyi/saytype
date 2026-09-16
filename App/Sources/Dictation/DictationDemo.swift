@@ -7,8 +7,12 @@ extension DictationController {
     func runDemo(style: AppSettings.OverlayStyle, settings: SettingsStore) {
         settings.value.overlayStyle = style
         let words = "поправь useEffect в Header, он дёргается при каждом рендере".split(separator: " ").map(String.init)
+        let modes = settings.value.modes
+        func mode(_ id: String) -> DictationMode { modes.first { $0.id == id } ?? DictationMode(id: id) }
         Task { @MainActor in
             try? await Task.sleep(for: .seconds(1))
+            // A mode with a language model: tag while recording, then the rewrite stage.
+            demoMode(mode(DictationMode.commitID))
             demoSet(phase: .listening, committed: "", pending: "")
             for i in 1...words.count {
                 try? await Task.sleep(for: .milliseconds(450))
@@ -19,9 +23,17 @@ extension DictationController {
             }
             try? await Task.sleep(for: .seconds(1.5))
             demoSet(phase: .finishing, committed: words.joined(separator: " "), pending: "")
-            try? await Task.sleep(for: .seconds(1.5))
+            try? await Task.sleep(for: .seconds(1))
+            demoMode(mode(DictationMode.commitID), stage: .rewriting)
+            try? await Task.sleep(for: .seconds(2))
+            demoMode(mode(DictationMode.commitID))
             demoSet(phase: .inserted(TargetApp(name: "Terminal", bundleID: "com.apple.Terminal", icon: NSWorkspace.shared.icon(forFile: "/System/Applications/Utilities/Terminal.app"))), committed: "", pending: "")
             try? await Task.sleep(for: .seconds(2))
+            demoSet(phase: .notice(.mode(mode(DictationMode.promptID).title)), committed: "", pending: "")
+            try? await Task.sleep(for: .seconds(1.4))
+            demoSet(phase: .notice(.mode(mode(DictationMode.messageID).title)), committed: "", pending: "")
+            try? await Task.sleep(for: .seconds(1.4))
+            demoMode(mode(DictationMode.standardID))
             demoSet(phase: .card("Поправь useEffect в Header, он дёргается при каждом рендере."), committed: "", pending: "")
             try? await Task.sleep(for: .seconds(3))
             demoSet(phase: .notice(.passwordField), committed: "", pending: "")

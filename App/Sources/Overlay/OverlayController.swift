@@ -17,12 +17,14 @@ final class OverlayController {
     private var tracking: Timer?
     private var lastStyle: AppSettings.OverlayStyle?
 
-    static let islandPanelSize = CGSize(width: 540, height: 340)
+    /// Room for the widest island, a recording row with a mode tag and a stop button.
+    static let islandPanelSize = CGSize(width: 600, height: 340)
     static let pillPanelSize = CGSize(width: 600, height: 360)
 
     init(model: OverlayModel) {
         self.model = model
         panel.contentView = ClickThroughHostingView(rootView: OverlayRoot(model: model))
+        model.onHitFrameChange = { [weak self] in self?.updateMouse() }
         observe()
         installMonitors()
         NotificationCenter.default.addObserver(forName: NSApplication.didChangeScreenParametersNotification, object: nil, queue: .main) { [weak self] _ in
