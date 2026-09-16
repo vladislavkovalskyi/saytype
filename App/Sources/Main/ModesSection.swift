@@ -270,7 +270,9 @@ private struct ModeEditor: View {
 
     @ViewBuilder
     private var languageModelGroup: some View {
-        let engineOff = model.settings.value.languageModel.engine == .off
+        let settings = model.settings.value
+        let rewriter = model.dictation.rewriter
+        let ready = rewriter.isReady(settings)
         GroupBox(title: "Language model") {
             SettingsRow("Rewrite", detailText: Text(rewriteDetail)) {
                 MenuChip(title: rewriteTitle(mode.rewrite), items: DictationMode.Rewrite.allCases.map { style in
@@ -284,14 +286,20 @@ private struct ModeEditor: View {
             }
             RowDivider()
             ToggleRow("Translate to English", detail: "speak in any language", isOn: $mode.translateToEnglish, accent: world.accent)
-            if engineOff, mode.rewrite != .none || mode.translateToEnglish {
+            if !ready, mode.rewrite != .none || mode.translateToEnglish {
                 RowDivider()
-                SettingsRow("Language model is off", detail: mode.rewrite != .none ? "text is inserted without the rewrite" : "Whisper translates, terms may change") {
+                SettingsRow(settings.languageModel.engine == .off ? "Language model is off" : "Language model is not ready", detail: missingModelDetail(settings, rewriter: rewriter)) {
                     Button("Set up") { model.mainSection = .model }
                         .buttonStyle(WhiteButtonStyle())
                 }
             }
         }
+    }
+
+    /// What happens to this mode's dictations until a model is ready.
+    private func missingModelDetail(_ settings: AppSettings, rewriter: RewriteService) -> LocalizedStringKey {
+        if mode.rewrite != .none { return "text is inserted without the rewrite" }
+        return rewriter.translationNeedsLanguageModel(settings) ? "text stays in the spoken language" : "Whisper translates, terms may change"
     }
 
     private var deliveryGroup: some View {

@@ -33,6 +33,26 @@
         }
       }
     },
+    "%@ of %@ GB" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ из %@ ГБ"
+          }
+        }
+      }
+    },
+    "%@ s" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ с"
+          }
+        }
+      }
+    },
     "%lld days" : {
       "localizations" : {
         "en" : {
@@ -160,6 +180,16 @@
         }
       }
     },
+    "%lld s" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld с"
+          }
+        }
+      }
+    },
     "%lld terms" : {
       "localizations" : {
         "en" : {
@@ -208,6 +238,16 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "%lld tok/s" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld ток/с"
           }
         }
       }
@@ -534,6 +574,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "3 с"
+          }
+        }
+      }
+    },
+    "4-bit" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "4 бита"
           }
         }
       }
@@ -1092,12 +1142,42 @@
         }
       }
     },
+    "Check" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проверить"
+          }
+        }
+      }
+    },
     "Check for Updates…" : {
       "localizations" : {
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Проверить обновления…"
+          }
+        }
+      }
+    },
+    "checking" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "проверка"
+          }
+        }
+      }
+    },
+    "Choose" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выбрать"
           }
         }
       }
@@ -1189,6 +1269,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Коммит"
+          }
+        }
+      }
+    },
+    "connected · models: %lld" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "подключено · моделей: %lld"
           }
         }
       }
@@ -1499,6 +1589,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "английский"
+          }
+        }
+      }
+    },
+    "error" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ошибка"
           }
         }
       }
@@ -2114,6 +2214,16 @@
         }
       }
     },
+    "Language model is not ready" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Языковая модель не готова"
+          }
+        }
+      }
+    },
     "Language model is off" : {
       "localizations" : {
         "ru" : {
@@ -2130,6 +2240,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Последняя диктовка"
+          }
+        }
+      }
+    },
+    "last rewrite %@" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "последний запуск %@"
           }
         }
       }
@@ -2221,6 +2341,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Живой текст"
+          }
+        }
+      }
+    },
+    "loaded" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "загружена"
+          }
+        }
+      }
+    },
+    "loading" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "загрузка"
           }
         }
       }
@@ -2467,6 +2607,16 @@
         }
       }
     },
+    "no answer" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "нет ответа"
+          }
+        }
+      }
+    },
     "No dictations yet" : {
       "localizations" : {
         "ru" : {
@@ -2513,6 +2663,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Нет доступа к микрофону"
+          }
+        }
+      }
+    },
+    "No models" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет моделей"
           }
         }
       }
@@ -2567,6 +2727,16 @@
         }
       }
     },
+    "not applied" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "не применено"
+          }
+        }
+      }
+    },
     "Not downloaded" : {
       "comment" : "Model state badge",
       "localizations" : {
@@ -2584,6 +2754,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Не найдена"
+          }
+        }
+      }
+    },
+    "not loaded" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "не загружена"
+          }
+        }
+      }
+    },
+    "not on the server" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "нет на сервере"
+          }
+        }
+      }
+    },
+    "not running" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "не запущен"
+          }
+        }
+      }
+    },
+    "not set up" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "не настроена"
           }
         }
       }
@@ -2962,6 +3172,16 @@
         }
       }
     },
+    "Qwen3 4B Instruct" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Qwen3 4B Instruct"
+          }
+        }
+      }
+    },
     "Ready" : {
       "comment" : "Model setup stage",
       "localizations" : {
@@ -2969,6 +3189,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Готово"
+          }
+        }
+      }
+    },
+    "ready" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "готова"
           }
         }
       }
@@ -3113,6 +3343,16 @@
         }
       }
     },
+    "rewrite and translation" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "переписывание и перевод"
+          }
+        }
+      }
+    },
     "Rewriting" : {
       "localizations" : {
         "ru" : {
@@ -3240,6 +3480,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Найти"
+          }
+        }
+      }
+    },
+    "Server" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сервер"
           }
         }
       }
@@ -3584,6 +3834,16 @@
         }
       }
     },
+    "text stays in the spoken language" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "текст останется на языке речи"
+          }
+        }
+      }
+    },
     "the command goes straight to the agent" : {
       "localizations" : {
         "ru" : {
@@ -3621,6 +3881,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "этот Mac"
+          }
+        }
+      }
+    },
+    "timed out" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "превышен таймаут"
+          }
+        }
+      }
+    },
+    "Timeout" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Таймаут"
           }
         }
       }
@@ -3702,6 +3982,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "эээ"
+          }
+        }
+      }
+    },
+    "unavailable" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "недоступна"
           }
         }
       }

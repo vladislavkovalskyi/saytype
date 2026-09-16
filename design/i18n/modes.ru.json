@@ -56,5 +56,7 @@
   "Every app without its own mode": "Все приложения без своего режима",
   "the other modes switch on in their apps": "остальные режимы включаются в своих приложениях",
   "Add app": "Добавить приложение",
-  "Without apps the mode is picked in the menu bar, on the island or with ⌃⌥M.": "Без приложений режим выбирается в строке меню, на острове или по ⌃⌥M."
+  "Without apps the mode is picked in the menu bar, on the island or with ⌃⌥M.": "Без приложений режим выбирается в строке меню, на острове или по ⌃⌥M.",
+  "Language model is not ready": "Языковая модель не готова",
+  "text stays in the spoken language": "текст останется на языке речи"
 }

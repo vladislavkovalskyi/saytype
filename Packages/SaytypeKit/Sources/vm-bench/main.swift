@@ -6,10 +6,11 @@ import VMTranscription
 // Command-line harness for measuring recognition on recorded phrases.
 //
 //   vm-bench download [variant]
-//   vm-bench transcribe <audio>... [--variant v] [--prompt] [--live]
+//   vm-bench transcribe <audio>... [--variant v] [--language ru|auto] [--prompt] [--live] [--translate]
 //
 // --prompt adds the punctuated sample and glossary; --live replays the file in
-// one-second steps through LiveAgreement, the way the app does while fn is held.
+// one-second steps through LiveAgreement, the way the app does while fn is held;
+// --translate asks Whisper for English text.
 
 let arguments = Array(CommandLine.arguments.dropFirst())
 let defaultVariant = AppSettings().whisperModel
@@ -37,13 +38,14 @@ case "download":
 
 case "transcribe":
     let variant = option("--variant") ?? defaultVariant
-    let files = arguments.dropFirst().filter { !$0.hasPrefix("--") && $0 != option("--variant") }
+    let files = arguments.dropFirst().filter { !$0.hasPrefix("--") && $0 != option("--variant") && $0 != option("--language") }
+    let language = option("--language").map { $0 == "auto" ? nil : $0 } ?? "ru"
     let engine = WhisperKitEngine(store: store, variant: variant)
     let loadStart = ContinuousClock.now
     try await engine.prepare()
     print("model \(variant) loaded in \(String(format: "%.1f", seconds(loadStart))) s\n")
     let glossary = ["useEffect", "useState", "Header", "Vercel", "Supabase", "Next.js", "TypeScript", "Prisma", "Zod", "GitHub Actions", "React Query", "Docker Compose", "Postgres", "Redis", "SwiftUI", "Telegram"]
-    let hints = TranscriptionHints(language: "ru", prompt: arguments.contains("--prompt") ? PromptBuilder.prompt(glossary: glossary) : (arguments.contains("--terms") ? glossary.joined(separator: ", ") + "." : nil), wordTimestamps: !arguments.contains("--no-words"))
+    let hints = TranscriptionHints(language: language, prompt: arguments.contains("--prompt") ? PromptBuilder.prompt(glossary: glossary) : (arguments.contains("--terms") ? glossary.joined(separator: ", ") + "." : nil), wordTimestamps: !arguments.contains("--no-words"), translate: arguments.contains("--translate"))
     for file in files {
         let samples = try AudioFileLoader.load(URL(fileURLWithPath: file))
         let duration = Double(samples.count) / AudioCapture.sampleRate
@@ -69,5 +71,5 @@ case "transcribe":
     }
 
 default:
-    print("usage: vm-bench download [variant] | vm-bench transcribe <audio>... [--variant v] [--prompt] [--live]")
+    print("usage: vm-bench download [variant] | vm-bench transcribe <audio>... [--variant v] [--language ru|auto] [--prompt] [--live] [--translate]")
 }

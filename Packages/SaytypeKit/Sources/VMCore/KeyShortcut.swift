@@ -73,7 +73,7 @@ extension AppSettings {
         public var lmStudioURL = "http://localhost:1234"
         public var lmStudioModel = ""
         /// Past this the dictation is inserted without the rewrite.
-        public var timeoutSeconds: Double = 10
+        public var timeoutSeconds: Double = 20
 
         public init() {}
 
