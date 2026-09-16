@@ -8,24 +8,24 @@ struct LookStep: View {
     var body: some View {
         @Bindable var settings = model.settings
         ZStack(alignment: .topLeading) {
-            StepTitle("Где показывать запись", size: 36)
+            StepTitle("Where to show recording", size: 36)
                 .frame(width: OnboardingLayout.size.width)
                 .place(x: 0, y: 64)
-            StepSubtitle("Поменять можно в настройках.")
+            StepSubtitle("Can be changed in settings.")
                 .frame(width: OnboardingLayout.size.width)
                 .place(x: 0, y: 110)
 
-            StyleCard(style: .island, detail: "у выреза камеры", selection: $settings.value.overlayStyle) {
+            StyleCard(style: .island, detail: "at the camera notch", selection: $settings.value.overlayStyle) {
                 IslandPreview()
             }
             .place(x: 100, y: 150)
 
-            StyleCard(style: .pill, detail: "внизу экрана", selection: $settings.value.overlayStyle) {
+            StyleCard(style: .pill, detail: "at the bottom of the screen", selection: $settings.value.overlayStyle) {
                 PillPreview(light: settings.value.glass == .light)
             }
             .place(x: 490, y: 150)
 
-            WorldSegmented(selection: $settings.value.glass, options: [(.dark, "Тёмное стекло"), (.light, "Светлое стекло")])
+            WorldSegmented(selection: $settings.value.glass, options: [(.dark, "Dark glass"), (.light, "Light glass")])
             .frame(width: OnboardingLayout.size.width)
             .place(x: 0, y: 462)
         }
@@ -35,7 +35,7 @@ struct LookStep: View {
 
 private struct StyleCard<Preview: View>: View {
     let style: AppSettings.OverlayStyle
-    let detail: String
+    let detail: LocalizedStringKey
     @Binding var selection: AppSettings.OverlayStyle
     @ViewBuilder let preview: Preview
 
@@ -158,8 +158,9 @@ private struct MiniText: View {
 
     var body: some View {
         let code = Text(verbatim: "useEffect").font(.mono(10.6)).foregroundStyle(Color(hex: light ? 0x1172B8 : 0x8FE3FF))
-        let dim = Text(verbatim: "в Header").foregroundStyle(light ? Color(hex: 0x17151B, opacity: 0.45) : .white.opacity(0.45))
-        Text("поправь \(code) \(dim)")
+        let dim = Text("in Header", comment: "Dimmed end of the sample live text in the overlay preview: fix useEffect in Header")
+            .foregroundStyle(light ? Color(hex: 0x17151B, opacity: 0.45) : .white.opacity(0.45))
+        Text("fix \(code) \(dim)", comment: "Sample live text in the overlay preview; the arguments are a code identifier and the dimmed rest")
             .lineLimit(1)
     }
 }
@@ -179,7 +180,7 @@ private struct IslandPreview: View {
                             .frame(width: 6, height: 6)
                             .shadow(color: Color(hex: 0xFF7A45), radius: 4)
                         Spacer()
-                        Text("0:04").font(.mono(9)).opacity(0.6)
+                        Text(verbatim: "0:04").font(.mono(9)).opacity(0.6)
                     }
                     .frame(height: 20)
                     HStack(spacing: 10) {

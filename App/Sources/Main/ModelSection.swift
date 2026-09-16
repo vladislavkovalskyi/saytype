@@ -16,7 +16,7 @@ struct WhisperModelInfo: Equatable {
     var megabytes: Int { isTurbo ? 632 : 947 }
     /// Approximate resident memory once loaded.
     var memoryGB: Double { isTurbo ? 1.0 : 1.5 }
-    var summary: String { isTurbo ? "быстрее, живой текст" : "точнее, медленнее" }
+    var summary: String { isTurbo ? String(localized: "faster, live text") : String(localized: "more accurate, slower") }
     var other: WhisperModelInfo { WhisperModelInfo(variant: isTurbo ? Self.large : Self.turbo) }
 }
 
@@ -28,7 +28,7 @@ struct ModelSection: View {
         @Bindable var settings = model.settings
         let info = WhisperModelInfo(variant: settings.value.whisperModel)
         VStack(alignment: .leading, spacing: 0) {
-            SectionHeader("Модель", subtitle: "Всё распознаётся на этом Mac")
+            SectionHeader("Model", subtitle: "Everything is transcribed on this Mac")
                 .frame(height: 84, alignment: .topLeading)
 
             HStack(alignment: .top, spacing: 16) {
@@ -44,10 +44,10 @@ struct ModelSection: View {
 
             HStack(alignment: .top, spacing: 16) {
                 VStack(spacing: 0) {
-                    ToggleRow("Умная структура", detail: model.dictation.smart.detail, isOn: model.smartStructureBinding, accent: world.accent)
+                    ToggleRow("Smart structure", detailText: Text(model.dictation.smart.detail), isOn: model.smartStructureBinding, accent: world.accent)
                     RowDivider()
-                    SettingsRow("Файлы моделей", detail: abbreviatedPath(ModelStore.defaultBase)) {
-                        Button("Показать") {
+                    SettingsRow("Model files", detailText: Text(verbatim: abbreviatedPath(ModelStore.defaultBase))) {
+                        Button("Show") {
                             let url = ModelStore.defaultBase
                             try? FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
                             NSWorkspace.shared.open(url)
@@ -96,10 +96,10 @@ private struct CurrentModelCard: View {
                     .tracking(-0.56)
                     .padding(.top, 12)
                 Grid(alignment: .leading, horizontalSpacing: 0, verticalSpacing: 8) {
-                    spec("Размер", "\(info.megabytes) МБ")
-                    spec("Язык", language)
-                    spec("Живой текст", "да")
-                    spec("Подготовка", preparation(state))
+                    spec("Size", String(localized: "\(info.megabytes) MB"))
+                    spec("Language", language)
+                    spec("Live text", String(localized: "yes"))
+                    spec("Preparation", preparation(state))
                 }
                 .font(.onest(14))
                 .padding(.top, 16)
@@ -112,7 +112,7 @@ private struct CurrentModelCard: View {
         }
     }
 
-    private func spec(_ name: String, _ value: String) -> some View {
+    private func spec(_ name: LocalizedStringKey, _ value: String) -> some View {
         GridRow {
             Text(name)
                 .foregroundStyle(.white.opacity(0.72))
@@ -123,18 +123,18 @@ private struct CurrentModelCard: View {
 
     private var language: String {
         switch model.settings.value.language {
-        case .russian: "русский, английские термины"
-        case .english: "английский"
-        case .auto: "определяется по речи"
+        case .russian: String(localized: "Russian, English terms", comment: "Speech language of the model")
+        case .english: String(localized: "English", comment: "Speech language of the model")
+        case .auto: String(localized: "detected from speech", comment: "Speech language of the model")
         }
     }
 
     private func preparation(_ state: DictationController.ModelState) -> String {
         switch state {
-        case .ready: "готово под \(MacInfo.chip)"
-        case .loading: "идёт под \(MacInfo.chip)"
-        case .downloading, .missing: "после загрузки"
-        case .failed: "не удалась"
+        case .ready: String(localized: "done for \(MacInfo.chip)", comment: "Model preparation; the argument is a chip name such as M3 Pro")
+        case .loading: String(localized: "in progress for \(MacInfo.chip)", comment: "Model preparation; the argument is a chip name such as M3 Pro")
+        case .downloading, .missing: String(localized: "after download", comment: "Model preparation")
+        case .failed: String(localized: "failed", comment: "Model preparation")
         }
     }
 
@@ -143,20 +143,20 @@ private struct CurrentModelCard: View {
         switch state {
         case .missing:
             Button(action: dictation.downloadModel) {
-                Label { Text("Скачать") } icon: { Icon(.download, size: 14, stroke: 2.2) }
+                Label { Text("Download") } icon: { Icon(.download, size: 14, stroke: 2.2) }
                     .labelStyle(IconFirstLabelStyle())
             }
             .buttonStyle(WhiteButtonStyle())
         case .downloading(let fraction):
             VStack(alignment: .leading, spacing: 8) {
-                Text("\(Int((fraction * 100).rounded()))% · \(Int((fraction * Double(info.megabytes)).rounded())) из \(info.megabytes) МБ")
+                Text(verbatim: "\(Int((fraction * 100).rounded()))% · " + String(localized: "\(Int((fraction * Double(info.megabytes)).rounded())) of \(info.megabytes) MB", comment: "Download progress in megabytes"))
                     .font(.onest(13, .medium))
                 ProgressTrack(fraction: fraction)
                     .frame(width: 300)
             }
         case .failed(let message):
             HStack(spacing: 12) {
-                Button("Повторить") {
+                Button("Retry") {
                     if dictation.isModelDownloaded {
                         dictation.loadModelIfPresent()
                     } else {
@@ -203,11 +203,11 @@ private struct StateBadge: View {
 
     private var title: String {
         switch state {
-        case .ready: "Используется"
-        case .loading: "Подготовка"
-        case .downloading: "Загрузка"
-        case .missing: "Не скачана"
-        case .failed: "Не загрузилась"
+        case .ready: String(localized: "In use", comment: "Model state badge")
+        case .loading: String(localized: "Preparing", comment: "Model state badge")
+        case .downloading: String(localized: "Downloading", comment: "Model state badge")
+        case .missing: String(localized: "Not downloaded", comment: "Model state badge")
+        case .failed: String(localized: "Failed to load", comment: "Model state badge")
         }
     }
 }
@@ -225,11 +225,11 @@ private struct OtherModelsPanel: View {
         let busy = isBusy(model.dictation.modelState)
         let downloaded = ModelStore().isDownloaded(other.variant)
         VStack(alignment: .leading, spacing: 0) {
-            PanelLabel("Другие модели")
+            PanelLabel("Other models")
             HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 1) {
                     Text(other.title).font(.onest(17, .semibold))
-                    Text("\(other.megabytes) МБ · \(other.summary)")
+                    Text("\(other.megabytes) MB · \(other.summary)", comment: "Model size, then a short summary such as faster, live text")
                         .font(.onest(13))
                         .foregroundStyle(.white.opacity(0.74))
                 }
@@ -238,9 +238,9 @@ private struct OtherModelsPanel: View {
                     use(other)
                 } label: {
                     if downloaded {
-                        Text("Использовать")
+                        Text("Use")
                     } else {
-                        Label { Text("Скачать") } icon: { Icon(.download, size: 14, stroke: 2.2) }
+                        Label { Text("Download") } icon: { Icon(.download, size: 14, stroke: 2.2) }
                             .labelStyle(IconFirstLabelStyle())
                     }
                 }
@@ -292,9 +292,9 @@ private struct MemoryPanel: View {
         let total = parts.reduce(0) { $0 + $1.gigabytes }
         VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .firstTextBaseline) {
-                PanelLabel("Память")
+                PanelLabel("Memory")
                 Spacer()
-                Text("\(Format.decimal(total)) ГБ")
+                Text("\(Format.decimal(total)) GB", comment: "Memory in gigabytes; the argument is a formatted decimal such as 1.5")
                     .font(.onest(26, .bold))
                     .tracking(-0.26)
             }
@@ -321,14 +321,14 @@ private struct MemoryPanel: View {
                             .padding(.trailing, 8)
                         Text(part.name)
                         Spacer()
-                        Text("\(Format.decimal(part.gigabytes)) ГБ")
+                        Text("\(Format.decimal(part.gigabytes)) GB", comment: "Memory in gigabytes; the argument is a formatted decimal such as 1.5")
                     }
                 }
             }
             .font(.onest(14))
             .padding(.top, 18)
 
-            Text("из \(MacInfo.memoryGB) ГБ на этом Mac")
+            Text("of \(MacInfo.memoryGB) GB on this Mac")
                 .font(.onest(13))
                 .foregroundStyle(.white.opacity(0.74))
                 .padding(.top, 16)

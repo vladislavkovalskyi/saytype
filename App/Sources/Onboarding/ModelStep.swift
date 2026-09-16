@@ -19,8 +19,8 @@ struct ModelStep: View {
             )
 
             VStack(alignment: .leading, spacing: 0) {
-                StepTitle("Whisper turbo")
-                StepSubtitle("Модель скачивается один раз. Дальше всё работает офлайн.")
+                StepTitle(verbatim: "Whisper turbo")
+                StepSubtitle("The model downloads once. After that everything works offline.")
                     .padding(.top, 12)
 
                 VStack(alignment: .leading, spacing: 0) {
@@ -34,8 +34,8 @@ struct ModelStep: View {
 
                 Toggle(isOn: smartBinding) {
                     VStack(alignment: .leading, spacing: 1) {
-                        Text("Умная структура").font(.onest(14.5, .semibold))
-                        Muted(smartSubtitle)
+                        Text("Smart structure").font(.onest(14.5, .semibold))
+                        Muted(verbatim: smartSubtitle)
                     }
                 }
                 .toggleStyle(WorldToggleStyle(accent: OnboardingStep.model.world.accent))
@@ -95,26 +95,26 @@ struct ModelStep: View {
         case .failed(let message):
             HStack(alignment: .center, spacing: 12) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(model.dictation.isModelDownloaded ? "Модель не загрузилась" : "Загрузка прервалась")
+                    Text(model.dictation.isModelDownloaded ? "Model failed to load" : "Download interrupted")
                         .font(.onest(17, .semibold))
-                    Muted(message)
+                    Muted(verbatim: message)
                         .lineLimit(2)
                 }
                 Spacer(minLength: 0)
-                WhiteButton(title: "Повторить", action: retry)
+                WhiteButton(title: "Retry", action: retry)
             }
         default:
             let fraction = progress(for: state)
             HStack(alignment: .firstTextBaseline) {
-                Text("\(Int((fraction * 100).rounded(.down)))%")
+                Text(verbatim: "\(Int((fraction * 100).rounded(.down)))%")
                     .font(.onest(26, .bold))
                     .tracking(-0.26)
                     .contentTransition(.numericText())
                 Spacer(minLength: 8)
                 if state == .missing {
-                    WhiteButton(title: "Скачать", action: retry)
+                    WhiteButton(title: "Download", action: retry)
                 } else {
-                    Muted(detail(for: state, fraction: fraction))
+                    Muted(verbatim: detail(for: state, fraction: fraction))
                         .monospacedDigit()
                 }
             }
@@ -134,40 +134,43 @@ struct ModelStep: View {
     private func detail(for state: DictationController.ModelState, fraction: Double) -> String {
         let total = Int(Self.totalMegabytes)
         let done = Int((fraction * Self.totalMegabytes).rounded(.down))
-        var text = "\(done) из \(total) МБ"
+        var text = String(localized: "\(done) of \(total) MB", comment: "Download progress in megabytes")
         if case .downloading = state, let speed = rate.megabytesPerSecond {
-            text += " · \(Int(speed.rounded())) МБ/с"
+            text += " · " + String(localized: "\(Int(speed.rounded())) MB/s", comment: "Download speed")
         }
         return text
     }
 
     private func stages(for state: DictationController.ModelState) -> [Stage] {
-        let prepare = "Подготовка под \(Self.chipName)"
+        let download = String(localized: "Downloading", comment: "Model setup stage")
+        let prepare = String(localized: "Preparing for \(Self.chipName)", comment: "Model setup stage; the argument is a chip name such as M3 Pro")
+        let ready = String(localized: "Ready", comment: "Model setup stage")
         switch state {
         case .missing:
-            return [Stage(title: "Загрузка", status: .pending), Stage(title: prepare, status: .pending), Stage(title: "Готово", status: .pending)]
+            return [Stage(title: download, status: .pending), Stage(title: prepare, status: .pending), Stage(title: ready, status: .pending)]
         case .downloading(let fraction):
-            return [Stage(title: "Загрузка", status: .active(fraction)), Stage(title: prepare, status: .pending), Stage(title: "Готово", status: .pending)]
+            return [Stage(title: download, status: .active(fraction)), Stage(title: prepare, status: .pending), Stage(title: ready, status: .pending)]
         case .loading:
-            return [Stage(title: "Загрузка", status: .done), Stage(title: prepare, status: .active(nil)), Stage(title: "Готово", status: .pending)]
+            return [Stage(title: download, status: .done), Stage(title: prepare, status: .active(nil)), Stage(title: ready, status: .pending)]
         case .ready:
-            return [Stage(title: "Загрузка", status: .done), Stage(title: prepare, status: .done), Stage(title: "Готово", status: .done)]
+            return [Stage(title: download, status: .done), Stage(title: prepare, status: .done), Stage(title: ready, status: .done)]
         case .failed:
             if model.dictation.isModelDownloaded {
-                return [Stage(title: "Загрузка", status: .done), Stage(title: prepare, status: .failed), Stage(title: "Готово", status: .pending)]
+                return [Stage(title: download, status: .done), Stage(title: prepare, status: .failed), Stage(title: ready, status: .pending)]
             }
-            return [Stage(title: "Загрузка", status: .failed), Stage(title: prepare, status: .pending), Stage(title: "Готово", status: .pending)]
+            return [Stage(title: download, status: .failed), Stage(title: prepare, status: .pending), Stage(title: ready, status: .pending)]
         }
     }
 
-    /// "M3 Pro" from "Apple M3 Pro"; "этот Mac" when the name is unavailable.
+    /// "M3 Pro" from "Apple M3 Pro"; "this Mac" when the name is unavailable.
     static let chipName: String = {
+        let fallback = String(localized: "this Mac", comment: "Stands in for the chip name: Preparing for this Mac")
         var size = 0
-        guard sysctlbyname("machdep.cpu.brand_string", nil, &size, nil, 0) == 0, size > 0 else { return "этот Mac" }
+        guard sysctlbyname("machdep.cpu.brand_string", nil, &size, nil, 0) == 0, size > 0 else { return fallback }
         var bytes = [CChar](repeating: 0, count: size)
-        guard sysctlbyname("machdep.cpu.brand_string", &bytes, &size, nil, 0) == 0 else { return "этот Mac" }
+        guard sysctlbyname("machdep.cpu.brand_string", &bytes, &size, nil, 0) == 0 else { return fallback }
         let brand = String(decoding: bytes.prefix { $0 != 0 }.map { UInt8(bitPattern: $0) }, as: UTF8.self)
-        guard brand.hasPrefix("Apple ") else { return "этот Mac" }
+        guard brand.hasPrefix("Apple ") else { return fallback }
         return String(brand.dropFirst("Apple ".count))
     }()
 }

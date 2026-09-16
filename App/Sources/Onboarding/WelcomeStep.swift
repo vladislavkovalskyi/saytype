@@ -12,13 +12,13 @@ struct WelcomeStep: View {
                 object: CGRect(x: 4, y: 191, width: 516, height: 230)
             )
             VStack(alignment: .leading, spacing: 0) {
-                StepTitle("voicemode")
-                StepSubtitle("Голосовой ввод для macOS. Распознаёт речь на этом Mac, без интернета.")
+                StepTitle(verbatim: "voicemode")
+                StepSubtitle("Voice input for macOS. Transcribes speech on this Mac, without internet.")
                     .padding(.top, 12)
                 VStack(alignment: .leading, spacing: 16) {
-                    FeatureRow(object: "ObjectKeycap", title: "Зажми \(model.settings.value.recordKey.inlineName)", detail: "и говори в любом приложении")
-                    FeatureRow(object: "ObjectTextcard", title: "Готовый текст", detail: "запятые, абзацы, списки")
-                    FeatureRow(object: "ObjectLock", title: "Офлайн", detail: "голос не покидает Mac")
+                    FeatureRow(object: "ObjectKeycap", title: "Hold \(model.settings.value.recordKey.inlineName)", detail: "and speak in any app")
+                    FeatureRow(object: "ObjectTextcard", title: "Finished text", detail: "commas, paragraphs, lists")
+                    FeatureRow(object: "ObjectLock", title: "Offline", detail: "audio never leaves the Mac")
                 }
                 .padding(.top, 30)
             }
@@ -31,8 +31,8 @@ struct WelcomeStep: View {
 
 private struct FeatureRow: View {
     let object: String
-    let title: String
-    let detail: String
+    let title: LocalizedStringKey
+    let detail: LocalizedStringKey
 
     var body: some View {
         HStack(spacing: 14) {

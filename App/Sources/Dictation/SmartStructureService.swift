@@ -3,7 +3,7 @@ import Observation
 import VMCore
 import VMSmart
 
-/// "Умная структура": a local language model turns long dictations into lists and
+/// Smart structure: a local language model turns long dictations into lists and
 /// paragraphs. Optional download; without it the deterministic formatter still works.
 @MainActor
 @Observable
@@ -50,10 +50,10 @@ final class SmartStructureService {
     /// Short state line under the switch.
     var detail: String {
         switch state {
-        case .missing: "Qwen3 1.7B · \(downloadSize) МБ"
-        case .downloading(let fraction): "загрузка · \(Int(fraction * 100))%"
-        case .ready: "Qwen3 1.7B · списки и абзацы"
-        case .failed: "не скачалась, включите ещё раз"
+        case .missing: "Qwen3 1.7B · " + String(localized: "\(downloadSize) MB")
+        case .downloading(let fraction): String(localized: "downloading", comment: "Smart structure model state, followed by a percentage") + " · \(Int(fraction * 100))%"
+        case .ready: "Qwen3 1.7B · " + String(localized: "lists and paragraphs", comment: "What the smart structure model does")
+        case .failed: String(localized: "download failed, turn it on again", comment: "Smart structure model state under its switch")
         }
     }
 
@@ -69,7 +69,7 @@ final class SmartStructureService {
                         self.state = .downloading(fraction)
                     }
                 }
-                state = store.isDownloaded ? .ready : .failed("Загрузка не завершилась")
+                state = store.isDownloaded ? .ready : .failed(String(localized: "Download did not finish"))
             } catch {
                 state = .failed(error.localizedDescription)
             }

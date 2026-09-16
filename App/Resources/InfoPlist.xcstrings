@@ -1,0 +1,24 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "NSMicrophoneUsageDescription" : {
+      "comment" : "Privacy - Microphone Usage Description",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "voicemode listens to the microphone while the record key is held. Audio is transcribed on this Mac and never leaves it."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "voicemode слушает микрофон, пока зажата клавиша записи. Звук распознаётся на этом Mac и никуда не отправляется."
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

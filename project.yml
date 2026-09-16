@@ -4,7 +4,7 @@ options:
   deploymentTarget:
     macOS: "26.0"
   createIntermediateGroups: true
-  developmentLanguage: ru
+  developmentLanguage: en
 
 settings:
   base:
@@ -56,7 +56,8 @@ targets:
         CFBundleName: voicemode
         LSApplicationCategoryType: public.app-category.productivity
         LSUIElement: true
-        NSMicrophoneUsageDescription: voicemode слушает микрофон, пока зажата клавиша записи. Звук распознаётся на этом Mac и никуда не отправляется.
+        # Translations live in App/Resources/InfoPlist.xcstrings.
+        NSMicrophoneUsageDescription: voicemode listens to the microphone while the record key is held. Audio is transcribed on this Mac and never leaves it.
         NSHumanReadableCopyright: © 2026 voicemode
     settings:
       base:
@@ -65,3 +66,6 @@ targets:
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         GENERATE_INFOPLIST_FILE: NO
         COMBINE_HIDPI_IMAGES: YES
+        # English source strings; Localizable.xcstrings and InfoPlist.xcstrings hold the translations.
+        LOCALIZATION_PREFERS_STRING_CATALOGS: YES
+        SWIFT_EMIT_LOC_STRINGS: YES

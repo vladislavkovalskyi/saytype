@@ -16,21 +16,21 @@ struct HistorySection: View {
             HeaderArt(name: "ObjectStack", width: 280, right: -10, top: -40)
 
             VStack(alignment: .leading, spacing: 0) {
-                SectionHeader("История") {
+                SectionHeader("History") {
                     RetentionLine()
                 }
                 .frame(height: 84, alignment: .topLeading)
 
                 HStack(spacing: 12) {
-                    StatTile(value: stats.wordsToday, caption: Format.plural(stats.wordsToday, "слово сегодня", "слова сегодня", "слов сегодня"))
-                    StatTile(value: stats.wordsPerMinute, caption: Format.plural(stats.wordsPerMinute, "слово в минуту", "слова в минуту", "слов в минуту"))
-                    StatTile(value: stats.wordsThisWeek, caption: Format.plural(stats.wordsThisWeek, "слово за неделю", "слова за неделю", "слов за неделю"))
+                    StatTile(value: stats.wordsToday, caption: String(localized: "\(stats.wordsToday) words today", comment: "Caption under the number; the plural forms leave the number out"))
+                    StatTile(value: stats.wordsPerMinute, caption: String(localized: "\(stats.wordsPerMinute) words per minute", comment: "Caption under the number; the plural forms leave the number out"))
+                    StatTile(value: stats.wordsThisWeek, caption: String(localized: "\(stats.wordsThisWeek) words this week", comment: "Caption under the number; the plural forms leave the number out"))
                 }
                 .frame(width: 780, height: 84)
 
                 Group {
                     if history.isEmpty {
-                        Text("Пока пусто")
+                        Text("Nothing yet")
                             .font(.onest(21, .semibold))
                             .frame(width: 1068, height: 480)
                             .frost()
@@ -67,21 +67,21 @@ struct HistorySection: View {
     }
 }
 
-/// "Хранится на этом Mac 30 дней ⌄".
+/// "Kept on this Mac for 30 days ⌄".
 private struct RetentionLine: View {
     @Environment(AppModel.self) private var model
 
     var body: some View {
         let days = model.settings.value.historyRetentionDays
         HStack(spacing: 5) {
-            Text("Хранится на этом Mac")
+            Text("Kept on this Mac for", comment: "Followed by a menu with the retention period, e.g. 30 days")
             PopupMenu(items: [7, 30, 90].map { option in
-                MenuOption(title: Format.count(option, "день", "дня", "дней"), isOn: option == days) {
+                MenuOption(title: String(localized: "\(option) days"), isOn: option == days) {
                     model.settings.value.historyRetentionDays = option
                 }
             }) {
                 HStack(spacing: 2) {
-                    Text(Format.count(days, "день", "дня", "дней"))
+                    Text("\(days) days")
                         .underline(color: .white.opacity(0.35))
                     Icon(.chevronDown, size: 14)
                 }
@@ -120,12 +120,12 @@ private struct RecordList: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            SearchField(prompt: "Найти", text: $query, width: nil, height: 34, frosted: false)
+            SearchField(prompt: "Search", text: $query, width: nil, height: 34, frosted: false)
                 .padding(.horizontal, 14)
                 .padding(.top, 14)
                 .padding(.bottom, 4)
             if records.isEmpty {
-                Text("Не найдено")
+                Text("No results")
                     .font(.onest(15, .medium))
                     .foregroundStyle(.white.opacity(0.7))
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -133,7 +133,7 @@ private struct RecordList: View {
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 0) {
                         ForEach(groups, id: \.title) { group in
-                            PanelLabel(group.title)
+                            PanelLabel(verbatim: group.title)
                                 .padding(.horizontal, 18)
                                 .padding(.top, 14)
                                 .padding(.bottom, 6)
@@ -226,12 +226,12 @@ private struct RecordDetail: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(([record.appName].compactMap { $0 } + [Format.moment(record.date)]).joined(separator: " · "))
                         .font(.onest(16, .semibold))
-                    Text("\(Format.duration(record.duration)) · \(Format.count(record.wordCount, "слово", "слова", "слов"))")
+                    Text(verbatim: "\(Format.duration(record.duration)) · " + String(localized: "\(record.wordCount) words"))
                         .font(.onest(13))
                         .foregroundStyle(.white.opacity(0.74))
                 }
                 Spacer(minLength: 12)
-                WorldSegmented(selection: $mode, options: [(.result, "Итог"), (.raw, "Как сказал"), (.diff, "Разница")])
+                WorldSegmented(selection: $mode, options: [(.result, "Final"), (.raw, "As spoken"), (.diff, "Changes")])
             }
             .padding(.horizontal, 24)
             .padding(.top, 20)
@@ -253,12 +253,12 @@ private struct RecordDetail: View {
 
             HStack(spacing: 8) {
                 Button(action: copy) {
-                    Label { Text(copied ? "Скопировано" : "Копировать") } icon: { Icon(copied ? .check : .copy, size: 14, stroke: 2) }
+                    Label { Text(copied ? "Copied" : "Copy") } icon: { Icon(copied ? .check : .copy, size: 14, stroke: 2) }
                         .labelStyle(IconFirstLabelStyle())
                 }
                 .buttonStyle(WhiteButtonStyle())
 
-                Label { Text("Перетащить") } icon: { Icon(.grip, size: 14) }
+                Label { Text("Drag") } icon: { Icon(.grip, size: 14) }
                     .labelStyle(IconFirstLabelStyle())
                     .font(.onest(13, .medium))
                     .padding(.horizontal, 13)
@@ -267,7 +267,7 @@ private struct RecordDetail: View {
                     .contentShape(Capsule())
                     .draggable(record.text)
 
-                Button("Вставить ещё раз", action: insertAgain)
+                Button("Paste again", action: insertAgain)
                     .buttonStyle(ChipButtonStyle())
 
                 Spacer()
@@ -275,7 +275,7 @@ private struct RecordDetail: View {
                 Button {
                     model.dictation.removeFromHistory(record.id)
                 } label: {
-                    Label { Text("Удалить") } icon: { Icon(.trash, size: 14, stroke: 2) }
+                    Label { Text("Delete") } icon: { Icon(.trash, size: 14, stroke: 2) }
                         .labelStyle(IconFirstLabelStyle())
                 }
                 .buttonStyle(ChipButtonStyle())

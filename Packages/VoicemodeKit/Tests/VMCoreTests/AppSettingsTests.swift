@@ -20,4 +20,31 @@ import Testing
         #expect(settings.recordKey == .fn)
         #expect(settings.whisperModel == AppSettings().whisperModel)
     }
+
+    @Test func storedLanguageWinsOverSystemDefault() throws {
+        for language in AppSettings.SpeechLanguage.allCases {
+            let document = Data(#"{"language":"\#(language.rawValue)"}"#.utf8)
+            #expect(try JSONDecoder().decode(AppSettings.self, from: document).language == language)
+        }
+    }
+
+    @Test func missingLanguageFallsBackToSystemDefault() throws {
+        let settings = try JSONDecoder().decode(AppSettings.self, from: Data("{}".utf8))
+        #expect(settings.language == AppSettings.SpeechLanguage.systemDefault)
+        #expect(AppSettings().language == AppSettings.SpeechLanguage.systemDefault)
+    }
+
+    @Test(arguments: [
+        (["ru-RU", "en-US"], AppSettings.SpeechLanguage.russian),
+        (["ru"], .russian),
+        (["en-GB", "ru-RU"], .english),
+        (["en"], .english),
+        (["de-DE", "ru-RU"], .auto),
+        (["uk-UA"], .auto),
+        (["zh-Hans-CN"], .auto),
+        ([], .auto),
+    ])
+    func defaultLanguageFollowsPrimarySystemLanguage(preferred: [String], expected: AppSettings.SpeechLanguage) {
+        #expect(AppSettings.SpeechLanguage.matching(preferredLanguages: preferred) == expected)
+    }
 }

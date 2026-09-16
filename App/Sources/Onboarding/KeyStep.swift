@@ -27,10 +27,10 @@ struct KeyStep: View {
             }
 
             VStack(alignment: .leading, spacing: 0) {
-                StepTitle("Зажми \(key.inlineName)")
-                StepSubtitle("Держать: запись. Отпустить: вставка. Двойное нажатие: запись без рук.")
+                StepTitle("Hold \(key.inlineName)")
+                StepSubtitle("Hold: record. Release: paste. Double-press: hands-free.")
                     .padding(.top, 12)
-                Text("Клавиша")
+                Text("Key")
                     .font(.onest(12.5, .semibold))
                     .foregroundStyle(.white.opacity(0.7))
                     .padding(.top, 28)
@@ -49,10 +49,10 @@ struct KeyStep: View {
                             .font(.system(size: 16, weight: .regular))
                         VStack(alignment: .leading, spacing: 1) {
                             Text(warning).font(.onest(14, .semibold))
-                            Muted("Клавиатура › Нажатие клавиши Globe")
+                            Muted("Keyboard › Press Globe key to")
                         }
                         Spacer(minLength: 0)
-                        WhiteButton(title: "Отключить") {
+                        WhiteButton(title: "Turn Off") {
                             if let url = URL(string: "x-apple.systempreferences:com.apple.Keyboard-Settings.extension") {
                                 NSWorkspace.shared.open(url)
                             }
@@ -112,7 +112,7 @@ private struct KeyChip: View {
     }
 }
 
-/// "fn удерживается · 0,42 с" while the key is down.
+/// "fn held · 0.42 sec" while the key is down.
 private struct HoldReadout: View {
     let key: AppSettings.RecordKey
     let since: Date
@@ -127,11 +127,11 @@ private struct HoldReadout: View {
             TimelineView(.animation(minimumInterval: 0.03)) { context in
                 let seconds = max(0, context.date.timeIntervalSince(since))
                 HStack(spacing: 0) {
-                    Text("\(key.title) удерживается · ")
-                    Text(seconds, format: .number.precision(.fractionLength(2)).locale(Locale(identifier: "ru_RU")))
+                    Text("\(key.title) held", comment: "Readout while the record key is down, followed by the time")
+                    Text(verbatim: " · ")
+                    Text(Duration.seconds(seconds), format: .units(allowed: [.seconds], width: .abbreviated, fractionalPart: .show(length: 2)))
                         .font(.mono(12.5, .medium))
                         .monospacedDigit()
-                    Text(" с").font(.mono(12.5, .medium))
                 }
             }
             .font(.onest(13.5, .medium))
@@ -193,9 +193,9 @@ struct GlobeUsage: Equatable {
     /// Nil when the key does nothing and fn is free for recording.
     var warning: String? {
         switch rawValue {
-        case 1: "Globe переключает язык"
-        case 2: "Globe открывает эмодзи"
-        case 3: "Globe включает диктовку"
+        case 1: String(localized: "Globe changes input source")
+        case 2: String(localized: "Globe shows emoji")
+        case 3: String(localized: "Globe starts dictation")
         default: nil
         }
     }

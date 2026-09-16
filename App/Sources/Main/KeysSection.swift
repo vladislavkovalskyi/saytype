@@ -13,12 +13,12 @@ struct KeysSection: View {
             HeaderArt(name: "ObjectKeycap", width: 300, right: -30, top: -40)
 
             VStack(alignment: .leading, spacing: 0) {
-                SectionHeader("Клавиша и плашка", subtitle: "Как начинать запись и где она видна")
+                SectionHeader("Key and overlay", subtitle: "How recording starts and where it shows")
                     .frame(height: 94, alignment: .topLeading)
 
                 HStack(alignment: .top, spacing: 16) {
                     VStack(spacing: 0) {
-                        SettingsRow("Клавиша записи", detail: "держать, чтобы говорить") {
+                        SettingsRow("Record key", detail: "hold to speak") {
                             PopupMenu(items: AppSettings.RecordKey.allCases.map { key in
                                 MenuOption(title: key.title, isOn: key == settings.value.recordKey) {
                                     settings.value.recordKey = key
@@ -31,32 +31,32 @@ struct KeysSection: View {
                             }
                         }
                         RowDivider()
-                        ToggleRow("Двойное нажатие", detail: "запись без рук", isOn: $settings.value.doubleTapHandsFree, accent: world.accent)
+                        ToggleRow("Double-press", detail: "hands-free recording", isOn: $settings.value.doubleTapHandsFree, accent: world.accent)
                         RowDivider()
-                        SettingsRow("Отмена") { Keycap("esc") }
+                        SettingsRow("Cancel") { Keycap("esc") }
                         RowDivider()
-                        ToggleRow("Звук начала и конца", isOn: $settings.value.sounds, accent: world.accent)
+                        ToggleRow("Start and end sounds", isOn: $settings.value.sounds, accent: world.accent)
                     }
                     .frame(width: 520)
                     .frost()
 
                     VStack(alignment: .leading, spacing: 14) {
                         HStack(spacing: 12) {
-                            OverlayStyleCard(title: "Остров", isSelected: settings.value.overlayStyle == .island) {
+                            OverlayStyleCard(title: "Island", isSelected: settings.value.overlayStyle == .island) {
                                 IslandPreview()
                             } action: {
                                 settings.value.overlayStyle = .island
                             }
-                            OverlayStyleCard(title: "Пилюля", isSelected: settings.value.overlayStyle == .pill) {
+                            OverlayStyleCard(title: "Pill", isSelected: settings.value.overlayStyle == .pill) {
                                 PillPreview(light: settings.value.glass == .light)
                             } action: {
                                 settings.value.overlayStyle = .pill
                             }
                         }
                         HStack {
-                            PanelLabel("Стекло")
+                            PanelLabel("Glass")
                             Spacer()
-                            WorldSegmented(selection: $settings.value.glass, options: [(.dark, "Тёмное"), (.light, "Светлое")])
+                            WorldSegmented(selection: $settings.value.glass, options: [(.dark, "Dark"), (.light, "Light")])
                         }
                     }
                     .padding(16)
@@ -80,7 +80,7 @@ struct KeysSection: View {
 // MARK: Overlay style
 
 private struct OverlayStyleCard<Preview: View>: View {
-    let title: String
+    let title: LocalizedStringKey
     let isSelected: Bool
     @ViewBuilder let preview: Preview
     let action: () -> Void
@@ -209,23 +209,23 @@ private struct AfterRecordingPanel: View {
     var body: some View {
         @Bindable var settings = model.settings
         VStack(alignment: .leading, spacing: 0) {
-            PanelLabel("После записи")
+            PanelLabel("After recording")
                 .padding(.horizontal, 20)
             HStack(spacing: 12) {
-                ModeCard(icon: .returnKey, title: "Вставить", detail: "в активное поле", isSelected: settings.value.outputMode == .paste) {
+                ModeCard(icon: .returnKey, title: "Paste", detail: "into the active field", isSelected: settings.value.outputMode == .paste) {
                     settings.value.outputMode = .paste
                 }
-                ModeCard(icon: .card, title: "Карточка", detail: "остаётся в плашке", isSelected: settings.value.outputMode == .card) {
+                ModeCard(icon: .card, title: "Card", detail: "stays in the overlay", isSelected: settings.value.outputMode == .card) {
                     settings.value.outputMode = .card
                 }
-                ModeCard(icon: .clipboard, title: "Буфер обмена", detail: "без вставки", isSelected: settings.value.outputMode == .clipboard) {
+                ModeCard(icon: .clipboard, title: "Clipboard", detail: "without pasting", isSelected: settings.value.outputMode == .clipboard) {
                     settings.value.outputMode = .clipboard
                 }
             }
             .padding(.horizontal, 20)
             .padding(.top, 12)
 
-            SettingsRow("Enter после вставки", detail: "команда сразу уходит агенту") {
+            SettingsRow("Return after paste", detail: "the command goes straight to the agent") {
                 AutoEnterApps()
             }
             .opacity(settings.value.outputMode == .paste ? 1 : 0.5)
@@ -237,8 +237,8 @@ private struct AfterRecordingPanel: View {
 
 private struct ModeCard: View {
     let icon: Icon.Name
-    let title: String
-    let detail: String
+    let title: LocalizedStringKey
+    let detail: LocalizedStringKey
     let isSelected: Bool
     let action: () -> Void
 
@@ -342,7 +342,7 @@ private struct AutoEnterApps: View {
         panel.canChooseFiles = true
         panel.canChooseDirectories = false
         panel.allowsMultipleSelection = false
-        panel.prompt = "Добавить"
+        panel.prompt = String(localized: "Add", comment: "Confirm button of the app picker")
         let response = panel.runModal()
         withExtendedLifetime(delegate) {}
         guard response == .OK, let url = panel.url, let bundleID = Bundle(url: url)?.bundleIdentifier else { return }
@@ -363,7 +363,7 @@ enum InstalledApps {
         NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID)
     }
 
-    /// Localised app name, e.g. "Терминал"; the bundle id when the app is not installed.
+    /// Localised app name, e.g. "Terminal"; the bundle id when the app is not installed.
     static func name(for bundleID: String) -> String {
         guard let url = url(for: bundleID) else {
             return bundleID.split(separator: ".").last.map(String.init) ?? bundleID

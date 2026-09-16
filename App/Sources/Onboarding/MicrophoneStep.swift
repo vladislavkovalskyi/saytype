@@ -19,8 +19,8 @@ struct MicrophoneStep: View {
             )
 
             VStack(alignment: .leading, spacing: 0) {
-                StepTitle("Микрофон")
-                StepSubtitle("Скажи пару слов. Полоски двигаются, только когда есть звук.")
+                StepTitle("Microphone")
+                StepSubtitle("Say a few words. The bars move only when there is sound.")
                     .padding(.top, 12)
 
                 HStack(spacing: 10) {
@@ -43,7 +43,7 @@ struct MicrophoneStep: View {
                         Text(Self.decibels(meter.peak))
                             .font(.onest(22, .bold))
                             .tracking(-0.22)
-                        Muted("dB")
+                        Muted(verbatim: "dB")
                     }
                     .frame(width: 44, alignment: .trailing)
                 }
@@ -57,16 +57,16 @@ struct MicrophoneStep: View {
                     HStack(spacing: 8) {
                         Image(systemName: "checkmark.circle")
                             .font(.system(size: 16, weight: .regular))
-                        Text("Доступ к микрофону разрешён")
+                        Text("Microphone access allowed")
                             .font(.onest(13.5, .medium))
                     }
                     .padding(.top, 16)
                 case .denied:
                     HStack(spacing: 12) {
-                        Text("Нет доступа к микрофону")
+                        Text("No microphone access")
                             .font(.onest(14, .semibold))
                         Spacer(minLength: 0)
-                        WhiteButton(title: "Открыть настройки") {
+                        WhiteButton(title: "Open Settings") {
                             Permissions.openSystemSettings(for: .microphone)
                         }
                     }
@@ -104,7 +104,7 @@ struct MicrophoneStep: View {
     }
 
     static func defaultDeviceName() -> String {
-        AVCaptureDevice.default(for: .audio)?.localizedName ?? "Микрофон"
+        AVCaptureDevice.default(for: .audio)?.localizedName ?? String(localized: "Microphone")
     }
 
     /// Level 0…1 is −60…0 dBFS.
