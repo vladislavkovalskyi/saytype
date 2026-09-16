@@ -1,0 +1,56 @@
+<style>
+.desk { position: relative; width: 1440px; height: 900px; overflow: hidden; }
+.chat { position: absolute; left: 260px; top: 170px; width: 920px; height: 640px; border-radius: 20px; overflow: hidden; background: rgba(23,23,26,.95); box-shadow: 0 0 0 .5px rgba(0,0,0,.6), inset 0 0 0 1px rgba(255,255,255,.07), 0 40px 90px -20px rgba(0,0,0,.6); display: flex; z-index: 3; }
+.side { width: 280px; border-right: 1px solid rgba(255,255,255,.06); padding: 54px 10px 10px; display: flex; flex-direction: column; gap: 2px; }
+.row { display: flex; gap: 10px; padding: 9px 10px; border-radius: 11px; align-items: center; }
+.row.on { background: rgba(255,255,255,.08); }
+.av { width: 40px; height: 40px; border-radius: 50%; flex: none; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: #fff; }
+.rn { font-size: 13.5px; font-weight: 600; color: rgba(255,255,255,.9); }
+.rp { font-size: 12.5px; color: rgba(255,255,255,.45); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+.conv { flex: 1; position: relative; display: flex; flex-direction: column; }
+.head { height: 58px; display: flex; align-items: center; gap: 10px; padding: 0 20px; border-bottom: 1px solid rgba(255,255,255,.06); }
+.msgs { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; gap: 8px; padding: 20px; }
+.bub { max-width: 68%; padding: 9px 13px; border-radius: 17px; font-size: 14px; line-height: 1.45; color: rgba(255,255,255,.92); }
+.bin { background: rgba(255,255,255,.08); align-self: flex-start; border-bottom-left-radius: 6px; }
+.bout { background: oklch(0.5 0.1 235); align-self: flex-end; border-bottom-right-radius: 6px; }
+.compose { margin: 0 16px 16px; height: 46px; border-radius: 23px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.14), 0 0 0 3px oklch(0.7 0.1 235 / .32); display: flex; align-items: center; padding: 0 18px; font-size: 14px; color: rgba(255,255,255,.4); gap: 3px; }
+.caretl { width: 2px; height: 18px; background: oklch(0.8 0.1 235); }
+</style>
+<div class="desk wp-c">
+  <div class="grain"></div>
+  <div class="menubar">
+    <div class="l"><span style="font-weight: 700;">Сообщения</span><span>Файл</span><span>Правка</span><span>Вид</span><span>Окно</span></div>
+    <div class="r"><span class="mb-icon" style="background: rgba(255,255,255,.22); color: oklch(0.86 0.14 65);">[[i wave 15 2.2]]</span><span>Ср 16 сент. 11:42</span></div>
+  </div>
+
+  <div class="island" style="width: 620px; height: 138px; --r: 34px; --e: 16px; z-index: 10; padding: 0 28px;">
+    <div style="height: 32px; display: flex; align-items: center; justify-content: space-between;">
+      <span style="width: 8px; height: 8px; border-radius: 50%; background: oklch(0.8 0.15 62); box-shadow: 0 0 10px oklch(0.8 0.15 62);"></span>
+      <span class="mono" style="font-size: 12px; color: rgba(255,255,255,.55);">0:09</span>
+    </div>
+    <div style="display: flex; gap: 18px; align-items: center; margin-top: 16px;">
+      <div class="bars" style="gap: 3px; color: oklch(0.83 0.14 62); height: 44px; flex: none;">[[bars 10 9 4 28]]</div>
+      <p class="live" style="font-size: 16px; color: #f6f3ee;">так, во-первых, поправь <span class="code">useEffect</span> в <span class="code">Header</span>, а во-вторых <span class="dim">задеплой на Vercel</span></p>
+    </div>
+  </div>
+
+  <div class="chat">
+    <div class="side">
+      <div class="lights" style="top: 18px; left: 18px;"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div>
+      <div class="row on"><div class="av" style="background: oklch(0.55 0.1 235);">Ш</div><div style="min-width: 0;"><div class="rn">Команда shop</div><div class="rp">Супер, и не забудь про превью</div></div></div>
+      <div class="row"><div class="av" style="background: oklch(0.58 0.11 30);">А</div><div style="min-width: 0;"><div class="rn">Аня</div><div class="rp">Скинула макеты в папку</div></div></div>
+      <div class="row"><div class="av" style="background: oklch(0.55 0.1 150);">Д</div><div style="min-width: 0;"><div class="rn">Дизайн</div><div class="rp">Ок, завтра созвон в 11</div></div></div>
+      <div class="row"><div class="av" style="background: oklch(0.55 0.09 300);">М</div><div style="min-width: 0;"><div class="rn">Макс</div><div class="rp">Посмотри PR, когда будет минутка</div></div></div>
+      <div class="row"><div class="av" style="background: #3a3a3f;">З</div><div style="min-width: 0;"><div class="rn">Заметки</div><div class="rp">список покупок</div></div></div>
+    </div>
+    <div class="conv">
+      <div class="head"><div class="av" style="width: 32px; height: 32px; font-size: 12px; background: oklch(0.55 0.1 235);">Ш</div><div><div class="rn">Команда shop</div><div class="rp" style="margin: 0;">5 участников</div></div></div>
+      <div class="msgs">
+        <div class="bub bin">Кто смотрит баг с хедером? Сборка красная с утра</div>
+        <div class="bub bout">Я. Там эффект без зависимостей, сейчас поправлю</div>
+        <div class="bub bin">Супер, и не забудь про превью</div>
+      </div>
+      <div class="compose"><span class="caretl"></span>Сообщение</div>
+    </div>
+  </div>
+</div>

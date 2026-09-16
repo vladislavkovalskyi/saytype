@@ -1,0 +1,147 @@
+<style>
+body { background: #121110; }
+.sheet { width: 1440px; min-height: 1080px; background: #121110; padding: 38px; }
+.grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 34px 36px; }
+.tile { position: relative; height: 232px; border-radius: 18px; overflow: hidden; box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+.anchor { position: absolute; left: 50%; bottom: 26px; transform: translateX(-50%); z-index: 4; }
+.tt { margin-top: 12px; font-size: 14px; font-weight: 600; color: #f3efe8; }
+.td { margin-top: 3px; font-size: 12.5px; line-height: 1.45; color: rgba(243,239,232,.55); text-wrap: pretty; max-width: 400px; }
+.fw { position: absolute; border-radius: 10px; background: rgba(18,18,20,.78); box-shadow: inset 0 0 0 1px rgba(255,255,255,.07); z-index: 2; }
+.fw.lt { background: rgba(255,255,255,.86); box-shadow: inset 0 0 0 1px rgba(0,0,0,.05), 0 10px 30px -10px rgba(60,40,20,.3); }
+.fw .ln { position: absolute; left: 18px; height: 6px; border-radius: 3px; background: rgba(255,255,255,.14); }
+.fw.lt .ln { background: rgba(0,0,0,.1); }
+.ring { width: 16px; height: 16px; border-radius: 50%; background: conic-gradient(oklch(0.8 0.15 62) 0 70%, rgba(255,255,255,.16) 70% 100%); -webkit-mask: radial-gradient(circle, transparent 5px, #000 5.5px); mask: radial-gradient(circle, transparent 5px, #000 5.5px); flex: none; }
+.slot { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex: none; background: rgba(255,255,255,.08); }
+</style>
+<div class="sheet">
+<div class="grid">
+
+  <div>
+    <div class="tile wp-a"><div class="grain"></div>
+      <div class="fw" style="left: 36px; top: 24px; width: 320px; height: 140px;"><div class="ln" style="top: 24px; width: 180px;"></div><div class="ln" style="top: 42px; width: 240px;"></div><div class="ln" style="top: 60px; width: 120px;"></div></div>
+      <div class="anchor"><div class="pill glass-dark" style="width: 280px;">
+        <div class="rec"></div>
+        <div class="bars" style="gap: 3px; opacity: .7;">[[flat 22]]</div>
+        <span class="mono cap" style="margin-left: auto; font-size: 12px;">0:01</span>
+      </div></div>
+    </div>
+    <div class="tt">Слушаю, звука ещё нет</div>
+    <div class="td">Fn зажата, но микрофон пока ничего не слышит — полоски ровные. Заговоришь — оживут.</div>
+  </div>
+
+  <div>
+    <div class="tile wp-b"><div class="grain"></div>
+      <div class="fw lt" style="left: 30px; top: 20px; width: 360px; height: 150px;"><div class="ln" style="top: 24px; width: 200px;"></div><div class="ln" style="top: 42px; width: 280px;"></div><div class="ln" style="top: 60px; width: 150px;"></div></div>
+      <div class="anchor"><div class="pill glass-dark" style="width: 400px; align-items: flex-start;">
+        <div class="rec"></div>
+        <p class="live" style="flex: 1; padding-top: 7px;">поправь <span class="code">useEffect</span> в <span class="code">Header</span>, он дёргается <span class="dim">при каждом рендере</span></p>
+      </div></div>
+    </div>
+    <div class="tt">Живой текст</div>
+    <div class="td">Яркие слова уже закреплены, бледные ещё могут поменяться. Термины из кода — моноширинным. Тёмное стекло читается и поверх светлого окна.</div>
+  </div>
+
+  <div>
+    <div class="tile wp-c"><div class="grain"></div>
+      <div class="fw" style="left: 50px; top: 30px; width: 300px; height: 130px;"><div class="ln" style="top: 24px; width: 160px;"></div><div class="ln" style="top: 42px; width: 220px;"></div></div>
+      <div class="anchor"><div class="pill glass-dark" style="width: 330px;">
+        <div class="rec"></div>
+        <span class="chip" style="height: 22px; padding: 0 8px; font-size: 11.5px; font-weight: 600; background: oklch(0.8 0.15 62 / .18); color: oklch(0.87 0.12 66);">без рук</span>
+        <div class="bars" style="gap: 3px;">[[bars 14 8 4 20]]</div>
+        <span class="mono cap" style="margin-left: auto; font-size: 12px;">0:14</span>
+        <span class="kbd">fn</span>
+      </div></div>
+    </div>
+    <div class="tt">Запись без рук</div>
+    <div class="td">Двойное нажатие Fn. Закончить — ещё раз Fn, отменить — Esc.</div>
+  </div>
+
+  <div>
+    <div class="tile wp-a"><div class="grain"></div>
+      <div class="fw" style="left: 60px; top: 20px; width: 320px; height: 130px;"><div class="ln" style="top: 24px; width: 200px;"></div><div class="ln" style="top: 42px; width: 140px;"></div></div>
+      <div class="anchor"><div class="pill glass-dark" style="width: 400px; align-items: flex-start;">
+        <div class="slot"><div class="ring"></div></div>
+        <div style="flex: 1; padding-top: 2px;">
+          <div class="cap" style="font-size: 11.5px;">Оформляю</div>
+          <p class="live sweep">Поправь <span class="code">useEffect</span> в <span class="code">Header</span> — он дёргается при каждом рендере.</p>
+        </div>
+      </div></div>
+    </div>
+    <div class="tt">Оформляю</div>
+    <div class="td">Запятые, абзацы, списки. Если умная структура не успела за 1,5 с — вставится текст с обычной пунктуацией.</div>
+  </div>
+
+  <div>
+    <div class="tile wp-c"><div class="grain"></div>
+      <div class="fw" style="left: 40px; top: 26px; width: 350px; height: 140px;"><div class="ln" style="top: 24px; width: 210px;"></div><div class="ln" style="top: 42px; width: 290px;"></div><div class="ln" style="top: 60px; width: 180px;"></div></div>
+      <div class="anchor"><div class="pill glass-dark" style="padding: 7px 14px 7px 7px; gap: 10px;">
+        <div style="width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: oklch(0.8 0.13 150 / .2); color: oklch(0.87 0.12 150);">[[i check 16 2.4]]</div>
+        <span style="font-size: 14px; font-weight: 500; white-space: nowrap;">Вставлено в Терминал</span>
+        <span class="kbd">⌃⌥V</span>
+      </div></div>
+    </div>
+    <div class="tt">Вставлено</div>
+    <div class="td">Через секунду плашка исчезает. Буфер обмена уже восстановлен. ⌃⌥V — вставить ещё раз.</div>
+  </div>
+
+  <div>
+    <div class="tile wp-a"><div class="grain"></div>
+      <div class="fw" style="left: 250px; top: 18px; width: 160px; height: 110px;"><div class="ln" style="top: 20px; width: 90px;"></div><div class="ln" style="top: 36px; width: 120px;"></div></div>
+      <div class="glass-dark" style="position: absolute; left: 24px; top: 46px; width: 360px; border-radius: 20px; padding: 12px 14px 12px 14px; transform: rotate(-2deg); z-index: 4;">
+        <div style="display: flex; align-items: center; gap: 8px; color: rgba(246,243,238,.5);">[[i grip 16]]<span style="font-size: 11.5px;">перетащи в любое окно</span><span style="margin-left: auto;">[[i x 14]]</span></div>
+        <div style="margin-top: 6px; font-size: 13px; line-height: 1.5;">
+          <p>Сегодня доделываю авторизацию:</p>
+          <p style="color: rgba(246,243,238,.84);">1. Поправить <span class="code">useEffect</span> в <span class="code">Header</span>.</p>
+          <p style="color: rgba(246,243,238,.84);">2. Задеплоить <span class="code">feature/auth</span> на Vercel.</p>
+        </div>
+        <div style="margin-top: 9px; display: flex; gap: 6px;"><span class="chip well" style="height: 26px; font-size: 12px; padding: 0 10px;">[[i copy 13]]Копировать</span><span class="chip well" style="height: 26px; font-size: 12px; padding: 0 10px;">Как сказал</span></div>
+      </div>
+      <div style="position: absolute; left: 44px; top: 66px; z-index: 6;">[[i cursorArrow 22]]</div>
+    </div>
+    <div class="tt">Карточка</div>
+    <div class="td">Режим «оставить в плашке». Текст ждёт карточкой: перетащи его в нужное окно или скопируй.</div>
+  </div>
+
+  <div>
+    <div class="tile wp-b"><div class="grain"></div>
+      <div class="fw lt" style="left: 90px; top: 24px; width: 250px; height: 130px;">
+        <div style="position: absolute; left: 24px; right: 24px; top: 40px; height: 30px; border-radius: 7px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.14); display: flex; align-items: center; padding: 0 10px; gap: 4px; color: rgba(0,0,0,.6); font-size: 14px; letter-spacing: 2px;">••••••<span style="width: 1.5px; height: 14px; background: oklch(0.6 0.12 240);"></span></div>
+      </div>
+      <div class="anchor"><div class="pill glass-dark" style="padding: 7px 16px 7px 7px; gap: 10px;">
+        <div style="width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,.1);">[[i lock 15]]</div>
+        <span style="font-size: 14px; font-weight: 500; white-space: nowrap;">Поле пароля — диктовка на паузе</span>
+      </div></div>
+    </div>
+    <div class="tt">Пауза</div>
+    <div class="td">macOS закрыла ввод: открыто поле пароля или защищённый ввод в терминале. Плашка говорит почему, а не молчит.</div>
+  </div>
+
+  <div>
+    <div class="tile wp-c"><div class="grain"></div>
+      <div class="fw" style="left: 44px; top: 22px; width: 340px; height: 130px;"><div class="ln" style="top: 24px; width: 230px;"></div><div class="ln" style="top: 42px; width: 160px;"></div></div>
+      <div class="anchor"><div class="pill glass-dark" style="width: 390px;">
+        <div class="rec"></div>
+        <div style="flex: 1; min-width: 0;">
+          <p class="live">задеплой ветку на Vercel</p>
+          <div class="cap" style="font-size: 11.5px; display: flex; align-items: center; gap: 6px; margin-top: 1px;"><span class="ring" style="width: 11px; height: 11px; -webkit-mask: radial-gradient(circle, transparent 3px, #000 3.5px); mask: radial-gradient(circle, transparent 3px, #000 3.5px);"></span>Whisper готовится · пока встроенная диктовка</div>
+        </div>
+      </div></div>
+    </div>
+    <div class="tt">Модель готовится</div>
+    <div class="td">После обновления macOS модель заново готовится под чип. Диктовка не выключается — работает встроенный движок.</div>
+  </div>
+
+  <div>
+    <div class="tile wp-b"><div class="grain"></div>
+      <div class="fw lt" style="left: 40px; top: 18px; width: 340px; height: 140px;"><div class="ln" style="top: 24px; width: 220px;"></div><div class="ln" style="top: 42px; width: 260px;"></div><div class="ln" style="top: 60px; width: 140px;"></div></div>
+      <div class="anchor"><div class="pill glass-light light" style="width: 400px; align-items: flex-start;">
+        <div class="rec" style="background: rgba(0,0,0,.05);"></div>
+        <p class="live" style="flex: 1; padding-top: 7px;">поправь <span class="code">useEffect</span> в <span class="code">Header</span>, он дёргается <span class="dim">при каждом рендере</span></p>
+      </div></div>
+    </div>
+    <div class="tt">Светлое стекло</div>
+    <div class="td">Тот же живой текст на светлом стекле. Включается в настройках плашки.</div>
+  </div>
+
+</div>
+</div>

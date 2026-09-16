@@ -1,0 +1,47 @@
+<style>
+.desk { position: relative; width: 440px; height: 640px; overflow: hidden; }
+.pop { position: absolute; top: 38px; right: 14px; width: 364px; border-radius: 20px; padding: 12px; z-index: 5; }
+.sec { font-size: 11.5px; font-weight: 600; color: rgba(246,243,238,.42); padding: 12px 8px 4px; }
+.hrow { display: flex; align-items: center; gap: 12px; padding: 7px 8px; border-radius: 9px; font-size: 13px; }
+.hrow .t { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: rgba(246,243,238,.88); }
+.hrow .m { font-size: 12px; color: rgba(246,243,238,.4); white-space: nowrap; }
+.mrow { display: flex; align-items: center; gap: 10px; padding: 7px 8px; border-radius: 9px; font-size: 13.5px; color: rgba(246,243,238,.9); }
+.mrow .icon { opacity: .7; }
+.mrow .sc { margin-left: auto; font-size: 12.5px; color: rgba(246,243,238,.4); }
+.sep { height: 1px; background: rgba(255,255,255,.08); margin: 6px 8px; }
+.ib { height: 26px; padding: 0 9px; border-radius: 8px; display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: rgba(246,243,238,.78); background: rgba(255,255,255,.07); white-space: nowrap; }
+</style>
+<div class="desk wp-a">
+  <div class="grain"></div>
+  <div class="menubar" style="justify-content: flex-end;">
+    <div class="r"><span style="opacity: .85;">[[i speaker 15]]</span><span class="mb-icon" style="background: rgba(255,255,255,.3);">[[i wave 15 2.2]]</span><span>Ср 11:42</span></div>
+  </div>
+
+  <div class="pop glass-dark">
+    <div style="display: flex; align-items: center; gap: 8px; padding: 2px 6px 10px;">
+      <span style="color: oklch(0.83 0.14 65);">[[i wave 16 2.2]]</span>
+      <span style="font-size: 14px; font-weight: 600;">voicemode</span>
+      <span class="chip" style="margin-left: auto; height: 24px; padding: 0 10px; font-size: 12px; background: rgba(255,255,255,.07); color: rgba(246,243,238,.78);"><span style="width: 6px; height: 6px; border-radius: 50%; background: oklch(0.8 0.13 150);"></span>Готов · держи Fn</span>
+    </div>
+
+    <div class="well" style="border-radius: 14px; padding: 11px 12px 10px;">
+      <div class="cap" style="display: flex; align-items: center; gap: 6px; font-size: 12px;"><span>Последняя · Терминал · только что</span><span style="margin-left: auto; color: rgba(246,243,238,.45);">[[i grip 14]]</span></div>
+      <p style="margin-top: 7px; font-size: 13.5px; line-height: 1.5;">Вынеси загрузку пользователя в отдельный хук <span class="code">useUser</span> и добавь массив зависимостей.</p>
+      <div style="margin-top: 10px; display: flex; gap: 6px;"><span class="ib">[[i copy 13]]Копировать</span><span class="ib">Как сказал</span><span class="ib" style="margin-left: auto;">Ещё раз <span style="opacity: .5;">⌃⌥V</span></span></div>
+    </div>
+
+    <div class="sec">Сегодня</div>
+    <div class="hrow"><span class="t">Так, во-первых, поправь useEffect в Header — он дёргается при каждом рендере</span><span class="m">Терминал · 11:40</span></div>
+    <div class="hrow"><span class="t">Задеплой feature/auth на Vercel и скинь превью</span><span class="m">iTerm2 · 10:58</span></div>
+    <div class="hrow"><span class="t">Созвон перенесли на четыре, ссылку скину позже</span><span class="m">Telegram · 10:31</span></div>
+    <div class="hrow"><span class="t">Добавь в Supabase таблицу users с полями id, email и created_at</span><span class="m">Cursor · 09:47</span></div>
+    <div class="hrow"><span class="t">localhost:3000/settings</span><span class="m">Safari · 09:12</span></div>
+    <div class="cap" style="padding: 8px 8px 2px; display: flex; align-items: center; gap: 6px; font-size: 12px;"><span>1 240 слов · 146 в минуту</span><span style="margin-left: auto; display: flex; align-items: center; gap: 5px;">[[i checkCircle 12]]Whisper turbo · офлайн</span></div>
+
+    <div class="sep"></div>
+    <div class="mrow">[[i history 16]]История<span class="sc">⌘Y</span></div>
+    <div class="mrow">[[i sliders 16]]Настройки…<span class="sc">⌘,</span></div>
+    <div class="sep"></div>
+    <div class="mrow">[[i power 16]]Выйти из voicemode<span class="sc">⌘Q</span></div>
+  </div>
+</div>

@@ -1,0 +1,74 @@
+<style>
+.desk { position: relative; width: 1100px; height: 800px; overflow: hidden; }
+.swin { position: absolute; left: 30px; top: 30px; width: 1040px; height: 740px; border-radius: 24px; overflow: hidden; background: oklch(0.2 0.006 60); box-shadow: 0 0 0 .5px rgba(0,0,0,.6), inset 0 0 0 1px rgba(255,255,255,.07), 0 40px 90px -20px rgba(0,0,0,.6); z-index: 3; }
+.toolbar { position: absolute; left: 0; right: 0; top: 0; height: 60px; display: flex; align-items: center; padding: 0 16px 0 94px; gap: 12px; }
+.search { width: 250px; height: 32px; border-radius: 16px; display: flex; align-items: center; gap: 7px; padding: 0 12px; font-size: 13px; color: rgba(246,243,238,.45); }
+.stats { position: absolute; left: 16px; right: 16px; top: 64px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.stat { border-radius: 14px; padding: 12px 16px; }
+.num { font-family: ui-rounded, "SF Pro Rounded", -apple-system, sans-serif; font-size: 26px; font-weight: 700; letter-spacing: -.02em; line-height: 1.1; }
+.list { position: absolute; left: 10px; top: 150px; bottom: 12px; width: 430px; overflow: hidden; }
+.day { font-size: 12px; font-weight: 600; color: rgba(246,243,238,.42); padding: 10px 12px 6px; }
+.item { display: flex; gap: 10px; padding: 11px 12px; border-radius: 12px; }
+.item.on { background: rgba(255,255,255,.08); box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+.item .g { color: rgba(246,243,238,.28); padding-top: 2px; }
+.item .tx { font-size: 13.5px; line-height: 1.45; color: rgba(246,243,238,.9); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.item .mt { font-size: 11.5px; color: rgba(246,243,238,.42); margin-top: 4px; }
+.detail { position: absolute; left: 452px; right: 16px; top: 150px; bottom: 16px; border-radius: 18px; padding: 20px 24px; }
+.del { text-decoration: line-through; text-decoration-color: oklch(0.72 0.14 30); color: rgba(246,243,238,.38); }
+.ins { color: oklch(0.86 0.14 72); background: oklch(0.86 0.14 72 / .15); border-radius: 3px; padding: 0 1px; }
+.legend { display: flex; gap: 16px; font-size: 12px; color: rgba(246,243,238,.5); margin-top: 16px; }
+.sw { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+.ib { height: 30px; padding: 0 12px; border-radius: 9px; display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: rgba(246,243,238,.85); background: rgba(255,255,255,.08); white-space: nowrap; }
+</style>
+<div class="desk wp-a">
+  <div class="grain"></div>
+  <div class="swin">
+    <div class="lights" style="top: 24px; left: 22px;"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div>
+    <div class="toolbar">
+      <span style="font-size: 15px; font-weight: 600;">История</span>
+      <div class="search glass" style="margin-left: auto;">[[i search 14]]Поиск по истории</div>
+    </div>
+
+    <div class="stats">
+      <div class="stat well"><div class="num">1 240</div><div class="cap" style="margin-top: 2px;">слов сегодня</div></div>
+      <div class="stat well"><div class="num">146</div><div class="cap" style="margin-top: 2px;">слов в минуту в среднем</div></div>
+      <div class="stat well"><div class="num">8 930</div><div class="cap" style="margin-top: 2px;">слов за неделю</div></div>
+    </div>
+
+    <div class="list">
+      <div class="day">Сегодня</div>
+      <div class="item"><span class="g">[[i grip 15]]</span><div style="min-width: 0;"><div class="tx">Вынеси загрузку пользователя в отдельный хук useUser и добавь массив зависимостей.</div><div class="mt">Терминал · 11:42 · 5 с</div></div></div>
+      <div class="item on"><span class="g">[[i grip 15]]</span><div style="min-width: 0;"><div class="tx">Так, во-первых, поправь useEffect в Header — он дёргается при каждом рендере. Во-вторых, задеплой ветку feature/auth на Vercel, ну и скинь превью в Telegram.</div><div class="mt">Терминал · 11:40 · 12 с</div></div></div>
+      <div class="item"><span class="g">[[i grip 15]]</span><div style="min-width: 0;"><div class="tx">Задеплой feature/auth на Vercel и скинь превью.</div><div class="mt">iTerm2 · 10:58 · 4 с</div></div></div>
+      <div class="item"><span class="g">[[i grip 15]]</span><div style="min-width: 0;"><div class="tx">Созвон перенесли на четыре, ссылку скину позже.</div><div class="mt">Telegram · 10:31 · 3 с</div></div></div>
+      <div class="item"><span class="g">[[i grip 15]]</span><div style="min-width: 0;"><div class="tx">Добавь в Supabase таблицу users с полями id, email и created_at.</div><div class="mt">Cursor · 09:47 · 6 с</div></div></div>
+      <div class="item"><span class="g">[[i grip 15]]</span><div style="min-width: 0;"><div class="tx">localhost:3000/settings</div><div class="mt">Safari · 09:12 · 2 с</div></div></div>
+      <div class="day">Вчера</div>
+      <div class="item"><span class="g">[[i grip 15]]</span><div style="min-width: 0;"><div class="tx">Напиши тест на Jest для функции parseDate: пустая строка, ISO и timestamp.</div><div class="mt">Cursor · 18:20 · 7 с</div></div></div>
+    </div>
+
+    <div class="detail well">
+      <div style="font-size: 15px; font-weight: 600;">Терминал · сегодня в 11:40</div>
+      <div class="cap" style="margin-top: 3px;">12 секунд · 23 слова · Whisper turbo · оформлено за 0,9 с</div>
+      <div style="margin-top: 16px; display: flex; align-items: center; gap: 12px;">
+        <div class="seg" style="background: rgba(255,255,255,.07);"><span>Оформлено</span><span>Как сказал</span><span class="on">Разница</span></div>
+        <div class="legend" style="margin: 0 0 0 auto;">
+          <span><span class="sw" style="background: oklch(0.86 0.14 72 / .6);"></span>добавлено</span>
+          <span><span class="sw" style="background: oklch(0.72 0.14 30 / .6);"></span>убрано</span>
+          <span><span class="sw" style="background: oklch(0.86 0.1 205 / .6);"></span>код</span>
+        </div>
+      </div>
+      <div style="margin-top: 22px; font-size: 16px; line-height: 1.85; color: rgba(246,243,238,.92);">
+        <p><span class="del">эээ</span> <span class="ins">Т</span>ак<span class="ins">,</span> во<span class="ins">-</span>первых<span class="ins">,</span> поправь <span class="code">useEffect</span> в <span class="code">Header</span><span class="ins"> —</span> он дёргается при каждом рендере<span class="ins">.</span></p>
+        <p style="margin-top: 12px;"><span class="ins">В</span>о<span class="ins">-</span>вторых<span class="ins">,</span> задеплой ветку <span class="code">feature/auth</span> на Vercel<span class="ins">,</span> ну и скинь превью в Telegram<span class="ins">.</span></p>
+      </div>
+      <div class="cap" style="margin-top: 18px; font-size: 12.5px; display: flex; align-items: center; gap: 6px;">[[i shield 14]]Слова не переписаны: добавлены только знаки и абзац, убрано «эээ».</div>
+
+      <div style="position: absolute; left: 24px; right: 24px; bottom: 20px; display: flex; align-items: center; gap: 8px;">
+        <span class="ib">[[i grip 14]]Перетащить</span>
+        <span class="ib">[[i copy 14]]Копировать</span>
+        <span class="ib">Вставить ещё раз <span style="opacity: .5;">⌃⌥V</span></span>
+      </div>
+    </div>
+  </div>
+</div>

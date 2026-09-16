@@ -1,0 +1,75 @@
+<style>
+.desk { position: relative; width: 1100px; height: 800px; overflow: hidden; }
+.swin { position: absolute; left: 30px; top: 30px; width: 1040px; height: 740px; border-radius: 24px; overflow: hidden; background: oklch(0.2 0.006 60); box-shadow: 0 0 0 .5px rgba(0,0,0,.6), inset 0 0 0 1px rgba(255,255,255,.07), 0 40px 90px -20px rgba(0,0,0,.6); z-index: 3; }
+.sidebar { position: absolute; left: 8px; top: 8px; bottom: 8px; width: 236px; border-radius: 17px; padding: 50px 10px 10px; }
+.search { height: 30px; border-radius: 9px; background: rgba(255,255,255,.07); display: flex; align-items: center; gap: 6px; padding: 0 9px; font-size: 13px; color: rgba(246,243,238,.4); margin-bottom: 10px; }
+.nav { display: flex; align-items: center; gap: 10px; height: 32px; padding: 0 10px; border-radius: 9px; font-size: 13.5px; color: rgba(246,243,238,.82); }
+.nav .icon { opacity: .7; }
+.nav.on { background: rgba(255,255,255,.15); color: #fff; }
+.nav.on .icon { opacity: 1; color: oklch(0.85 0.13 65); }
+.content { position: absolute; left: 280px; right: 44px; top: 0; bottom: 0; padding-top: 42px; }
+.ttl { font-size: 26px; font-weight: 700; letter-spacing: -.02em; }
+.gh { font-size: 12px; font-weight: 600; color: rgba(246,243,238,.45); margin: 22px 4px 8px; display: flex; align-items: center; }
+.group { border-radius: 14px; background: rgba(255,255,255,.045); box-shadow: inset 0 0 0 1px rgba(255,255,255,.05); }
+.srow { display: flex; align-items: center; gap: 14px; padding: 10px 16px; min-height: 52px; }
+.srow + .srow { box-shadow: inset 0 1px 0 rgba(255,255,255,.06); }
+.srow .l { flex: 1; min-width: 0; }
+.srow .n { font-size: 13.5px; color: rgba(246,243,238,.93); }
+.srow .d { font-size: 12px; color: rgba(246,243,238,.48); margin-top: 2px; }
+.modes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.mode { border-radius: 14px; padding: 14px; background: rgba(255,255,255,.045); box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+.mode.on { background: rgba(255,255,255,.08); box-shadow: inset 0 0 0 1.5px oklch(0.8 0.14 65); }
+.mode .mi { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,.07); color: rgba(255,255,255,.85); margin-bottom: 12px; }
+.mode.on .mi { background: oklch(0.8 0.14 65 / .18); color: oklch(0.87 0.12 68); }
+.mode .n { font-size: 13.5px; font-weight: 600; }
+.mode .d { font-size: 12px; line-height: 1.45; color: rgba(246,243,238,.5); margin-top: 3px; }
+.apptile { width: 28px; height: 28px; border-radius: 7px; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,.85); flex: none; box-shadow: inset 0 1px 0 rgba(255,255,255,.15); }
+.keys { display: inline-flex; gap: 4px; }
+.keys .kbd { font-size: 12px; padding: 5px 8px; }
+.add { display: inline-flex; align-items: center; gap: 6px; color: oklch(0.83 0.14 65); font-size: 13px; font-weight: 500; }
+</style>
+<div class="desk wp-a">
+  <div class="grain"></div>
+  <div class="swin">
+    <div class="lights" style="top: 20px; left: 22px;"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div>
+    <div class="sidebar glass">
+      <div class="search">[[i search 14]]Поиск</div>
+      <div class="nav">[[i general 17]]Общие</div>
+      <div class="nav">[[i keyboard 17]]Клавиша</div>
+      <div class="nav">[[i capsule 17]]Плашка</div>
+      <div class="nav">[[i wave 17]]Распознавание</div>
+      <div class="nav">[[i text 17]]Текст</div>
+      <div class="nav on">[[i out 17]]Вывод</div>
+      <div class="nav">[[i history 17]]История</div>
+      <div class="nav">[[i shield 17]]Разрешения</div>
+      <div class="nav">[[i info 17]]О приложении</div>
+    </div>
+
+    <div class="content">
+      <div class="ttl">Вывод</div>
+      <div class="cap" style="margin-top: 4px; font-size: 13px;">Что происходит с текстом, когда отпускаешь Fn.</div>
+
+      <div class="gh">Режим</div>
+      <div class="modes">
+        <div class="mode on"><div class="mi">[[i ret 20]]</div><div class="n">Вставить сразу</div><div class="d">В активное поле. Буфер обмена потом возвращается как был.</div></div>
+        <div class="mode"><div class="mi">[[i cardStack 20]]</div><div class="n">Оставить в плашке</div><div class="d">Карточкой: перетащить в нужное окно или скопировать.</div></div>
+        <div class="mode"><div class="mi">[[i clipboard 20]]</div><div class="n">Только в буфер</div><div class="d">Вставишь сам, когда и куда нужно.</div></div>
+      </div>
+
+      <div class="gh">Горячие клавиши</div>
+      <div class="group">
+        <div class="srow"><div class="l"><div class="n">Вставить последнее ещё раз</div><div class="d">Если текст ушёл не в то окно.</div></div><span class="keys"><span class="kbd">⌃</span><span class="kbd">⌥</span><span class="kbd">V</span></span></div>
+        <div class="srow"><div class="l"><div class="n">Отменить запись</div><div class="d">Пока держишь Fn или в режиме без рук.</div></div><span class="keys"><span class="kbd">esc</span></span></div>
+      </div>
+
+      <div class="gh">Авто-Enter после вставки</div>
+      <div class="group">
+        <div class="srow"><div class="apptile" style="background: #2c2c30;">[[i terminal 16]]</div><div class="l"><div class="n">Терминал</div></div><div class="toggle on"></div></div>
+        <div class="srow"><div class="apptile" style="background: oklch(0.36 0.06 150);">[[i terminal 16]]</div><div class="l"><div class="n">iTerm2</div></div><div class="toggle on"></div></div>
+        <div class="srow"><div class="apptile" style="background: oklch(0.32 0.04 260);">[[i text 16]]</div><div class="l"><div class="n">Cursor</div></div><div class="toggle"></div></div>
+        <div class="srow" style="min-height: 44px;"><span class="add">[[i plus 14 2.2]]Добавить приложение</span></div>
+      </div>
+      <div class="cap" style="margin: 10px 4px 0; font-size: 12px;">Сказал «запусти тесты» в терминале с агентом — команда сразу ушла. В поля паролей voicemode не вставляет ничего.</div>
+    </div>
+  </div>
+</div>

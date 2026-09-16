@@ -25,3 +25,6 @@ Bench/results/*.local.*
 # Python tooling
 .venv/
 __pycache__/
+
+# Design artboards are generated from design/*/src by build.mjs
+design/*/artboards/

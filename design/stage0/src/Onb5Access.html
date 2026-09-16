@@ -1,0 +1,36 @@
+<style>
+.perm { position: absolute; top: 174px; width: 356px; height: 256px; border-radius: 24px; padding: 22px; z-index: 3; display: flex; flex-direction: column; }
+.tile { width: 46px; height: 46px; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #fff; }
+</style>
+<div class="stage">
+<div class="win" style="[[field 95]]">
+  [[chrome 5]]
+  <h2 class="layer h2 center" style="top: 64px; width: 600px;">Два разрешения</h2>
+  <p class="layer sub center" style="top: 108px; width: 600px;">Без них voicemode не услышит Fn в других приложениях и не сможет вставить текст. С экрана ничего не читаем и никуда не отправляем.</p>
+
+  <div class="perm glass" style="left: 72px;">
+    <div class="tile well">[[i person 24 1.6]]</div>
+    <div style="margin-top: 16px; font-size: 17px; font-weight: 600; letter-spacing: -.01em;">Универсальный доступ</div>
+    <p style="margin-top: 6px; font-size: 13.5px; line-height: 1.45; color: rgba(246,243,238,.62);">Чтобы нажать ⌘V за тебя и вставить текст в активное окно.</p>
+    <div style="margin-top: auto; display: flex; align-items: center; gap: 10px; color: oklch(0.85 0.13 150); font-size: 14px; font-weight: 600;">[[i checkCircle 26 1.8]]Разрешено</div>
+  </div>
+
+  <div class="perm glass" style="left: 452px;">
+    <div class="tile well">[[i keyboard 24 1.6]]</div>
+    <div style="margin-top: 16px; font-size: 17px; font-weight: 600; letter-spacing: -.01em;">Мониторинг ввода</div>
+    <p style="margin-top: 6px; font-size: 13.5px; line-height: 1.45; color: rgba(246,243,238,.62);">Чтобы услышать, что ты держишь Fn, в каком бы приложении ты ни был.</p>
+    <div style="margin-top: auto; display: flex; align-items: center; gap: 14px;">
+      <span class="btn btn-sm btn-primary">Открыть Системные настройки[[i out 14 2]]</span>
+      <span class="cap" style="display: flex; align-items: center; gap: 7px; font-size: 13px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.6); box-shadow: 0 0 0 4px rgba(255,255,255,.1);"></span>жду</span>
+    </div>
+  </div>
+
+  <div class="layer cap center" style="top: 456px; display: flex; justify-content: center; align-items: center; gap: 6px; font-size: 13px;">[[i clock 14]]Галочка появится сама, как только разрешишь в Системных настройках</div>
+
+  <div class="footer">
+    <div class="left btn btn-ghost">[[i chevronLeft 16]]Назад</div>
+    <div class="btn btn-primary" style="opacity: .42;">Дальше</div>
+    <div class="right btn btn-ghost" style="font-size: 14px;">Позже</div>
+  </div>
+</div>
+</div>

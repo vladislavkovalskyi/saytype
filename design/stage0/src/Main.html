@@ -1,0 +1,26 @@
+<style>
+.ripple { position: absolute; left: 50%; transform: translateX(-50%); border-radius: 999px; z-index: 2; }
+</style>
+<div class="stage">
+<div class="win" style="[[field 70]]">
+  [[chrome 1]]
+  <div class="layer" style="top: 16px; right: 22px; display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; letter-spacing: -.01em; color: rgba(246,243,238,.72);">[[i wave 15 2]]<span>voicemode</span></div>
+
+  <div class="layer" style="left: 50%; top: 0; width: 560px; height: 400px; transform: translateX(-50%); background: radial-gradient(closest-side, oklch(0.8 0.15 70 / .5), transparent); z-index: 2;"></div>
+  <div class="ripple" style="top: 70px; width: 576px; height: 204px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);"></div>
+  <div class="ripple" style="top: 94px; width: 492px; height: 156px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.1);"></div>
+  <div class="layer glass" style="left: 50%; top: 112px; width: 404px; height: 120px; transform: translateX(-50%); border-radius: 60px; display: flex; align-items: center; justify-content: center; color: #fbf6ec;">
+    <div class="bars" style="gap: 5px;">[[bars 33 3 6 70]]</div>
+  </div>
+  <p class="layer live center" style="top: 290px; width: 640px; font-size: 16px; color: rgba(251,246,236,.94);">поправь <span class="code">useEffect</span> в <span class="code">Header</span>, он дёргается <span class="dim">при каждом рендере</span></p>
+
+  <h1 class="layer h1 center" style="top: 344px; width: 720px;">Говори — и это уже текст</h1>
+  <p class="layer sub center" style="top: 408px; width: 540px;">Зажми Fn, скажи, отпусти. Оформленный текст появится там, где стоит курсор: в редакторе, терминале, браузере или мессенджере.</p>
+  <div class="layer cap center" style="top: 488px; display: flex; justify-content: center; align-items: center; gap: 6px;">[[i lock 13]]<span>Распознаётся на этом Mac — без интернета и подписок</span></div>
+
+  <div class="footer">
+    <div class="btn btn-primary">Начать настройку</div>
+    <div class="right cap">займёт несколько минут</div>
+  </div>
+</div>
+</div>

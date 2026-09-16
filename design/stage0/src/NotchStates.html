@@ -1,0 +1,87 @@
+<style>
+body { background: #121110; }
+.sheet { width: 1440px; min-height: 780px; background: #121110; padding: 38px; }
+.grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 34px 36px; }
+.tile { position: relative; height: 210px; border-radius: 18px; overflow: hidden; box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+.tt { margin-top: 12px; font-size: 14px; font-weight: 600; color: #f3efe8; }
+.td { margin-top: 3px; font-size: 12.5px; line-height: 1.45; color: rgba(243,239,232,.55); text-wrap: pretty; max-width: 400px; }
+.mb { position: absolute; top: 0; left: 0; right: 0; height: 30px; display: flex; align-items: center; justify-content: space-between; padding: 0 14px; font-size: 12px; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.25); z-index: 2; }
+.mb .l, .mb .r { display: flex; align-items: center; gap: 12px; }
+.ring { width: 14px; height: 14px; border-radius: 50%; background: conic-gradient(oklch(0.8 0.15 62) 0 70%, rgba(255,255,255,.16) 70% 100%); -webkit-mask: radial-gradient(circle, transparent 4px, #000 4.5px); mask: radial-gradient(circle, transparent 4px, #000 4.5px); flex: none; }
+.cmp { height: 30px; display: flex; align-items: center; justify-content: space-between; padding: 0 14px; }
+</style>
+<div class="sheet">
+<div class="grid">
+
+  <div>
+    <div class="tile wp-c"><div class="grain"></div>
+      <div class="mb"><div class="l"><b>Терминал</b><span>Файл</span></div><div class="r"><span class="mb-icon" style="width: 26px; height: 20px; color: rgba(255,255,255,.85);">[[i wave 13 2.2]]</span><span>11:42</span></div></div>
+      <div class="island" style="width: 160px; height: 30px; --r: 10px; --e: 6px; z-index: 5;"></div>
+    </div>
+    <div class="tt">Покой</div>
+    <div class="td">Ничего лишнего. Вырез выглядит как обычно, иконка в строке меню — единственный след.</div>
+  </div>
+
+  <div>
+    <div class="tile wp-c"><div class="grain"></div>
+      <div class="mb"><div class="l"><b>Терминал</b></div><div class="r"><span>11:42</span></div></div>
+      <div class="island" style="width: 250px; height: 30px; --r: 14px; --e: 8px; z-index: 5;">
+        <div class="cmp"><div class="bars" style="gap: 2px; color: oklch(0.83 0.14 62);">[[bars 7 3 3 16]]</div><span class="mono" style="font-size: 11px; color: rgba(255,255,255,.6);">0:03</span></div>
+      </div>
+    </div>
+    <div class="tt">Слушаю</div>
+    <div class="td">Остров чуть шире выреза: волна слева, время справа. Пока слов нет — не раскрывается.</div>
+  </div>
+
+  <div>
+    <div class="tile wp-c"><div class="grain"></div>
+      <div class="island" style="width: 400px; height: 118px; --r: 30px; --e: 14px; z-index: 5; padding: 0 20px;">
+        <div style="height: 30px; display: flex; align-items: center; justify-content: space-between;"><span style="width: 7px; height: 7px; border-radius: 50%; background: oklch(0.8 0.15 62); box-shadow: 0 0 8px oklch(0.8 0.15 62);"></span><span class="mono" style="font-size: 11px; color: rgba(255,255,255,.55);">0:06</span></div>
+        <div style="display: flex; gap: 14px; align-items: center; margin-top: 10px;">
+          <div class="bars" style="gap: 2px; color: oklch(0.83 0.14 62); flex: none;">[[bars 8 4 3 24]]</div>
+          <p class="live" style="font-size: 14px; color: #f6f3ee;">поправь <span class="code">useEffect</span> в <span class="code">Header</span>, он дёргается <span class="dim">при каждом рендере</span></p>
+        </div>
+      </div>
+    </div>
+    <div class="tt">Живой текст</div>
+    <div class="td">С первыми словами остров раскрывается пружиной вниз. Держит до трёх строк.</div>
+  </div>
+
+  <div>
+    <div class="tile wp-c"><div class="grain"></div>
+      <div class="island" style="width: 400px; height: 118px; --r: 30px; --e: 14px; z-index: 5; padding: 0 20px;">
+        <div style="height: 30px; display: flex; align-items: center; justify-content: space-between;"><span class="ring"></span><span style="font-size: 11px; color: rgba(255,255,255,.55);">оформляю</span></div>
+        <p class="live sweep" style="font-size: 14px; margin-top: 12px;">Поправь <span class="code">useEffect</span> в <span class="code">Header</span> — он дёргается при каждом рендере.</p>
+      </div>
+    </div>
+    <div class="tt">Оформляю</div>
+    <div class="td">По тексту проходит мягкий блик, пока расставляются знаки и абзацы.</div>
+  </div>
+
+  <div>
+    <div class="tile wp-c"><div class="grain"></div>
+      <div class="mb"><div class="l"><b>Терминал</b></div><div class="r"><span>11:42</span></div></div>
+      <div class="island" style="width: 250px; height: 30px; --r: 14px; --e: 8px; z-index: 5;">
+        <div class="cmp"><span style="color: oklch(0.86 0.12 150);">[[i check 14 2.6]]</span><span style="font-size: 11px; color: rgba(255,255,255,.7);">вставлено</span></div>
+      </div>
+    </div>
+    <div class="tt">Вставлено</div>
+    <div class="td">Остров сжимается обратно до выреза и через секунду исчезает.</div>
+  </div>
+
+  <div>
+    <div class="tile wp-a"><div class="grain"></div>
+      <div class="mb" style="background: rgba(0,0,0,.12);"><div class="l"><b>Терминал</b><span>Файл</span><span>Правка</span><span>Вид</span></div><div class="r"><span>Ср 11:42</span></div></div>
+      <div class="island" style="top: 30px; width: 320px; height: 72px; --r: 24px; --e: 12px; z-index: 5; padding: 0 18px;">
+        <div style="display: flex; gap: 12px; align-items: center; height: 72px;">
+          <div class="bars" style="gap: 2px; color: oklch(0.83 0.14 62); flex: none;">[[bars 6 7 3 20]]</div>
+          <p class="live" style="font-size: 13.5px; color: #f6f3ee;">задеплой ветку <span class="dim">на Vercel</span></p>
+        </div>
+      </div>
+    </div>
+    <div class="tt">Монитор без выреза</div>
+    <div class="td">Остров висит под строкой меню по центру того экрана, где сейчас курсор.</div>
+  </div>
+
+</div>
+</div>
