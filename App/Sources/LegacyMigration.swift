@@ -2,6 +2,7 @@ import Foundation
 
 /// The app was called voicemode before it became saytype. On the first launch under the
 /// new bundle id, models, history and settings move over so nothing downloads twice.
+@MainActor
 enum LegacyMigration {
     static let legacyID = "dev.kovalskyi.voicemode"
     static let settingsKey = "settings.v1"
