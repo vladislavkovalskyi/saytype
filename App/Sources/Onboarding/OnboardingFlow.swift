@@ -28,9 +28,9 @@ enum OnboardingStep: Int, CaseIterable, Sendable {
 
     var actionTitle: String {
         switch self {
-        case .welcome: "Начать"
-        case .done: "Закрыть"
-        default: "Дальше"
+        case .welcome: String(localized: "Start", comment: "Round button on the first onboarding step")
+        case .done: String(localized: "Close", comment: "Round button on the last onboarding step")
+        default: String(localized: "Next", comment: "Round button that moves onboarding forward")
         }
     }
 }
@@ -87,17 +87,17 @@ extension AppSettings.RecordKey {
     var title: String {
         switch self {
         case .fn: "fn"
-        case .rightOption: "Правый ⌥"
-        case .rightCommand: "Правый ⌘"
+        case .rightOption: String(localized: "Right ⌥", comment: "Record key name on a chip or in a menu")
+        case .rightCommand: String(localized: "Right ⌘", comment: "Record key name on a chip or in a menu")
         }
     }
 
-    /// The key inside a sentence: «Зажми правый ⌥».
+    /// The key inside a sentence: "Hold right ⌥".
     var inlineName: String {
         switch self {
         case .fn: "fn"
-        case .rightOption: "правый ⌥"
-        case .rightCommand: "правый ⌘"
+        case .rightOption: String(localized: "right ⌥", comment: "Record key name inside a sentence, e.g. Hold right ⌥")
+        case .rightCommand: String(localized: "right ⌘", comment: "Record key name inside a sentence, e.g. Hold right ⌘")
         }
     }
 
@@ -122,8 +122,8 @@ extension AppSettings.RecordKey {
 extension AppSettings.OverlayStyle {
     var title: String {
         switch self {
-        case .island: "Остров"
-        case .pill: "Пилюля"
+        case .island: String(localized: "Island", comment: "Overlay style: a black shape under the camera notch")
+        case .pill: String(localized: "Pill", comment: "Overlay style: a capsule at the bottom of the screen")
         }
     }
 }

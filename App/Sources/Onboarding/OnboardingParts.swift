@@ -20,16 +20,22 @@ extension View {
 }
 
 struct StepTitle: View {
-    let text: String
+    let text: Text
     var size: CGFloat = 40
 
-    init(_ text: String, size: CGFloat = 40) {
-        self.text = text
+    init(_ key: LocalizedStringKey, size: CGFloat = 40) {
+        text = Text(key)
+        self.size = size
+    }
+
+    /// A name that stays the same in every language, e.g. "voicemode".
+    init(verbatim text: String, size: CGFloat = 40) {
+        self.text = Text(verbatim: text)
         self.size = size
     }
 
     var body: some View {
-        Text(text)
+        text
             .font(.onest(size, .bold))
             .tracking(-0.022 * size)
             // Onest's natural line is about 1.3 em; the design sets titles at 1.05 em.
@@ -38,9 +44,9 @@ struct StepTitle: View {
 }
 
 struct StepSubtitle: View {
-    let text: String
+    let text: LocalizedStringKey
 
-    init(_ text: String) {
+    init(_ text: LocalizedStringKey) {
         self.text = text
     }
 
@@ -82,16 +88,22 @@ struct HeroObject: View {
 
 /// Muted secondary line: 13 pt at 74 % white.
 struct Muted: View {
-    let text: String
+    let text: Text
     var size: CGFloat = 13
 
-    init(_ text: String, size: CGFloat = 13) {
-        self.text = text
+    init(_ key: LocalizedStringKey, size: CGFloat = 13) {
+        text = Text(key)
+        self.size = size
+    }
+
+    /// A line that is already localized or needs no translation, e.g. a unit or a readout.
+    init(verbatim text: String, size: CGFloat = 13) {
+        self.text = Text(verbatim: text)
         self.size = size
     }
 
     var body: some View {
-        Text(text)
+        text
             .font(.onest(size))
             .foregroundStyle(.white.opacity(0.74))
     }

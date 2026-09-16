@@ -15,25 +15,25 @@ struct DoneStep: View {
             )
 
             VStack(alignment: .leading, spacing: 0) {
-                StepTitle("Готово")
-                StepSubtitle("voicemode в строке меню. Зажми \(settings.recordKey.inlineName) в любом приложении.")
+                StepTitle("Done")
+                StepSubtitle("voicemode is in the menu bar. Hold \(settings.recordKey.inlineName) in any app.")
                     .padding(.top, 12)
 
                 VStack(spacing: 0) {
-                    SummaryRow(title: "Клавиша") {
+                    SummaryRow(title: "Key") {
                         Kbd(text: settings.recordKey.inlineName)
                     }
                     RowDivider()
-                    SummaryRow(title: "Плашка") {
+                    SummaryRow(title: "Overlay") {
                         Text(settings.overlayStyle.title).font(.onest(14, .semibold))
                     }
                     RowDivider()
-                    SummaryRow(title: "Модель") {
-                        Text("Whisper turbo").font(.onest(14, .semibold))
+                    SummaryRow(title: "Model") {
+                        Text(verbatim: "Whisper turbo").font(.onest(14, .semibold))
                     }
                     RowDivider()
                     Toggle(isOn: loginBinding) {
-                        Text("Открывать при входе")
+                        Text("Open at login")
                             .font(.onest(14))
                             .foregroundStyle(.white.opacity(0.74))
                     }
@@ -62,7 +62,7 @@ struct DoneStep: View {
 }
 
 private struct SummaryRow<Value: View>: View {
-    let title: String
+    let title: LocalizedStringKey
     @ViewBuilder let value: Value
 
     var body: some View {

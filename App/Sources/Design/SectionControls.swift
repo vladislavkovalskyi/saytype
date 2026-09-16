@@ -93,10 +93,10 @@ struct CodeSpan: View {
 
 /// Section title and one line under it.
 struct SectionHeader<Subtitle: View>: View {
-    let title: String
+    let title: LocalizedStringKey
     let subtitle: Subtitle
 
-    init(_ title: String, @ViewBuilder subtitle: () -> Subtitle) {
+    init(_ title: LocalizedStringKey, @ViewBuilder subtitle: () -> Subtitle) {
         self.title = title
         self.subtitle = subtitle()
     }
@@ -116,7 +116,7 @@ struct SectionHeader<Subtitle: View>: View {
 }
 
 extension SectionHeader where Subtitle == Text {
-    init(_ title: String, subtitle: String) {
+    init(_ title: LocalizedStringKey, subtitle: LocalizedStringKey) {
         self.init(title) { Text(subtitle) }
     }
 }
@@ -145,14 +145,19 @@ struct HeaderArt: View {
 
 /// Small grey caption above a group of controls.
 struct PanelLabel: View {
-    let text: String
+    let text: Text
 
-    init(_ text: String) {
-        self.text = text
+    init(_ key: LocalizedStringKey) {
+        text = Text(key)
+    }
+
+    /// A label that is already localized or needs no translation, e.g. a date.
+    init(verbatim text: String) {
+        self.text = Text(verbatim: text)
     }
 
     var body: some View {
-        Text(text)
+        text
             .font(.onest(12.5, .semibold))
             .foregroundStyle(.white.opacity(0.7))
     }
@@ -162,17 +167,17 @@ struct PanelLabel: View {
 
 /// One line of a settings panel: title, optional detail and a control on the right.
 struct SettingsRow<Accessory: View>: View {
-    let title: String
+    let title: LocalizedStringKey
     let detail: Text?
     let accessory: Accessory
 
-    init(_ title: String, detail: String? = nil, @ViewBuilder accessory: () -> Accessory) {
+    init(_ title: LocalizedStringKey, detail: LocalizedStringKey? = nil, @ViewBuilder accessory: () -> Accessory) {
         self.title = title
         self.detail = detail.map { Text($0) }
         self.accessory = accessory()
     }
 
-    init(_ title: String, detailText: Text, @ViewBuilder accessory: () -> Accessory) {
+    init(_ title: LocalizedStringKey, detailText: Text, @ViewBuilder accessory: () -> Accessory) {
         self.title = title
         self.detail = detailText
         self.accessory = accessory()
@@ -191,7 +196,7 @@ struct SettingsRow<Accessory: View>: View {
 }
 
 struct RowTitle: View {
-    let title: String
+    let title: LocalizedStringKey
     let detail: Text?
 
     var body: some View {
@@ -208,19 +213,19 @@ struct RowTitle: View {
 
 /// A settings row whose control is a world toggle; the whole row toggles.
 struct ToggleRow: View {
-    let title: String
+    let title: LocalizedStringKey
     let detail: Text?
     @Binding var isOn: Bool
     let accent: Color
 
-    init(_ title: String, detail: String? = nil, isOn: Binding<Bool>, accent: Color) {
+    init(_ title: LocalizedStringKey, detail: LocalizedStringKey? = nil, isOn: Binding<Bool>, accent: Color) {
         self.title = title
         self.detail = detail.map { Text($0) }
         _isOn = isOn
         self.accent = accent
     }
 
-    init(_ title: String, detailText: Text, isOn: Binding<Bool>, accent: Color) {
+    init(_ title: LocalizedStringKey, detailText: Text, isOn: Binding<Bool>, accent: Color) {
         self.title = title
         self.detail = detailText
         _isOn = isOn
@@ -278,7 +283,7 @@ struct PopupMenu<Label: View>: View {
     }
 }
 
-/// Frost chip with a value and a chevron that opens a menu, e.g. "40 слов ⌄".
+/// Frost chip with a value and a chevron that opens a menu, e.g. "40+ words ⌄".
 struct MenuChip: View {
     let title: String
     let items: [MenuOption]
@@ -356,7 +361,7 @@ private final class ActionMenuItem: NSMenuItem {
 
 /// Frosted search capsule.
 struct SearchField: View {
-    let prompt: String
+    let prompt: LocalizedStringKey
     @Binding var text: String
     var width: CGFloat? = 300
     var height: CGFloat = 38
@@ -369,7 +374,7 @@ struct SearchField: View {
                 if text.isEmpty {
                     Text(prompt).foregroundStyle(.white.opacity(0.75)).allowsHitTesting(false)
                 }
-                TextField("", text: $text)
+                TextField(text: $text) { EmptyView() }
                     .textFieldStyle(.plain)
                     .foregroundStyle(.white)
             }

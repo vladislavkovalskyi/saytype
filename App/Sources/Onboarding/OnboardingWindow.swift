@@ -27,7 +27,7 @@ struct OnboardingWindow: View {
             }
             .stepCanvas()
 
-            Text("Шаг \(step.rawValue) из \(OnboardingStep.allCases.count)")
+            Text("Step \(step.rawValue) of \(OnboardingStep.allCases.count)")
                 .font(.onest(13, .semibold))
                 .foregroundStyle(.white.opacity(0.9))
                 .contentTransition(.numericText())
@@ -61,14 +61,14 @@ struct OnboardingWindow: View {
     private func bottomBar(for step: OnboardingStep) -> some View {
         ZStack(alignment: .bottom) {
             if !flow.isFirst {
-                TextAction(title: "Назад", chevron: true) { move(flow.back) }
+                TextAction(title: "Back", chevron: true) { move(flow.back) }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.leading, 30)
                     .padding(.bottom, 52)
                     .transition(.opacity)
             }
             if step == .access && !accessGranted {
-                TextAction(title: "Позже", chevron: false) { move(flow.next) }
+                TextAction(title: "Later", chevron: false) { move(flow.next) }
                     .frame(maxWidth: .infinity, alignment: .trailing)
                     .padding(.trailing, 30)
                     .padding(.bottom, 52)
@@ -120,9 +120,9 @@ private struct StepTransition: Transition {
     }
 }
 
-/// "Назад" and "Позже": plain text at the bottom corners.
+/// "Back" and "Later": plain text at the bottom corners.
 private struct TextAction: View {
-    let title: String
+    let title: LocalizedStringKey
     let chevron: Bool
     let action: () -> Void
 

@@ -12,7 +12,7 @@ struct PermissionsSection: View {
             HeaderArt(name: "ObjectLock", width: 230, right: 10, top: -24)
 
             VStack(alignment: .leading, spacing: 0) {
-                SectionHeader("Разрешения", subtitle: "Системные настройки › Конфиденциальность и безопасность")
+                SectionHeader("Permissions", subtitle: "System Settings › Privacy & Security")
                     .frame(height: 94, alignment: .topLeading)
 
                 VStack(spacing: 0) {
@@ -28,8 +28,8 @@ struct PermissionsSection: View {
 
                 VStack(spacing: 0) {
                     ToggleRow(
-                        "Открывать при входе в систему",
-                        detail: loginNeedsApproval ? "ждёт подтверждения в Системных настройках" : nil,
+                        "Open automatically at login",
+                        detail: loginNeedsApproval ? "awaiting approval in System Settings" : nil,
                         isOn: Binding(
                             get: { launchAtLogin },
                             set: { enabled in
@@ -53,11 +53,11 @@ struct PermissionsSection: View {
         }
     }
 
-    private func detail(for permission: Permission) -> String {
+    private func detail(for permission: Permission) -> LocalizedStringKey {
         switch permission {
-        case .microphone: "запись речи"
-        case .accessibility: "вставка текста в активное окно"
-        case .inputMonitoring: "\(model.settings.value.recordKey.inlineName) в любом приложении"
+        case .microphone: "recording speech"
+        case .accessibility: "pasting text into the active window"
+        case .inputMonitoring: "\(model.settings.value.recordKey.inlineName) in any app"
         }
     }
 }
@@ -65,7 +65,7 @@ struct PermissionsSection: View {
 private struct PermissionRow: View {
     let permission: Permission
     let state: PermissionState
-    let detail: String
+    let detail: LocalizedStringKey
 
     var body: some View {
         SettingsRow(title, detail: detail) {
@@ -73,7 +73,7 @@ private struct PermissionRow: View {
                 if state == .granted {
                     HStack(spacing: 6) {
                         Icon(.check, size: 14, stroke: 2.6)
-                        Text("Разрешено")
+                        Text("Allowed")
                     }
                     .font(.onest(13, .semibold))
                     .foregroundStyle(Color(hex: 0x13804A))
@@ -81,26 +81,26 @@ private struct PermissionRow: View {
                     .padding(.trailing, 12)
                     .frame(height: 30)
                     .background(Capsule().fill(.white.opacity(0.9)))
-                    Button("Открыть", action: open)
+                    Button("Open", action: open)
                         .buttonStyle(ChipButtonStyle())
                 } else {
-                    Text(state == .denied ? "Запрещено" : "Нет доступа")
+                    Text(state == .denied ? "Denied" : "No access")
                         .font(.onest(13, .semibold))
                         .padding(.horizontal, 12)
                         .frame(height: 30)
                         .background(ChipFill())
-                    Button("Открыть", action: open)
+                    Button("Open", action: open)
                         .buttonStyle(WhiteButtonStyle())
                 }
             }
         }
     }
 
-    private var title: String {
+    private var title: LocalizedStringKey {
         switch permission {
-        case .microphone: "Микрофон"
-        case .accessibility: "Универсальный доступ"
-        case .inputMonitoring: "Мониторинг ввода"
+        case .microphone: "Microphone"
+        case .accessibility: "Accessibility"
+        case .inputMonitoring: "Input Monitoring"
         }
     }
 

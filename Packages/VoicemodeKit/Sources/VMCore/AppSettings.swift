@@ -32,6 +32,22 @@ public struct AppSettings: Codable, Equatable, Sendable {
         case russian = "ru"
         case english = "en"
         case auto
+
+        /// The default for a new install: the system language when voicemode
+        /// knows it, otherwise detection from speech.
+        public static var systemDefault: SpeechLanguage {
+            matching(preferredLanguages: Locale.preferredLanguages)
+        }
+
+        /// `["ru-RU", "en-US"]` → `.russian`: only the first, primary language counts.
+        public static func matching(preferredLanguages: [String]) -> SpeechLanguage {
+            guard let first = preferredLanguages.first else { return .auto }
+            switch Locale.Language(identifier: first).languageCode {
+            case .russian: return .russian
+            case .english: return .english
+            default: return .auto
+            }
+        }
     }
 
     public enum FillerMode: String, Codable, CaseIterable, Sendable {
@@ -56,7 +72,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
     /// Bundle identifiers of apps that get Return after a paste.
     public var autoEnterApps: [String] = ["com.apple.Terminal", "com.googlecode.iterm2"]
 
-    public var language = SpeechLanguage.russian
+    public var language = SpeechLanguage.systemDefault
     public var punctuation = true
     public var smartStructure = true
     public var smartStructureMinWords = 40

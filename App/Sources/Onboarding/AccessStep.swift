@@ -15,19 +15,19 @@ struct AccessStep: View {
             )
 
             VStack(alignment: .leading, spacing: 0) {
-                StepTitle("Два разрешения")
-                StepSubtitle("voicemode не читает экран и не ходит в сеть.")
+                StepTitle("Two permissions")
+                StepSubtitle("voicemode does not read the screen or use the network.")
                     .padding(.top, 12)
 
                 VStack(spacing: 0) {
-                    PermissionRow(permission: .accessibility, title: "Универсальный доступ", detail: "вставка текста в активное окно")
+                    PermissionRow(permission: .accessibility, title: "Accessibility", detail: "pasting text into the active window")
                     RowDivider()
-                    PermissionRow(permission: .inputMonitoring, title: "Мониторинг ввода", detail: "fn в любом приложении")
+                    PermissionRow(permission: .inputMonitoring, title: "Input Monitoring", detail: "fn in any app")
                 }
                 .frost()
                 .padding(.top, 26)
 
-                Muted("Системные настройки › Конфиденциальность и безопасность")
+                Muted("System Settings › Privacy & Security")
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.top, 14)
             }
@@ -42,8 +42,8 @@ struct AccessStep: View {
 private struct PermissionRow: View {
     @Environment(AppModel.self) private var model
     let permission: Permission
-    let title: String
-    let detail: String
+    let title: LocalizedStringKey
+    let detail: LocalizedStringKey
 
     var body: some View {
         HStack(spacing: 10) {
@@ -61,7 +61,7 @@ private struct PermissionRow: View {
                 GrantedPill()
                     .transition(.scale(scale: 0.9).combined(with: .opacity))
             } else {
-                WhiteButton(title: "Открыть") {
+                WhiteButton(title: "Open") {
                     Task {
                         _ = await Permissions.request(permission)
                         Permissions.openSystemSettings(for: permission)

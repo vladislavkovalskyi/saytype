@@ -27,6 +27,6 @@
 	<key>NSHumanReadableCopyright</key>
 	<string>© 2026 voicemode</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>voicemode слушает микрофон, пока зажата клавиша записи. Звук распознаётся на этом Mac и никуда не отправляется.</string>
+	<string>voicemode listens to the microphone while the record key is held. Audio is transcribed on this Mac and never leaves it.</string>
 </dict>
 </plist>

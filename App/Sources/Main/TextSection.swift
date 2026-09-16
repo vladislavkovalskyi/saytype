@@ -11,7 +11,7 @@ struct TextSection: View {
             HeaderArt(name: "ObjectTextcard", width: 290, right: -20, top: -36)
 
             VStack(alignment: .leading, spacing: 16) {
-                SectionHeader("Текст", subtitle: "Как сказанное становится текстом")
+                SectionHeader("Text", subtitle: "How speech becomes text")
                     .frame(height: 78, alignment: .topLeading)
 
                 ExamplePanel(world: world)
@@ -20,13 +20,13 @@ struct TextSection: View {
 
                 HStack(alignment: .top, spacing: 16) {
                     VStack(spacing: 0) {
-                        ToggleRow("Пунктуация и абзацы", detail: "новый абзац после паузы 1,5 с", isOn: $settings.value.punctuation, accent: world.accent)
+                        ToggleRow("Punctuation and paragraphs", detail: "new paragraph after a 1.5 s pause", isOn: $settings.value.punctuation, accent: world.accent)
                         RowDivider()
-                        ToggleRow("Умная структура", detail: model.dictation.smart.detail, isOn: model.smartStructureBinding, accent: world.accent)
+                        ToggleRow("Smart structure", detailText: Text(model.dictation.smart.detail), isOn: model.smartStructureBinding, accent: world.accent)
                         RowDivider()
-                        SettingsRow("Включать с") {
-                            MenuChip(title: Format.count(settings.value.smartStructureMinWords, "слова", "слов", "слов"), items: [20, 40, 80].map { words in
-                                MenuOption(title: "\(words) слов", isOn: settings.value.smartStructureMinWords == words) {
+                        SettingsRow("Applies to") {
+                            MenuChip(title: minimumWords(settings.value.smartStructureMinWords), items: [20, 40, 80].map { words in
+                                MenuOption(title: minimumWords(words), isOn: settings.value.smartStructureMinWords == words) {
                                     settings.value.smartStructureMinWords = words
                                 }
                             })
@@ -43,18 +43,28 @@ struct TextSection: View {
                 }
 
                 VStack(spacing: 0) {
-                    SettingsRow("Язык речи") {
-                        WorldSegmented(selection: $settings.value.language, options: [(.russian, "Русский"), (.english, "English"), (.auto, "Авто")])
+                    SettingsRow("Speech language") {
+                        // Language names are written in their own language.
+                        WorldSegmented(selection: $settings.value.language, titles: [
+                            (.russian, Text(verbatim: "Русский")),
+                            (.english, Text(verbatim: "English")),
+                            (.auto, Text("Auto", comment: "Speech language detected automatically")),
+                        ])
                     }
                     RowDivider()
-                    ToggleRow("Термины латиницей", detailText: Text(CodeWords.attributed("useEffect, Vercel, Supabase остаются как в коде", size: 12.5)), isOn: $settings.value.latinTerms, accent: world.accent)
+                    ToggleRow("Terms in Latin script", detailText: Text(CodeWords.attributed(String(localized: "useEffect, Vercel, Supabase stay as in code"), size: 12.5)), isOn: $settings.value.latinTerms, accent: world.accent)
                     RowDivider()
-                    ToggleRow("Удалять точку в конце короткой фразы", detail: "для команд агенту и поиска", isOn: $settings.value.dropTrailingPeriodInShortPhrases, accent: world.accent)
+                    ToggleRow("Drop the period after short phrases", detail: "for agent commands and search", isOn: $settings.value.dropTrailingPeriodInShortPhrases, accent: world.accent)
                 }
                 .frame(width: 1068)
                 .frost()
             }
         }
+    }
+
+    /// "40+ words": smart structure starts at this dictation length.
+    private func minimumWords(_ count: Int) -> String {
+        String(localized: "\(count)+ words", comment: "Minimum dictation length for smart structure, after Applies to")
     }
 }
 
@@ -64,7 +74,7 @@ private struct ExamplePanel: View {
     var body: some View {
         HStack(alignment: .center, spacing: 10) {
             VStack(alignment: .leading, spacing: 8) {
-                PanelLabel("Как сказал")
+                PanelLabel("As spoken")
                 Text(raw)
                     .font(.mono(13.5))
                     .foregroundStyle(.white.opacity(0.92))
@@ -80,8 +90,8 @@ private struct ExamplePanel: View {
                 .frame(width: 48)
 
             VStack(alignment: .leading, spacing: 6) {
-                PanelLabel("Результат")
-                DictatedText(text: "Так, поправь useEffect в Header, он дёргается при каждом рендере.", size: 17, lineHeight: 1.5, codeOpacity: 0.22, codeWords: ["Header"])
+                PanelLabel("Result")
+                DictatedText(text: String(localized: "So, fix useEffect in Header, it flickers on every render.", comment: "Formatted sample dictation; keep useEffect and Header as they are"), size: 17, lineHeight: 1.5, codeOpacity: 0.22, codeWords: ["Header"])
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
@@ -91,16 +101,17 @@ private struct ExamplePanel: View {
     }
 
     private var raw: AttributedString {
-        var filler = AttributedString("эээ")
+        var filler = AttributedString(String(localized: "um", comment: "Struck-out hesitation at the start of the raw sample dictation"))
         filler.strikethroughStyle = .single
         filler.foregroundColor = .white.opacity(0.5)
-        return filler + AttributedString(" так поправь юз эффект в хедере он дёргается при каждом рендере")
+        return filler + AttributedString(" " + String(localized: "so fix use effect in header it flickers on every render", comment: "Raw sample dictation as the speech model hears it, before formatting"))
     }
 }
 
 private struct FillerPanel: View {
     @Environment(AppModel.self) private var model
 
+    /// The Russian words the cleanup removes, shown as they are in every language.
     private static let hesitations = ["эээ", "ммм", "ааа"]
     private static let fillers = ["ну", "типа", "короче", "как бы", "в общем"]
 
@@ -109,9 +120,9 @@ private struct FillerPanel: View {
         let mode = settings.value.fillerMode
         VStack(alignment: .leading, spacing: 0) {
             HStack {
-                Text("Слова-паразиты").font(.onest(14.5, .medium))
+                Text("Filler words").font(.onest(14.5, .medium))
                 Spacer()
-                WorldSegmented(selection: $settings.value.fillerMode, options: [(.keep, "Оставлять"), (.hesitations, "Мычание"), (.all, "Все")])
+                WorldSegmented(selection: $settings.value.fillerMode, options: [(.keep, "Keep"), (.hesitations, "Hesitations"), (.all, "All")])
             }
             FlowLayout(spacing: 8, lineSpacing: 8) {
                 ForEach(Self.hesitations, id: \.self) { word in
@@ -122,7 +133,7 @@ private struct FillerPanel: View {
                 }
             }
             .padding(.top, 22)
-            Text("Остальные слова не меняются.")
+            Text("Other words stay unchanged.")
                 .font(.onest(13))
                 .foregroundStyle(.white.opacity(0.74))
                 .padding(.top, 16)

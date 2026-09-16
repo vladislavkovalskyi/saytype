@@ -2,7 +2,7 @@ import SwiftUI
 
 /// Small white capsule button used inside frosted rows.
 struct WhiteButton: View {
-    let title: String
+    let title: LocalizedStringKey
     let action: () -> Void
 
     var body: some View {
@@ -24,7 +24,7 @@ struct WhiteButton: View {
 
 /// White status capsule with a green check: a permission is granted.
 struct GrantedPill: View {
-    var title = "Разрешено"
+    var title: LocalizedStringKey = "Allowed"
 
     var body: some View {
         HStack(spacing: 6) {

@@ -4,8 +4,8 @@ import VMCore
 struct DictionarySection: View {
     @Environment(AppModel.self) private var model
     @State private var query = ""
-    /// A row added with "Добавить" that has no spelling yet. It joins the dictionary
-    /// once "Пишу" is filled, so a half-typed entry never rewrites dictation.
+    /// A row added with "Add" that has no spelling yet. It joins the dictionary
+    /// once "Written" is filled, so a half-typed entry never rewrites dictation.
     @State private var draft: DictionaryEntry?
     @FocusState private var focus: DictionaryField?
 
@@ -15,13 +15,13 @@ struct DictionarySection: View {
             HeaderArt(name: "ObjectAa", width: 250, right: 10, top: -24)
 
             VStack(alignment: .leading, spacing: 0) {
-                SectionHeader("Словарь", subtitle: "\(Format.count(entries.count, "термин", "термина", "терминов")) · подсказываются Whisper при распознавании")
+                SectionHeader("Dictionary", subtitle: "\(entries.count) terms · passed to Whisper as hints")
                     .frame(height: 84, alignment: .topLeading)
 
                 HStack(spacing: 10) {
-                    SearchField(prompt: "Найти термин", text: $query)
+                    SearchField(prompt: "Find term", text: $query)
                     Button(action: add) {
-                        Label { Text("Добавить") } icon: { Icon(.plus, size: 14, stroke: 2.4) }
+                        Label { Text("Add") } icon: { Icon(.plus, size: 14, stroke: 2.4) }
                             .labelStyle(IconFirstLabelStyle())
                     }
                     .buttonStyle(WhiteButtonStyle())
@@ -44,13 +44,13 @@ struct DictionarySection: View {
         let visible = filtered(entries)
         return VStack(spacing: 0) {
             DictionaryRowLayout {
-                PanelLabel("Слышу")
+                PanelLabel("Heard")
             } arrow: {
                 Color.clear
             } written: {
-                PanelLabel("Пишу")
+                PanelLabel("Written")
             } source: {
-                PanelLabel("Источник")
+                PanelLabel("Source")
             } delete: {
                 Color.clear
             }
@@ -58,7 +58,7 @@ struct DictionarySection: View {
             RowDivider(opacity: 0.13)
 
             if visible.isEmpty && draft == nil {
-                Text(entries.isEmpty ? "Пусто" : "Не найдено")
+                Text(entries.isEmpty ? "Empty" : "No results")
                     .font(.onest(15, .medium))
                     .foregroundStyle(.white.opacity(0.7))
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -81,17 +81,17 @@ struct DictionarySection: View {
     private func row(_ entry: DictionaryEntry, isDraft: Bool) -> some View {
         VStack(spacing: 0) {
             DictionaryRowLayout {
-                EditableCell(value: entry.heard, placeholder: "как звучит", isCode: false, field: .heard(entry.id), focus: $focus) { value in
+                EditableCell(value: entry.heard, placeholder: String(localized: "how it sounds", comment: "Placeholder for the heard form of a dictionary term"), isCode: false, field: .heard(entry.id), focus: $focus) { value in
                     commit(entry.id, isDraft: isDraft, heard: value)
                 }
             } arrow: {
                 Icon(.arrowRight, size: 16, stroke: 2).opacity(0.6)
             } written: {
-                EditableCell(value: entry.written, placeholder: "как пишется", isCode: CodeWords.isCode(entry.written), field: .written(entry.id), focus: $focus) { value in
+                EditableCell(value: entry.written, placeholder: String(localized: "how it is written", comment: "Placeholder for the spelling of a dictionary term"), isCode: CodeWords.isCode(entry.written), field: .written(entry.id), focus: $focus) { value in
                     commit(entry.id, isDraft: isDraft, written: value)
                 }
             } source: {
-                Text(entry.source == .manual ? "вручную" : "из истории")
+                Text(entry.source == .manual ? "manual" : "from history")
                     .font(.onest(12))
                     .padding(.horizontal, 9)
                     .frame(height: 24)
@@ -107,7 +107,7 @@ struct DictionarySection: View {
                 .buttonStyle(.plain)
                 .opacity(0.5)
                 .padding(.leading, -6)
-                .help("Удалить")
+                .help("Delete")
             }
             .frame(height: 52)
             RowDivider(opacity: 0.13)
@@ -224,7 +224,7 @@ private struct EditableCell: View {
                     .foregroundStyle(.white.opacity(isFocused ? 0.45 : 0.3))
                     .allowsHitTesting(false)
             }
-            TextField("", text: $text)
+            TextField(text: $text) { EmptyView() }
                 .textFieldStyle(.plain)
                 .font(font)
                 .foregroundStyle(.white)

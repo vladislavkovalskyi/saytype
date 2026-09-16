@@ -35,7 +35,7 @@ private struct TileArt {
 }
 
 private struct Tile<Content: View>: View {
-    let title: String
+    let title: LocalizedStringKey
     var art: TileArt?
     var action: (() -> Void)?
     @ViewBuilder let content: Content
@@ -69,12 +69,12 @@ private struct Tile<Content: View>: View {
 }
 
 private struct TileValue: View {
-    let value: String
+    let value: Text
     let detail: Text
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(value)
+            value
                 .font(.onest(21, .semibold))
                 .tracking(-0.2)
             detail
@@ -121,8 +121,8 @@ private struct ReadyTile: View {
             .padding(.top, 66)
 
             HStack(alignment: .top, spacing: 34) {
-                Stat(value: dictation.stats.wordsToday, caption: Format.plural(dictation.stats.wordsToday, "слово сегодня", "слова сегодня", "слов сегодня"))
-                Stat(value: dictation.stats.wordsPerMinute, caption: Format.plural(dictation.stats.wordsPerMinute, "слово в минуту", "слова в минуту", "слов в минуту"))
+                Stat(value: dictation.stats.wordsToday, caption: String(localized: "\(dictation.stats.wordsToday) words today", comment: "Caption under the number; the plural forms leave the number out"))
+                Stat(value: dictation.stats.wordsPerMinute, caption: String(localized: "\(dictation.stats.wordsPerMinute) words per minute", comment: "Caption under the number; the plural forms leave the number out"))
             }
             .padding(.leading, 22)
             .padding(.bottom, 24)
@@ -147,7 +147,7 @@ private struct ReadyTile: View {
 
     private func headline(info: WhisperModelInfo) -> String {
         switch state {
-        case .ready: "Зажми \(model.settings.value.recordKey.inlineName)"
+        case .ready: String(localized: "Hold \(model.settings.value.recordKey.inlineName)", comment: "The argument is the record key, e.g. fn or right ⌥")
         case .downloading(let fraction): "\(Int((fraction * 100).rounded()))%"
         case .missing, .loading, .failed: info.shortTitle
         }
@@ -156,11 +156,13 @@ private struct ReadyTile: View {
     private func detail(info: WhisperModelInfo) -> String {
         switch state {
         case .ready:
-            model.settings.value.overlayStyle == .island ? "Плашка появится у выреза камеры" : "Плашка появится внизу экрана"
+            model.settings.value.overlayStyle == .island
+                ? String(localized: "Overlay appears at the camera notch")
+                : String(localized: "Overlay appears at the bottom of the screen")
         case .downloading(let fraction):
-            "\(Int((fraction * Double(info.megabytes)).rounded())) из \(info.megabytes) МБ"
+            String(localized: "\(Int((fraction * Double(info.megabytes)).rounded())) of \(info.megabytes) MB", comment: "Download progress in megabytes")
         case .missing, .loading:
-            "\(info.megabytes) МБ · офлайн"
+            String(localized: "\(info.megabytes) MB · offline")
         case .failed(let message):
             message
         }
@@ -173,11 +175,11 @@ private struct ReadyTile: View {
             Button {
                 dictation.downloadModel()
             } label: {
-                Label { Text("Скачать") } icon: { Icon(.download, size: 14, stroke: 2.2) }
+                Label { Text("Download") } icon: { Icon(.download, size: 14, stroke: 2.2) }
             }
             .buttonStyle(WhiteButtonStyle())
         case .failed:
-            Button("Повторить") {
+            Button("Retry") {
                 if dictation.isModelDownloaded {
                     dictation.loadModelIfPresent()
                 } else {
@@ -202,11 +204,11 @@ private struct ReadyTile: View {
 private extension DictationController.ModelState {
     var title: String {
         switch self {
-        case .ready: "Готово к диктовке"
-        case .missing: "Модель не скачана"
-        case .downloading: "Загрузка модели"
-        case .loading: "Подготовка под \(MacInfo.chip)"
-        case .failed: "Модель не загрузилась"
+        case .ready: String(localized: "Ready to dictate")
+        case .missing: String(localized: "Model not downloaded")
+        case .downloading: String(localized: "Downloading model")
+        case .loading: String(localized: "Preparing for \(MacInfo.chip)", comment: "Model setup stage; the argument is a chip name such as M3 Pro")
+        case .failed: String(localized: "Model failed to load")
         }
     }
 }
@@ -254,8 +256,8 @@ private struct ModelTile: View {
 
     var body: some View {
         let info = WhisperModelInfo(variant: model.settings.value.whisperModel)
-        Tile(title: "Модель", art: TileArt(name: "ObjectChip", width: 190, right: -26, bottom: -34), action: action) {
-            TileValue(value: info.shortTitle, detail: Text("офлайн · \(info.megabytes) МБ"))
+        Tile(title: "Model", art: TileArt(name: "ObjectChip", width: 190, right: -26, bottom: -34), action: action) {
+            TileValue(value: Text(verbatim: info.shortTitle), detail: Text("offline · \(info.megabytes) MB"))
         }
     }
 }
@@ -266,11 +268,11 @@ private struct DictionaryTile: View {
 
     var body: some View {
         let entries = model.settings.value.dictionary
-        Tile(title: "Словарь", art: TileArt(name: "ObjectAa", width: 180, right: -18, bottom: -30), action: action) {
+        Tile(title: "Dictionary", art: TileArt(name: "ObjectAa", width: 180, right: -18, bottom: -30), action: action) {
             if let first = entries.first {
-                TileValue(value: Format.count(entries.count, "термин", "термина", "терминов"), detail: example(first))
+                TileValue(value: Text("\(entries.count) terms"), detail: example(first))
             } else {
-                TileValue(value: "Терминов нет", detail: Text(""))
+                TileValue(value: Text("No terms"), detail: Text(verbatim: ""))
             }
         }
     }
@@ -289,9 +291,9 @@ private struct HistoryTile: View {
 
     var body: some View {
         let records = Array(model.dictation.history.prefix(4))
-        Tile(title: "История", art: TileArt(name: "ObjectStack", width: 230, right: -30, bottom: -40), action: action) {
+        Tile(title: "History", art: TileArt(name: "ObjectStack", width: 230, right: -30, bottom: -40), action: action) {
             if records.isEmpty {
-                TileValue(value: "Пока пусто", detail: Text(""))
+                TileValue(value: Text("Nothing yet"), detail: Text(verbatim: ""))
             } else {
                 VStack(alignment: .leading, spacing: 0) {
                     ForEach(Array(records.enumerated()), id: \.element.id) { index, record in
@@ -325,8 +327,8 @@ private struct TextTile: View {
 
     var body: some View {
         @Bindable var settings = model.settings
-        Tile(title: "Текст", art: TileArt(name: "ObjectTextcard", width: 230, right: -30, bottom: -44), action: action) {
-            TileValue(value: "Умная структура", detail: Text(model.dictation.smart.detail))
+        Tile(title: "Text", art: TileArt(name: "ObjectTextcard", width: 230, right: -30, bottom: -44), action: action) {
+            TileValue(value: Text("Smart structure"), detail: Text(model.dictation.smart.detail))
             Toggle(isOn: model.smartStructureBinding) { EmptyView() }
                 .toggleStyle(WorldToggleStyle(accent: MainSection.home.world.accent))
                 .frame(width: 42)

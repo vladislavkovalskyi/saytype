@@ -25,11 +25,11 @@ struct PracticeStep: View {
         let key = model.settings.value.recordKey
         ZStack(alignment: .topLeading) {
             VStack(alignment: .leading, spacing: 0) {
-                StepTitle("Попробуй")
+                StepTitle("Try it")
                 HStack(spacing: 6) {
-                    Text("Зажми")
+                    Text("Hold", comment: "Before the record key: Hold [fn] and dictate a few phrases.")
                     Kbd(text: key.inlineName, height: 24)
-                    Text("и продиктуй пару фраз.")
+                    Text("and dictate a few phrases.", comment: "After the record key: Hold [fn] and dictate a few phrases. Keep it short, it sits on one line.")
                 }
                 .font(.onest(15))
                 .foregroundStyle(.white.opacity(0.84))
@@ -46,10 +46,10 @@ struct PracticeStep: View {
 
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
-                    WorldSegmented(selection: $mode, options: [(.formatted, "Оформлено"), (.raw, "Как сказал")])
+                    WorldSegmented(selection: $mode, options: [(.formatted, "Formatted"), (.raw, "As spoken")])
                     Spacer(minLength: 0)
                     if let record {
-                        Muted(meta(for: record))
+                        Muted(verbatim: meta(for: record))
                             .monospacedDigit()
                             .transition(.opacity)
                     }
@@ -103,13 +103,13 @@ struct PracticeStep: View {
         }
     }
 
-    /// "12 с · 0,9 с": speech length, then processing time when it is known.
+    /// "12 sec · 0.9 sec": speech length, then processing time when it is known.
     private func meta(for record: DictationRecord) -> String {
-        var parts = ["\(max(1, Int(record.duration.rounded()))) с"]
+        var parts = [Duration.seconds(max(1, Int(record.duration.rounded()))).formatted(.units(allowed: [.seconds], width: .abbreviated))]
         if let startedAt = model.dictation.startedAt {
             let processing = record.date.timeIntervalSince(startedAt) - record.duration
             if processing > 0, processing < 60 {
-                parts.append(processing.formatted(.number.precision(.fractionLength(1)).locale(Locale(identifier: "ru_RU"))) + " с")
+                parts.append(Duration.seconds(processing).formatted(.units(allowed: [.seconds], width: .abbreviated, fractionalPart: .show(length: 1))))
             }
         }
         return parts.joined(separator: " · ")

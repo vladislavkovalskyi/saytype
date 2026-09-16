@@ -2,76 +2,50 @@ import Foundation
 import SwiftUI
 import VMCore
 
-/// Russian number, date and duration strings for the main window.
+/// Number, date and duration strings for the main window, in the user's locale.
+/// Plural words live in the string catalog.
 enum Format {
-    private static let locale = Locale(identifier: "ru_RU")
-
-    /// Picks the Russian plural form: 1 термин, 2 термина, 5 терминов.
-    static func plural(_ n: Int, _ one: String, _ few: String, _ many: String) -> String {
-        let n10 = abs(n) % 10
-        let n100 = abs(n) % 100
-        if n10 == 1 && n100 != 11 { return one }
-        if (2...4).contains(n10) && !(12...14).contains(n100) { return few }
-        return many
-    }
-
-    static func count(_ n: Int, _ one: String, _ few: String, _ many: String) -> String {
-        "\(grouped(n)) \(plural(n, one, few, many))"
-    }
-
-    /// 8930 → "8 930" with a no-break space.
+    /// 8930 → "8,930" or "8 930".
     static func grouped(_ n: Int) -> String {
-        let digits = String(abs(n))
-        var groups: [Substring] = []
-        var end = digits.endIndex
-        while end > digits.startIndex {
-            let start = digits.index(end, offsetBy: -3, limitedBy: digits.startIndex) ?? digits.startIndex
-            groups.insert(digits[start..<end], at: 0)
-            end = start
-        }
-        return (n < 0 ? "−" : "") + groups.joined(separator: "\u{00A0}")
+        n.formatted()
     }
 
-    /// 1.0 → "1,0".
+    /// 1.0 → "1.0" or "1,0".
     static func decimal(_ value: Double, digits: Int = 1) -> String {
-        String(format: "%.\(digits)f", value).replacingOccurrences(of: ".", with: ",")
+        value.formatted(.number.precision(.fractionLength(digits)))
     }
 
+    /// "11:42 AM" or "11:42".
     static func time(_ date: Date) -> String {
-        date.formatted(.dateTime.hour(.twoDigits(amPM: .omitted)).minute(.twoDigits).locale(locale))
+        date.formatted(.dateTime.hour().minute())
     }
 
-    /// "11:42" today, "вчера, 11:42", otherwise "12 сент., 11:42".
+    /// "11:42" today, "yesterday, 11:42", otherwise "Sep 12 at 11:42".
     static func moment(_ date: Date, calendar: Calendar = .current) -> String {
         if calendar.isDateInToday(date) { return time(date) }
-        if calendar.isDateInYesterday(date) { return "вчера, \(time(date))" }
-        return "\(date.formatted(.dateTime.day().month(.abbreviated).locale(locale))), \(time(date))"
+        if calendar.isDateInYesterday(date) { return "\(relativeDay(-1, context: .middleOfSentence)), \(time(date))" }
+        return date.formatted(.dateTime.day().month(.abbreviated).hour().minute())
     }
 
-    /// Group title for a list of records: "Сегодня", "Вчера", "12 сентября".
+    /// Group title for a list of records: "Today", "Yesterday", "September 12".
     static func day(_ date: Date, calendar: Calendar = .current) -> String {
-        if calendar.isDateInToday(date) { return "Сегодня" }
-        if calendar.isDateInYesterday(date) { return "Вчера" }
-        let formatter = calendar.isDate(date, equalTo: Date(), toGranularity: .year) ? dayFormatter : dayYearFormatter
-        return formatter.string(from: date)
+        if calendar.isDateInToday(date) { return relativeDay(0, context: .beginningOfSentence) }
+        if calendar.isDateInYesterday(date) { return relativeDay(-1, context: .beginningOfSentence) }
+        let sameYear = calendar.isDate(date, equalTo: Date(), toGranularity: .year)
+        return date.formatted(sameYear ? .dateTime.day().month(.wide) : .dateTime.day().month(.wide).year())
     }
 
-    private static let dayFormatter = dateFormatter(template: "d MMMM")
-    private static let dayYearFormatter = dateFormatter(template: "d MMMM y")
-
-    private static func dateFormatter(template: String) -> DateFormatter {
-        let formatter = DateFormatter()
-        formatter.locale = locale
-        formatter.setLocalizedDateFormatFromTemplate(template)
-        return formatter
+    /// "Today", "yesterday": the named day `days` from today.
+    private static func relativeDay(_ days: Int, context: Formatter.Context) -> String {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.dateTimeStyle = .named
+        formatter.formattingContext = context
+        return formatter.localizedString(from: DateComponents(day: days))
     }
 
-    /// 5.2 → "5 с", 72 → "1 мин 12 с".
+    /// 5.2 → "5 sec", 72 → "1 min, 12 sec".
     static func duration(_ seconds: Double) -> String {
-        let total = max(1, Int(seconds.rounded()))
-        guard total >= 60 else { return "\(total) с" }
-        let rest = total % 60
-        return rest == 0 ? "\(total / 60) мин" : "\(total / 60) мин \(rest) с"
+        Duration.seconds(max(1, Int(seconds.rounded()))).formatted(.units(allowed: [.minutes, .seconds], width: .abbreviated))
     }
 }
 

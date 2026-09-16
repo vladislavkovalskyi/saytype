@@ -7,13 +7,13 @@ enum MainSection: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .home: "Главная"
-        case .keys: "Клавиша и плашка"
-        case .text: "Текст"
-        case .dictionary: "Словарь"
-        case .history: "История"
-        case .model: "Модель"
-        case .permissions: "Разрешения"
+        case .home: String(localized: "Home", comment: "Main window section")
+        case .keys: String(localized: "Key and overlay", comment: "Main window section: record key and the recording overlay")
+        case .text: String(localized: "Text", comment: "Main window section")
+        case .dictionary: String(localized: "Dictionary", comment: "Main window section")
+        case .history: String(localized: "History", comment: "Main window section")
+        case .model: String(localized: "Model", comment: "Main window section")
+        case .permissions: String(localized: "Permissions", comment: "Main window section")
         }
     }
 
