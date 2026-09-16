@@ -31,7 +31,7 @@ final class AppModel {
             dictation.runDemo(style: style, settings: settings)
             return
         }
-        if !settings.value.onboardingCompleted {
+        if !settings.value.onboardingCompleted || OnboardingFlow.launchStep != nil {
             windows.showOnboarding()
         }
     }
