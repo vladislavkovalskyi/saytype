@@ -3,6 +3,17 @@
     <channel>
         <title>saytype</title>
         <item>
+            <title>0.1.1</title>
+            <pubDate>Wed, 16 Sep 2026 17:44:19 +0200</pubDate>
+            <link>https://github.com/vladislavkovalskyi/saytype</link>
+            <sparkle:fullReleaseNotesLink>https://github.com/vladislavkovalskyi/saytype/releases</sparkle:fullReleaseNotesLink>
+            <sparkle:version>53</sparkle:version>
+            <sparkle:shortVersionString>0.1.1</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+            <enclosure url="https://github.com/vladislavkovalskyi/saytype/releases/download/v0.1.1/saytype-0.1.1.dmg" length="10110354" type="application/octet-stream" sparkle:edSignature="+pnUx48csxbvLZXittBp6B4n1jvQGFPha0MI7Kk78zXo/mi55WVAMiadMMiiFgmu4H5HUO8ALXlUYk+DWG/zDw=="/>
+        </item>
+        <item>
             <title>0.1.0</title>
             <pubDate>Wed, 16 Sep 2026 16:42:10 +0200</pubDate>
             <link>https://github.com/vladislavkovalskyi/saytype</link>
