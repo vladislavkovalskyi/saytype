@@ -1,7 +1,10 @@
 import SwiftUI
 
 enum MainSection: String, CaseIterable, Identifiable {
-    case home, keys, text, dictionary, history, model, permissions
+    case home, keys, text, dictionary, history, model, permissions, about
+
+    /// Sections pinned to the bottom of the rail.
+    static let footer: [MainSection] = [.permissions, .about]
 
     var id: String { rawValue }
 
@@ -14,6 +17,7 @@ enum MainSection: String, CaseIterable, Identifiable {
         case .history: String(localized: "History", comment: "Main window section")
         case .model: String(localized: "Model", comment: "Main window section")
         case .permissions: String(localized: "Permissions", comment: "Main window section")
+        case .about: String(localized: "About", comment: "Main window section: version, author and links")
         }
     }
 
@@ -26,6 +30,7 @@ enum MainSection: String, CaseIterable, Identifiable {
         case .history: "ObjectStack"
         case .model: "ObjectChip"
         case .permissions: "ObjectLock"
+        case .about: "ObjectAppicon"
         }
     }
 
@@ -38,6 +43,7 @@ enum MainSection: String, CaseIterable, Identifiable {
         case .history: .violet
         case .model: .cyan
         case .permissions: .green
+        case .about: .ember
         }
     }
 }
@@ -79,9 +85,9 @@ private struct SectionRail: View {
 
     var body: some View {
         VStack(spacing: 10) {
-            ForEach(MainSection.allCases.filter { $0 != .permissions }) { item(for: $0) }
+            ForEach(MainSection.allCases.filter { !MainSection.footer.contains($0) }) { item(for: $0) }
             Spacer()
-            item(for: .permissions)
+            ForEach(MainSection.footer) { item(for: $0) }
         }
         .frame(width: 64)
     }
@@ -121,6 +127,7 @@ private struct SectionContent: View {
         case .history: HistorySection()
         case .model: ModelSection()
         case .permissions: PermissionsSection()
+        case .about: AboutSection()
         }
     }
 }
