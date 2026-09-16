@@ -3113,6 +3113,16 @@
         }
       }
     },
+    "Rewriting" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Переписывание"
+          }
+        }
+      }
+    },
     "Right ⌘" : {
       "comment" : "Record key name on a chip or in a menu",
       "localizations" : {
@@ -3270,6 +3280,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Размер"
+          }
+        }
+      }
+    },
+    "Skip" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пропустить"
           }
         }
       }
