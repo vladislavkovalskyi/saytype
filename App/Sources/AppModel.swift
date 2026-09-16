@@ -40,7 +40,7 @@ final class AppModel {
             windows.showMenuPreview()
             return
         }
-        if !settings.value.onboardingCompleted {
+        if !settings.value.onboardingCompleted || OnboardingFlow.launchStep != nil {
             windows.showOnboarding()
         }
     }

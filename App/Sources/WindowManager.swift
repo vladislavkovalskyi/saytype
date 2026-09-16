@@ -63,6 +63,8 @@ final class WindowManager {
         window.isMovableByWindowBackground = true
         window.isReleasedWhenClosed = false
         window.contentView = NSHostingView(rootView: root)
+        // The content rect excludes the title bar; the design sizes include it.
+        window.setFrame(CGRect(origin: .zero, size: size), display: false)
         window.center()
         return window
     }
