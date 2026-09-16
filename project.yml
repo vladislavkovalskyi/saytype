@@ -19,6 +19,9 @@ settings:
 packages:
   VoicemodeKit:
     path: Packages/VoicemodeKit
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    from: 2.10.0
 
 targets:
   Voicemode:
@@ -44,6 +47,8 @@ targets:
         product: VMSystem
       - package: VoicemodeKit
         product: VMSmart
+      - package: Sparkle
+        product: Sparkle
     entitlements:
       path: App/Voicemode.entitlements
       properties:
@@ -54,11 +59,19 @@ targets:
       properties:
         CFBundleDisplayName: voicemode
         CFBundleName: voicemode
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         LSApplicationCategoryType: public.app-category.productivity
         LSUIElement: true
         # Translations live in App/Resources/InfoPlist.xcstrings.
         NSMicrophoneUsageDescription: voicemode listens to the microphone while the record key is held. Audio is transcribed on this Mac and never leaves it.
         NSHumanReadableCopyright: © 2026 voicemode
+        # Sparkle 2. Generate the key pair with Sparkle's generate_keys and paste the public
+        # key here; docs/RELEASING.md has the steps. The updater stays off while the
+        # placeholder is in place.
+        SUFeedURL: https://vladislavkovalskyi.github.io/voicemode/appcast.xml
+        SUPublicEDKey: REPLACE_WITH_SPARKLE_PUBLIC_KEY
+        SUEnableAutomaticChecks: true
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: dev.kovalskyi.voicemode
