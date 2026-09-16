@@ -1,0 +1,22 @@
+{
+  "Voice commands": "Голосовые команды",
+  "“new line”, “new paragraph”, “delete last sentence”, “open quote … close quote”, “send it” at the end": "«новая строка», «новый абзац», «удали последнее предложение», «открой кавычки … закрой кавычки», «отправь» в конце",
+  "Stop after silence": "Остановка при тишине",
+  "Off": "Выкл.",
+  "3 s": "3 с",
+  "5 s": "5 с",
+  "10 s": "10 с",
+  "Copy last dictation": "Копировать последнюю диктовку",
+  "Switch mode": "Сменить режим",
+  "esc cancels, ⌫ turns off": "esc — отмена, ⌫ — выкл.",
+  "Taken by another app": "Занято другим приложением",
+  "Add ⌃ or ⌥": "Добавьте ⌃ или ⌥",
+  "In use": "Уже занято",
+  "Press keys": "Нажмите…",
+  "min saved today": "мин сэкономлено сегодня",
+  "Typing at %lld wpm": "Печать %lld слов/мин",
+  "%lld min this week, typing at %lld wpm": "%lld мин за неделю при печати %lld слов/мин",
+  "Fix spelling": "Исправить написание",
+  "Add to dictionary": "Добавить в словарь",
+  "Added to dictionary": "Добавлено в словарь"
+}

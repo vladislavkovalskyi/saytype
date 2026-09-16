@@ -121,8 +121,10 @@ private struct ReadyTile: View {
             .padding(.top, 66)
 
             HStack(alignment: .top, spacing: 34) {
-                Stat(value: dictation.stats.wordsToday, caption: String(localized: "\(dictation.stats.wordsToday) words today", comment: "Caption under the number; the plural forms leave the number out"))
-                Stat(value: dictation.stats.wordsPerMinute, caption: String(localized: "\(dictation.stats.wordsPerMinute) words per minute", comment: "Caption under the number; the plural forms leave the number out"))
+                let stats = HistoryStats(records: dictation.history, typingWordsPerMinute: model.settings.value.typingWordsPerMinute)
+                Stat(value: stats.wordsToday, caption: String(localized: "\(stats.wordsToday) words today", comment: "Caption under the number; the plural forms leave the number out"))
+                Stat(value: stats.wordsPerMinute, caption: String(localized: "\(stats.wordsPerMinute) words per minute", comment: "Caption under the number; the plural forms leave the number out"))
+                TimeSavedStat(stats: stats)
             }
             .padding(.leading, 22)
             .padding(.bottom, 24)
@@ -245,6 +247,35 @@ private struct Stat: View {
                 .font(.onest(13))
                 .foregroundStyle(.white.opacity(0.8))
         }
+    }
+}
+
+/// "12 min saved today" against typing the same words. The caption opens the typing speed menu.
+private struct TimeSavedStat: View {
+    @Environment(AppModel.self) private var model
+    let stats: HistoryStats
+
+    var body: some View {
+        let speed = model.settings.value.typingWordsPerMinute
+        PopupMenu(items: [30, 40, 60, 80].map { option in
+            MenuOption(title: String(localized: "Typing at \(option) wpm", comment: "Typing speed that time saved is counted against"), isOn: option == speed) {
+                model.settings.value.typingWordsPerMinute = option
+            }
+        }) {
+            VStack(alignment: .leading, spacing: 1) {
+                Text(Format.grouped(Int((stats.secondsSavedToday / 60).rounded())))
+                    .font(.onest(30, .bold))
+                    .tracking(-0.6)
+                HStack(spacing: 2) {
+                    Text("min saved today", comment: "Caption under the number of minutes")
+                    Icon(.chevronDown, size: 13).opacity(0.8)
+                }
+                .font(.onest(13))
+                .foregroundStyle(.white.opacity(0.8))
+            }
+            .foregroundStyle(.white)
+        }
+        .help(String(localized: "\(Int((stats.secondsSavedThisWeek / 60).rounded())) min this week, typing at \(speed) wpm", comment: "Tooltip of the time saved"))
     }
 }
 

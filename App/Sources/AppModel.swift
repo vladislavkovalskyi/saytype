@@ -14,6 +14,12 @@ final class AppModel {
     @ObservationIgnored private var overlay: OverlayController?
     @ObservationIgnored private var statusItem: StatusItemController?
     @ObservationIgnored private var hotKeys: GlobalHotKeys?
+    /// The shortcuts registered now; `nil` while a shortcut recorder listens.
+    @ObservationIgnored private var registeredShortcuts: AppSettings.Shortcuts?
+    /// Shortcuts that failed to register because another app holds them.
+    private(set) var takenShortcuts: Set<ShortcutAction> = []
+    /// A shortcut recorder is listening; global shortcuts step aside so it gets their keys.
+    private(set) var isRecordingShortcut = false
     /// Sparkle; stays off in preview launches and in builds without a signing key.
     @ObservationIgnored private(set) var updater: Updater?
     private(set) var permissions: [Permission: PermissionState] = [:]
@@ -103,23 +109,57 @@ final class AppModel {
     }
 
     private func registerHotKeys() {
-        let keys = GlobalHotKeys()
+        hotKeys = GlobalHotKeys()
+        updateHotKeys()
+        observeShortcuts()
+    }
+
+    /// Registers the shortcuts again whenever they change in settings.
+    private func observeShortcuts() {
+        withObservationTracking {
+            _ = settings.value.shortcuts
+        } onChange: { [weak self] in
+            Task { @MainActor in
+                self?.updateHotKeys()
+                self?.observeShortcuts()
+            }
+        }
+    }
+
+    private func updateHotKeys() {
+        guard let keys = hotKeys else { return }
+        let wanted = isRecordingShortcut ? nil : settings.value.shortcuts
+        guard wanted != registeredShortcuts else { return }
+        keys.unregisterAll()
+        registeredShortcuts = wanted
+        guard let wanted else { return }
+        var taken: Set<ShortcutAction> = []
+        for action in ShortcutAction.allCases {
+            guard let shortcut = wanted[keyPath: action.keyPath] else { continue }
+            if !keys.register(GlobalHotKeys.Shortcut(shortcut), action: perform(action)) {
+                taken.insert(action)
+            }
+        }
+        if taken != takenShortcuts { takenShortcuts = taken }
+    }
+
+    private func perform(_ action: ShortcutAction) -> @MainActor () -> Void {
         let dictation = dictation
-        let shortcuts = settings.value.shortcuts
-        if let shortcut = shortcuts.pasteAgain {
-            keys.register(GlobalHotKeys.Shortcut(shortcut)) {
-                if let last = dictation.lastRecord { dictation.insertAgain(last) }
-            }
+        switch action {
+        case .pasteAgain:
+            return { if let last = dictation.lastRecord { dictation.insertAgain(last) } }
+        case .copyLast:
+            return { if let last = dictation.lastRecord { Paster.copy(last.text) } }
+        case .cycleMode:
+            return { dictation.cycleMode() }
         }
-        if let shortcut = shortcuts.copyLast {
-            keys.register(GlobalHotKeys.Shortcut(shortcut)) {
-                if let last = dictation.lastRecord { Paster.copy(last.text) }
-            }
-        }
-        if let shortcut = shortcuts.cycleMode {
-            keys.register(GlobalHotKeys.Shortcut(shortcut)) { dictation.cycleMode() }
-        }
-        hotKeys = keys
+    }
+
+    /// Called by a shortcut recorder when it starts and stops listening.
+    func setRecordingShortcut(_ recording: Bool) {
+        guard recording != isRecordingShortcut else { return }
+        isRecordingShortcut = recording
+        updateHotKeys()
     }
 
     /// Settings switch for smart structure; turning it on downloads the model.
@@ -131,5 +171,20 @@ final class AppModel {
     func finishOnboarding() {
         settings.value.onboardingCompleted = true
         windows.closeOnboarding()
+    }
+}
+
+/// What a global shortcut does.
+enum ShortcutAction: CaseIterable, Hashable {
+    case pasteAgain
+    case copyLast
+    case cycleMode
+
+    var keyPath: WritableKeyPath<AppSettings.Shortcuts, KeyShortcut?> {
+        switch self {
+        case .pasteAgain: \.pasteAgain
+        case .copyLast: \.copyLast
+        case .cycleMode: \.cycleMode
+        }
     }
 }

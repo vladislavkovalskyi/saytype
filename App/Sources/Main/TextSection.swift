@@ -68,6 +68,8 @@ struct TextSection: View {
                         ToggleRow("Drop the period after short phrases", detail: "for agent commands and search", isOn: $settings.value.dropTrailingPeriodInShortPhrases, accent: world.accent)
                             .opacity(settings.value.punctuationStyle == .full ? 1 : 0.5)
                             .disabled(settings.value.punctuationStyle != .full)
+                        RowDivider()
+                        ToggleRow("Voice commands", detail: "“new line”, “new paragraph”, “delete last sentence”, “open quote … close quote”, “send it” at the end", isOn: $settings.value.voiceCommands, accent: world.accent)
                     }
                     .frame(width: 1068)
                     .frost()

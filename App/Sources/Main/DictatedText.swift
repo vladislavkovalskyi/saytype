@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 /// Dictated text laid out word by word, with identifiers on code chips.
@@ -8,10 +9,12 @@ struct DictatedText: View {
     var codeOpacity: Double = 0.2
     /// Words set as code even when they do not look like identifiers.
     var codeWords: Set<String> = []
+    /// Indices of picked words, as in `Words.split`; set to let a click pick words.
+    var selection: Binding<ClosedRange<Int>?>?
 
     var body: some View {
         let words = WordDiff.tokens(text).map { WordDiff.Word(segments: [.init(text: $0.word, kind: .same)], startsParagraph: $0.startsParagraph) }
-        WordParagraphs(words: words, size: size, lineHeight: lineHeight, codeOpacity: codeOpacity, codeWords: codeWords)
+        WordParagraphs(words: words, size: size, lineHeight: lineHeight, codeOpacity: codeOpacity, codeWords: codeWords, selection: selection)
     }
 }
 
@@ -33,14 +36,21 @@ private struct WordParagraphs: View {
     let lineHeight: CGFloat
     let codeOpacity: Double
     let codeWords: Set<String>
+    var selection: Binding<ClosedRange<Int>?>?
 
     var body: some View {
         let lineSpacing = max(0, size * (lineHeight - 1.3))
         VStack(alignment: .leading, spacing: lineSpacing + 10) {
             ForEach(Array(paragraphs.enumerated()), id: \.offset) { _, paragraph in
                 FlowLayout(spacing: size * 0.27, lineSpacing: lineSpacing) {
-                    ForEach(Array(paragraph.enumerated()), id: \.offset) { _, word in
-                        WordView(word: word, size: size, codeOpacity: codeOpacity, codeWords: codeWords)
+                    ForEach(paragraph, id: \.index) { item in
+                        if let selection {
+                            PickableWord(index: item.index, selection: selection) {
+                                WordView(word: item.word, size: size, codeOpacity: codeOpacity, codeWords: codeWords)
+                            }
+                        } else {
+                            WordView(word: item.word, size: size, codeOpacity: codeOpacity, codeWords: codeWords)
+                        }
                     }
                 }
             }
@@ -48,16 +58,61 @@ private struct WordParagraphs: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private var paragraphs: [[WordDiff.Word]] {
-        var result: [[WordDiff.Word]] = []
-        for word in words {
+    private struct Item {
+        let index: Int
+        let word: WordDiff.Word
+    }
+
+    private var paragraphs: [[Item]] {
+        var result: [[Item]] = []
+        for (index, word) in words.enumerated() {
             if word.startsParagraph || result.isEmpty {
-                result.append([word])
+                result.append([Item(index: index, word: word)])
             } else {
-                result[result.count - 1].append(word)
+                result[result.count - 1].append(Item(index: index, word: word))
             }
         }
         return result
+    }
+}
+
+/// A word that a click picks and a shift-click adds to the picked range.
+private struct PickableWord<Content: View>: View {
+    let index: Int
+    @Binding var selection: ClosedRange<Int>?
+    @ViewBuilder let content: Content
+    @State private var isHovered = false
+
+    var body: some View {
+        let isPicked = selection?.contains(index) ?? false
+        content
+            .background {
+                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                    .fill(.white.opacity(isPicked ? 0.24 : isHovered ? 0.12 : 0))
+                    .overlay {
+                        if isPicked {
+                            RoundedRectangle(cornerRadius: 6, style: .continuous).strokeBorder(.white.opacity(0.85), lineWidth: 1.5)
+                        }
+                    }
+                    .padding(.horizontal, -4)
+                    .padding(.vertical, -2)
+            }
+            .contentShape(Rectangle())
+            .onHover { isHovered = $0 }
+            .help(Text("Fix spelling", comment: "Tooltip of a word in the history: a click picks it for a dictionary entry"))
+            .onTapGesture { pick(extending: NSEvent.modifierFlags.contains(.shift)) }
+    }
+
+    private func pick(extending: Bool) {
+        guard let current = selection else {
+            selection = index...index
+            return
+        }
+        if extending {
+            selection = min(current.lowerBound, index)...max(current.upperBound, index)
+        } else {
+            selection = current == index...index ? nil : index...index
+        }
     }
 }
 

@@ -61,11 +61,11 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         if let last = dictation.lastRecord {
             menu.addItem(.sectionHeader(title: String(localized: "Last Dictation")))
             menu.addItem(viewItem(MenuLastDictation(record: last), height: MenuLastDictation.height(for: last)))
-            let paste = ClosureMenuItem(title: String(localized: "Paste Again"), keyEquivalent: "v") { dictation.insertAgain(last) }
-            paste.keyEquivalentModifierMask = [.control, .option]
+            let paste = ClosureMenuItem(title: String(localized: "Paste Again")) { dictation.insertAgain(last) }
+            paste.showShortcut(settings.value.shortcuts.pasteAgain)
             menu.addItem(paste)
-            let copy = ClosureMenuItem(title: String(localized: "Copy"), keyEquivalent: "c") { Paster.copy(last.text) }
-            copy.keyEquivalentModifierMask = [.control, .option]
+            let copy = ClosureMenuItem(title: String(localized: "Copy")) { Paster.copy(last.text) }
+            copy.showShortcut(settings.value.shortcuts.copyLast)
             menu.addItem(copy)
 
             let recent = NSMenuItem(title: String(localized: "Recent"), action: nil, keyEquivalent: "")
