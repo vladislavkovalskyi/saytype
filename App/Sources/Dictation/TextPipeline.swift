@@ -5,14 +5,6 @@ struct TextPipeline {
     let settings: AppSettings
 
     func format(_ transcript: Transcript) -> String {
-        var text = transcript.text
-        if settings.latinTerms {
-            text = DictionaryRewriter(entries: settings.dictionary).apply(to: text)
-        }
-        text = Cleanup.removeFillers(text, mode: settings.fillerMode)
-        if settings.dropTrailingPeriodInShortPhrases {
-            text = Cleanup.dropTrailingPeriod(text)
-        }
-        return text.trimmingCharacters(in: .whitespacesAndNewlines)
+        TextFormatter.format(transcript, settings: settings)
     }
 }
