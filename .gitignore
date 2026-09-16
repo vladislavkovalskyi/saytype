@@ -1,0 +1,27 @@
+# macOS
+.DS_Store
+
+# Xcode / Swift
+build/
+DerivedData/
+*.xcodeproj
+*.xcworkspace
+xcuserdata/
+.swiftpm/
+.build/
+Package.resolved.orig
+
+# Models are downloaded at runtime or produced by tools/, never committed
+Models/
+*.mlmodelc
+*.mlpackage
+*.safetensors
+*.gguf
+
+# Benchmark recordings contain the owner's voice
+Bench/recordings/
+Bench/results/*.local.*
+
+# Python tooling
+.venv/
+__pycache__/
