@@ -1,0 +1,793 @@
+<title>voicemode Overlays</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+@property --ear { syntax: '<length>'; inherits: true; initial-value: 0px; }
+
+:root {
+  --page: #101014;
+  --panel: #17171d;
+  --line: rgba(255, 255, 255, .08);
+  --ink: #f2f0f4;
+  --mute: #9a97a3;
+  --ember-hi: #ffb36b;
+  --ember: #ff7a45;
+  --ember-lo: #e2483a;
+  --ok: #8ef0b0;
+  --spring: cubic-bezier(.32, 1.32, .42, 1);
+  --ui: "Onest", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --sys: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--ink); font-family: var(--ui); -webkit-font-smoothing: antialiased; }
+button { font: inherit; color: inherit; }
+button:focus-visible, [tabindex]:focus-visible { outline: 2px solid #7cc0ff; outline-offset: 2px; }
+
+.wrap { max-width: 1280px; margin: 0 auto; padding-inline: 24px; padding-block: 36px 96px; }
+header.top { display: grid; gap: 10px; margin-bottom: 22px; }
+.eyebrow { font: 500 12px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ember-hi); }
+h1 { margin: 0; font-size: clamp(30px, 4.4vw, 52px); line-height: 1.02; letter-spacing: -.03em; font-weight: 700; text-wrap: balance; }
+.lede { margin: 0; max-width: 62ch; color: var(--mute); font-size: 15.5px; line-height: 1.55; }
+.lede kbd, .spec kbd { font: 500 12px var(--mono); padding: 1px 6px; border-radius: 5px; background: #26262e; color: var(--ink); border: 1px solid #34343d; }
+
+.controls { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; margin: 0 0 16px; }
+.ctl { display: flex; align-items: center; gap: 8px; }
+.ctl > span { font-size: 12px; color: var(--mute); }
+.seg { display: inline-flex; padding: 3px; border-radius: 999px; background: #1f1f26; border: 1px solid var(--line); }
+.seg button { border: 0; background: transparent; padding: 6px 12px; border-radius: 999px; font-size: 13px; font-weight: 500; color: #cfcbd6; cursor: pointer; white-space: nowrap; }
+.seg button[aria-pressed="true"] { background: #fff; color: #141217; font-weight: 600; }
+.fnkey { margin-left: auto; display: flex; align-items: center; gap: 10px; border: 0; background: transparent; cursor: pointer; color: var(--mute); font-size: 12px; user-select: none; -webkit-user-select: none; touch-action: none; }
+.fnkey b { display: grid; place-items: center; width: 52px; height: 44px; border-radius: 9px; background: linear-gradient(#2c2c34, #202027); box-shadow: inset 0 1px 0 #ffffff1c, 0 3px 0 #0b0b0e, 0 4px 12px #0008; font: 600 15px var(--ui); color: #fff; transition: transform .08s, box-shadow .08s; }
+.fnkey.down b { transform: translateY(3px); box-shadow: inset 0 1px 0 #ffffff14, 0 0 0 #0b0b0e, 0 2px 6px #0008; background: linear-gradient(#ff8a52, #e2553a); }
+
+/* ---------- fit-to-width boxes ---------- */
+.fit { position: relative; width: 100%; overflow: hidden; }
+.fit > .fit-inner { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+
+/* ---------- desktop stage ---------- */
+.stage-shell { border-radius: 18px; overflow: hidden; border: 1px solid var(--line); box-shadow: 0 30px 80px -30px #000c; }
+.desk { position: absolute; inset: 0; overflow: hidden; }
+.desk[data-wall="dark"] { background: radial-gradient(900px 620px at 12% 108%, #5a2a3c 0%, transparent 62%), radial-gradient(900px 600px at 92% -12%, #1f5566 0%, transparent 58%), linear-gradient(160deg, #0f1a26 0%, #1a1422 100%); }
+.desk[data-wall="light"] { background: radial-gradient(900px 640px at 10% 104%, #f4c49c 0%, transparent 60%), radial-gradient(900px 620px at 90% -6%, #9ccfe6 0%, transparent 60%), linear-gradient(160deg, #d6e6ef 0%, #efe0d2 100%); }
+
+.menubar { position: absolute; left: 0; right: 0; top: 0; height: 30px; display: flex; align-items: center; padding: 0 14px; gap: 18px; font: 13px/1 var(--sys); z-index: 20; }
+.desk[data-wall="dark"] .menubar { color: #fff; background: rgba(0, 0, 0, .14); }
+.desk[data-wall="light"] .menubar { color: #1d1d1f; background: rgba(255, 255, 255, .22); }
+.menubar b { font-weight: 700; }
+.menubar .right { margin-left: auto; display: flex; align-items: center; gap: 14px; }
+.mb-icon { display: grid; place-items: center; width: 30px; height: 22px; border-radius: 6px; border: 0; background: transparent; cursor: pointer; color: inherit; }
+.mb-icon[aria-expanded="true"] { background: rgba(127, 127, 127, .28); }
+.mb-icon .rec { display: none; }
+.desk.recording .mb-icon .rec { display: block; }
+.desk.recording .mb-icon .idle { display: none; }
+
+.win { position: absolute; border-radius: 12px; overflow: hidden; box-shadow: 0 0 0 .5px #0009, 0 26px 60px -18px #000b; }
+.win-bar { height: 30px; display: flex; align-items: center; gap: 7px; padding: 0 12px; background: #2a2a30; font: 12px var(--sys); color: #b9b9c2; }
+.win-bar i { width: 11px; height: 11px; border-radius: 50%; background: #ff5f57; }
+.win-bar i:nth-child(2) { background: #febc2e; }
+.win-bar i:nth-child(3) { background: #28c840; }
+.win-bar span { margin: 0 auto; transform: translateX(-24px); }
+.term { left: 96px; top: 210px; width: 660px; height: 420px; background: rgba(22, 22, 27, .94); }
+.term-body { padding: 16px 18px; font: 500 13px/1.6 var(--mono); color: #d8d8de; }
+.term-body p { margin: 0; }
+.t-dim { color: #7c7c88; }
+.t-acc { color: #ff9a5c; }
+.t-prompt { margin-top: 8px; display: flex; gap: 8px; align-items: flex-start; }
+.t-input { white-space: pre-wrap; }
+.t-input.flash { animation: flash 1.1s ease; }
+@keyframes flash { 0% { background: rgba(255, 154, 92, .32); } 100% { background: transparent; } }
+.caret { display: inline-block; width: 8px; height: 17px; background: #d8d8de; animation: blink 1s steps(1) infinite; margin-top: 2px; }
+@keyframes blink { 50% { opacity: 0; } }
+.notes { right: 110px; top: 150px; width: 330px; height: 250px; background: rgba(250, 248, 244, .96); }
+.notes .win-bar { background: #ecebe7; color: #6c6a66; }
+.notes-body { padding: 16px 18px; color: #2a2826; font: 14px/1.5 var(--sys); }
+.notes-body h4 { margin: 0 0 6px; font-size: 17px; }
+.notes-body .pw { margin-top: 12px; padding: 7px 10px; border-radius: 7px; border: 1px solid #d8d5cf; color: #9a968f; font-size: 13px; letter-spacing: .2em; }
+
+.dock { position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); display: flex; gap: 8px; padding: 7px 9px; border-radius: 22px; background: rgba(255, 255, 255, .16); backdrop-filter: blur(24px) saturate(160%); -webkit-backdrop-filter: blur(24px) saturate(160%); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .22); z-index: 10; }
+.dock i { width: 48px; height: 48px; border-radius: 12px; background: var(--c); box-shadow: inset 0 1px 0 #fff5, 0 2px 6px #0004; }
+
+/* ---------- island ---------- */
+.island { --w: 160px; --h: 30px; --r: 10px; --ear: 0px; --lvl: 0;
+  position: absolute; top: 0; left: 50%; width: var(--w); height: var(--h); transform: translateX(-50%);
+  background: #000; border-radius: 0 0 var(--r) var(--r); z-index: 30; color: #fff; font-family: var(--ui);
+  box-shadow: 0 14px 44px -16px rgba(255, 122, 69, calc(var(--lvl) * .95));
+  transition: width .52s var(--spring), height .52s var(--spring), border-radius .52s var(--spring), --ear .52s var(--spring); }
+.island::before, .island::after { content: ""; position: absolute; top: 0; width: var(--ear); height: var(--ear); pointer-events: none; }
+.island::before { right: 100%; background: radial-gradient(circle at 0 100%, transparent calc(var(--ear) - .6px), #000 var(--ear)); }
+.island::after { left: 100%; background: radial-gradient(circle at 100% 100%, transparent calc(var(--ear) - .6px), #000 var(--ear)); }
+
+.island[data-state="idle"]    { --w: 160px; --h: 30px; --r: 10px; --ear: 0px; }
+.island[data-state="peek"]    { --w: 204px; --h: 36px; --r: 15px; --ear: 8px; }
+.island[data-state="panel"]   { --w: 444px; --h: 180px; --r: 28px; --ear: 14px; }
+.island[data-state="listen0"] { --w: 304px; --h: 30px; --r: 12px; --ear: 8px; }
+.island[data-state="listen"], .island[data-state="finish"] { --w: 464px; --h: 106px; --r: 26px; --ear: 14px; }
+.island[data-state="done"]    { --w: 256px; --h: 30px; --r: 12px; --ear: 8px; }
+.island[data-state="notice"]  { --w: 364px; --h: 30px; --r: 12px; --ear: 8px; }
+.island[data-state="card"]    { --w: 464px; --h: 200px; --r: 28px; --ear: 14px; }
+
+.layer { position: absolute; inset: 0; opacity: 0; filter: blur(8px); transform: scale(.97); transform-origin: 50% 0; pointer-events: none; overflow: hidden; border-radius: inherit;
+  transition: opacity .2s ease, filter .2s ease, transform .4s var(--spring); }
+.island[data-state="peek"] .l-peek,
+.island[data-state="panel"] .l-panel,
+.island[data-state="listen0"] .l-listen,
+.island[data-state="listen"] .l-listen,
+.island[data-state="finish"] .l-listen,
+.island[data-state="done"] .l-done,
+.island[data-state="notice"] .l-notice,
+.island[data-state="card"] .l-card { opacity: 1; filter: none; transform: none; pointer-events: auto; transition-delay: .09s, .09s, 0s; }
+.island[data-state="done"] .l-listen { transform: translateY(-22px) scale(.66); }
+
+.row-top { position: absolute; left: 0; right: 0; top: 0; height: 30px; display: flex; align-items: center; gap: 8px; padding: 0 18px; }
+.island[data-state="peek"] .row-top { height: 36px; }
+.sp { flex: 1; }
+.status { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 500; color: rgba(255, 255, 255, .72); }
+.dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 8px rgba(142, 240, 176, .8); }
+.kbd { display: inline-grid; place-items: center; min-width: 22px; height: 18px; padding: 0 5px; border-radius: 5px; background: rgba(255, 255, 255, .12); box-shadow: inset 0 -1px 0 rgba(255, 255, 255, .08); font: 600 10.5px var(--ui); color: rgba(255, 255, 255, .85); }
+.ibtn { width: 28px; height: 28px; border-radius: 50%; border: 0; background: rgba(255, 255, 255, .1); display: grid; place-items: center; cursor: pointer; color: #fff; transition: background .15s, transform .15s; }
+.ibtn:hover { background: rgba(255, 255, 255, .2); }
+.ibtn:active { transform: scale(.92); }
+.ibtn.bare { background: transparent; width: 22px; height: 22px; }
+.ibtn.bare:hover { background: rgba(255, 255, 255, .14); }
+
+.orb { position: relative; width: 58px; height: 58px; border-radius: 50%; border: 0; cursor: pointer; color: #fff; display: grid; place-items: center;
+  background: radial-gradient(circle at 34% 26%, rgba(255, 255, 255, .72) 0, rgba(255, 255, 255, 0) 34%), radial-gradient(circle at 50% 62%, #ffa062 0%, #f0603c 52%, #b3303a 100%);
+  box-shadow: inset 0 -7px 14px rgba(80, 10, 30, .45), inset 0 2px 1px rgba(255, 255, 255, .5), 0 8px 26px -6px rgba(255, 110, 60, .8);
+  transition: transform .25s var(--spring), box-shadow .25s; }
+.orb:hover { transform: scale(1.06); box-shadow: inset 0 -7px 14px rgba(80, 10, 30, .45), inset 0 2px 1px rgba(255, 255, 255, .5), 0 10px 34px -4px rgba(255, 110, 60, .95); }
+.orb:active { transform: scale(.94); }
+.orb.sm { width: 28px; height: 28px; box-shadow: inset 0 -4px 8px rgba(80, 10, 30, .45), inset 0 1px 1px rgba(255, 255, 255, .5), 0 4px 14px -4px rgba(255, 110, 60, .8); }
+.orb.pulse { transform: scale(calc(.9 + var(--lvl) * .22)); transition: transform .08s linear; cursor: default; }
+
+.panel-body { position: absolute; left: 20px; right: 16px; top: 42px; display: grid; grid-template-columns: 58px 1fr auto; gap: 14px; align-items: center; }
+.last-text { margin: 0; font-size: 13.5px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.last-meta { margin-top: 4px; font-size: 11.5px; color: rgba(255, 255, 255, .46); }
+.last-actions { display: grid; gap: 6px; }
+.row-bottom { position: absolute; left: 14px; right: 14px; bottom: 13px; display: flex; gap: 6px; align-items: center; }
+.chip { height: 26px; border-radius: 13px; padding: 0 10px; border: 0; background: rgba(255, 255, 255, .1); display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 500; color: rgba(255, 255, 255, .88); cursor: pointer; white-space: nowrap; transition: background .15s; }
+.chip:hover { background: rgba(255, 255, 255, .18); }
+.chip .sw { width: 20px; height: 12px; border-radius: 6px; background: rgba(255, 255, 255, .22); position: relative; transition: background .2s; }
+.chip .sw::after { content: ""; position: absolute; left: 2px; top: 2px; width: 8px; height: 8px; border-radius: 50%; background: #fff; transition: transform .2s var(--spring); }
+.chip[aria-pressed="true"] .sw { background: var(--ember); }
+.chip[aria-pressed="true"] .sw::after { transform: translateX(8px); }
+.mseg { display: inline-flex; height: 26px; padding: 2px; border-radius: 13px; background: rgba(255, 255, 255, .1); }
+.mseg button { border: 0; background: transparent; padding: 0 8px; border-radius: 11px; font-size: 11px; font-weight: 600; color: rgba(255, 255, 255, .62); cursor: pointer; }
+.mseg button[aria-pressed="true"] { background: #fff; color: #111; }
+
+code { font-family: var(--mono); font-size: .88em; font-weight: 500; padding: 0 4px; border-radius: 5px; background: rgba(255, 255, 255, .12); }
+
+.wave { display: inline-flex; align-items: center; gap: 2px; height: 16px; }
+.wave i { width: 3px; height: 4px; border-radius: 2px; background: linear-gradient(#ffc794, #ff7a45); transition: height .07s linear; }
+.spin { width: 14px; height: 14px; border-radius: 50%; border: 2px solid rgba(255, 154, 92, .25); border-top-color: #ff9a5c; animation: rot .8s linear infinite; display: none; }
+@keyframes rot { to { transform: rotate(360deg); } }
+.island[data-state="finish"] .l-listen .wave { display: none; }
+.island[data-state="finish"] .l-listen .spin { display: block; }
+.timer { font: 500 11px var(--mono); color: rgba(255, 255, 255, .6); font-variant-numeric: tabular-nums; }
+.stopb { display: none; width: 22px; height: 22px; border-radius: 50%; border: 0; background: rgba(255, 255, 255, .14); cursor: pointer; place-items: center; }
+.stopb::after { content: ""; width: 7px; height: 7px; border-radius: 1.5px; background: #fff; }
+.hands .stopb { display: grid; }
+
+.livebox { position: absolute; left: 24px; right: 24px; top: 36px; bottom: 16px; display: flex; align-items: flex-end; -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 12px); mask-image: linear-gradient(to bottom, transparent 0, #000 12px); }
+.live-text { margin: 0; font-size: 15px; line-height: 1.42; }
+.live-text .p { color: rgba(255, 255, 255, .42); }
+.live-text .new { display: inline-block; animation: wordIn .36s ease both; }
+@keyframes wordIn { from { filter: blur(6px); opacity: 0; transform: translateY(3px); } to { filter: none; opacity: 1; transform: none; } }
+.island[data-state="finish"] .live-text, .pill-wrap[data-state="finish"] .live-text {
+  -webkit-mask-image: linear-gradient(100deg, rgba(0, 0, 0, .38) 38%, #000 50%, rgba(0, 0, 0, .38) 62%); mask-image: linear-gradient(100deg, rgba(0, 0, 0, .38) 38%, #000 50%, rgba(0, 0, 0, .38) 62%);
+  -webkit-mask-size: 260% 100%; mask-size: 260% 100%; animation: sweep 1.05s linear infinite; }
+@keyframes sweep { from { -webkit-mask-position: 100% 0; mask-position: 100% 0; } to { -webkit-mask-position: -160% 0; mask-position: -160% 0; } }
+
+.appic { width: 18px; height: 18px; border-radius: 5px; background: linear-gradient(#45454d, #1c1c21); box-shadow: inset 0 0 0 .5px rgba(255, 255, 255, .25); display: grid; place-items: center; font: 700 7.5px var(--mono); color: var(--ok); }
+.check { width: 18px; height: 18px; border-radius: 50%; background: rgba(142, 240, 176, .18); display: grid; place-items: center; color: var(--ok); }
+.island[data-state="done"] .check, .pill-wrap[data-state="done"] .check { animation: pop .45s var(--spring) .12s both; }
+@keyframes pop { from { transform: scale(.3); opacity: 0; } to { transform: none; opacity: 1; } }
+.notice-text { font-size: 12px; font-weight: 500; color: rgba(255, 255, 255, .86); white-space: nowrap; }
+.warn { color: #ffb36b; display: grid; place-items: center; }
+
+.card-text { position: absolute; left: 24px; right: 24px; top: 40px; margin: 0; font-size: 14px; line-height: 1.46; white-space: pre-line; }
+.card-actions { position: absolute; left: 18px; right: 18px; bottom: 14px; display: flex; gap: 6px; align-items: center; }
+.pbtn { height: 28px; padding: 0 12px; border-radius: 14px; border: 0; background: rgba(255, 255, 255, .14); color: #fff; font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; gap: 6px; align-items: center; }
+.pbtn.white { background: #fff; color: #1a1318; }
+.pbtn:active { transform: scale(.96); }
+.grip { color: rgba(255, 255, 255, .45); cursor: grab; display: grid; place-items: center; }
+
+/* ---------- pill ---------- */
+.pill-wrap { --pw: 56px; --ph: 8px; --lvl: 0; position: absolute; left: 50%; bottom: 84px; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 10px; z-index: 25; transition: opacity .3s; font-family: var(--ui); color: #fff; }
+.pill-wrap[data-state="hidden"] { opacity: 0; pointer-events: none; }
+.pill-wrap[data-state="idle"]   { --pw: 56px;  --ph: 8px; }
+.pill-wrap[data-state="peek"]   { --pw: 158px; --ph: 40px; }
+.pill-wrap[data-state="listen"], .pill-wrap[data-state="finish"] { --pw: 250px; --ph: 44px; }
+.pill-wrap[data-state="done"]   { --pw: 150px; --ph: 40px; }
+.pill-wrap[data-state="notice"] { --pw: 178px; --ph: 40px; }
+.pill-wrap[data-state="card"]   { --pw: 150px; --ph: 40px; }
+.pill { position: relative; width: var(--pw); height: var(--ph); border-radius: 999px; cursor: default;
+  background: linear-gradient(rgba(38, 35, 42, .78), rgba(18, 16, 22, .86)); backdrop-filter: blur(26px) saturate(170%); -webkit-backdrop-filter: blur(26px) saturate(170%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .13), inset 0 1px 0 rgba(255, 255, 255, .2), 0 14px 34px -12px rgba(0, 0, 0, .6), 0 0 0 calc(var(--lvl) * 4px) rgba(255, 122, 69, .16), 0 10px 44px -8px rgba(255, 122, 69, calc(var(--lvl) * .75));
+  transition: width .52s var(--spring), height .52s var(--spring); }
+.pill::before { content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; background: linear-gradient(90deg, rgba(255, 179, 107, 0), rgba(255, 179, 107, .9), rgba(226, 72, 58, 0)); background-size: 200% 100%; -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; opacity: 0; transition: opacity .3s; animation: ring 2.4s linear infinite; }
+.pill-wrap[data-state="listen"] .pill::before { opacity: calc(.35 + var(--lvl) * .65); }
+@keyframes ring { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+.p-layer { position: absolute; inset: 0; display: flex; align-items: center; gap: 9px; padding: 0 14px 0 7px; opacity: 0; filter: blur(6px); pointer-events: none; white-space: nowrap; overflow: hidden; border-radius: inherit; transition: opacity .2s, filter .2s; }
+.pill-wrap[data-state="peek"] .p-peek, .pill-wrap[data-state="listen"] .p-listen, .pill-wrap[data-state="finish"] .p-listen,
+.pill-wrap[data-state="done"] .p-done, .pill-wrap[data-state="card"] .p-done, .pill-wrap[data-state="notice"] .p-notice { opacity: 1; filter: none; pointer-events: auto; transition-delay: .1s; }
+.p-label { font-size: 12.5px; font-weight: 500; color: rgba(255, 255, 255, .8); }
+.pill-wrap[data-state="finish"] .p-listen .wave { display: none; }
+.pill-wrap[data-state="finish"] .p-listen .spin { display: block; }
+.pill-wrap[data-state="finish"] .p-listen .orb { display: none; }
+.pill-wrap .wave { height: 20px; }
+.bubble { position: relative; width: max-content; min-width: 120px; max-width: 492px; padding: 12px 16px; border-radius: 20px; opacity: 0; transform: translateY(14px) scale(.94); pointer-events: none;
+  background: linear-gradient(rgba(38, 35, 42, .8), rgba(18, 16, 22, .88)); backdrop-filter: blur(26px) saturate(170%); -webkit-backdrop-filter: blur(26px) saturate(170%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .13), inset 0 1px 0 rgba(255, 255, 255, .18), 0 18px 40px -14px rgba(0, 0, 0, .6);
+  transition: opacity .22s, transform .5s var(--spring); }
+.bubble .live-part { max-height: calc(15px * 1.42 * 2); overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; }
+.bubble .live-text { max-width: 460px; }
+.pill-wrap.has-text[data-state="listen"] .bubble, .pill-wrap[data-state="finish"] .bubble, .pill-wrap[data-state="card"] .bubble { opacity: 1; transform: none; pointer-events: auto; }
+.pill-wrap[data-state="done"] .bubble { transform: translateY(30px) scale(.5); }
+.bubble .card-part { display: none; }
+.pill-wrap[data-state="card"] .bubble .card-part { display: block; }
+.pill-wrap[data-state="card"] .bubble .live-part { display: none; }
+.bubble .card-text { position: static; margin: 0 0 12px; max-width: 460px; }
+.bubble .card-actions { position: static; }
+
+/* ---------- native menu ---------- */
+.menu { --m-bg: rgba(40, 40, 46, .74); --m-ink: #f5f5f7; --m-mute: rgba(235, 235, 245, .5); --m-edge: rgba(255, 255, 255, .16); --m-hi: rgba(255, 255, 255, .1); --m-sep: rgba(255, 255, 255, .1); --m-code: rgba(255, 255, 255, .12);
+  position: absolute; top: 34px; right: 154px; width: 296px; padding: 5px; border-radius: 12px; z-index: 60;
+  font: 13px/1 var(--sys); color: var(--m-ink); background: var(--m-bg); backdrop-filter: blur(34px) saturate(180%); -webkit-backdrop-filter: blur(34px) saturate(180%);
+  box-shadow: 0 0 0 .5px var(--m-edge), inset 0 .5px 0 var(--m-hi), 0 22px 54px -12px rgba(0, 0, 0, .5);
+  opacity: 0; transform: translateY(-4px); pointer-events: none; transition: opacity .12s ease, transform .12s ease; }
+.menu.open, .menu.static { opacity: 1; transform: none; pointer-events: auto; }
+.menu.static { position: relative; top: 0; right: 0; }
+.menu.light { --m-bg: rgba(246, 246, 248, .78); --m-ink: #1d1d1f; --m-mute: rgba(60, 60, 67, .56); --m-edge: rgba(0, 0, 0, .14); --m-hi: rgba(255, 255, 255, .85); --m-sep: rgba(0, 0, 0, .1); --m-code: rgba(0, 0, 0, .07); }
+.mhead-app { display: flex; align-items: center; gap: 8px; padding: 7px 10px 8px; }
+.mhead-app b { font-weight: 600; }
+.mhead-app span { margin-left: auto; color: var(--m-mute); font-size: 12px; }
+.msec { font-size: 11px; font-weight: 600; color: var(--m-mute); padding: 7px 10px 4px 30px; }
+.mlast { padding: 1px 12px 7px 30px; }
+.mlast p { margin: 0; font-size: 12.5px; line-height: 1.38; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.mlast code { background: var(--m-code); }
+.mlast span { display: block; margin-top: 4px; font-size: 11px; color: var(--m-mute); }
+.mi { position: relative; height: 24px; display: flex; align-items: center; padding: 0 10px 0 8px; border-radius: 7px; cursor: default; white-space: nowrap; outline: none; }
+.mi .ck { width: 22px; flex: none; font-size: 12px; }
+.mi .sc { margin-left: auto; padding-left: 16px; color: var(--m-mute); }
+.mi .t { overflow: hidden; text-overflow: ellipsis; max-width: 190px; }
+.mi:hover, .mi:focus-visible { background: #0a82ff; color: #fff; }
+.mi:hover > .sc, .mi:focus-visible > .sc { color: rgba(255, 255, 255, .8); }
+.msep { height: 1px; background: var(--m-sep); margin: 5px 10px; }
+.sub { position: absolute; right: calc(100% + 2px); top: -5px; width: 218px; padding: 5px; border-radius: 12px; display: none; color: var(--m-ink);
+  background: var(--m-bg); backdrop-filter: blur(34px) saturate(180%); -webkit-backdrop-filter: blur(34px) saturate(180%); box-shadow: 0 0 0 .5px var(--m-edge), inset 0 .5px 0 var(--m-hi), 0 22px 54px -12px rgba(0, 0, 0, .5); }
+.mi.has:hover > .sub, .mi.has:focus-within > .sub { display: block; }
+
+/* ---------- storyboard ---------- */
+section.board { margin-top: 64px; }
+section.board > h2 { margin: 0 0 6px; font-size: 26px; letter-spacing: -.02em; }
+section.board > p { margin: 0 0 22px; color: var(--mute); font-size: 14.5px; max-width: 62ch; line-height: 1.5; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px; }
+.tiles.menus { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
+figure.tile { margin: 0; display: grid; gap: 10px; }
+.tile .fit { border-radius: 12px; border: 1px solid var(--line); }
+figcaption { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+figcaption b { font-size: 14px; font-weight: 600; }
+figcaption span { font: 500 11.5px var(--mono); color: var(--mute); white-space: nowrap; }
+.strip { position: absolute; inset: 0; background: radial-gradient(500px 260px at 20% 120%, #5a2a3c 0%, transparent 70%), linear-gradient(160deg, #13202d, #1b1523); }
+.strip.lightwall { background: radial-gradient(500px 260px at 20% 120%, #f4c49c 0%, transparent 70%), linear-gradient(160deg, #d6e6ef, #efe0d2); }
+.strip .island, .strip .pill, .strip .bubble, .strip .layer, .strip .p-layer { transition: none !important; }
+
+.spec { margin-top: 64px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
+.spec div { padding: 18px 20px; border-radius: 14px; background: var(--panel); border: 1px solid var(--line); }
+.spec h3 { margin: 0 0 10px; font-size: 15px; }
+.spec ul { margin: 0; padding-left: 18px; color: #c9c5d1; font-size: 13.5px; line-height: 1.6; }
+.spec li::marker { color: var(--ember); }
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --spring: ease; }
+  .live-text .new, .spin, .pill::before, .caret { animation: none !important; }
+  .island[data-state="finish"] .live-text, .pill-wrap[data-state="finish"] .live-text { animation: none; -webkit-mask-image: none; mask-image: none; opacity: .7; }
+}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">voicemode · прототип</span>
+    <h1>Остров, пилюля и меню</h1>
+    <p class="lede">Наведи курсор на вырез: остров подпрыгнет, через 0,3 с откроется панель. Удерживай <kbd>fn</kbd> ниже или пробел, чтобы диктовать. Иконка волны в строке меню открывает меню.</p>
+  </header>
+
+  <div class="controls" role="toolbar" aria-label="Прототип">
+    <div class="ctl"><span>Плашка</span><div class="seg" data-key="style"><button aria-pressed="true" data-v="island">Остров</button><button aria-pressed="false" data-v="pill">Пилюля</button></div></div>
+    <div class="ctl"><span>Фраза</span><div class="seg" data-key="scenario"><button aria-pressed="true" data-v="short">Команда</button><button aria-pressed="false" data-v="long">Список</button><button aria-pressed="false" data-v="password">Поле пароля</button></div></div>
+    <div class="ctl"><span>Вывод</span><div class="seg" data-key="output"><button aria-pressed="true" data-v="paste">Вставка</button><button aria-pressed="false" data-v="card">Карточка</button></div></div>
+    <div class="ctl"><span>Обои</span><div class="seg" data-key="wall"><button aria-pressed="true" data-v="dark">Тёмные</button><button aria-pressed="false" data-v="light">Светлые</button></div></div>
+    <button class="fnkey" id="fn" type="button" aria-label="Удерживай, чтобы диктовать"><span>удерживай</span><b>fn</b></button>
+  </div>
+
+  <div class="stage-shell">
+    <div class="fit" data-w="1280" data-h="800">
+      <div class="fit-inner">
+        <div class="desk" id="desk" data-wall="dark">
+          <div class="menubar">
+            <svg width="14" height="16" viewBox="0 0 14 17" fill="currentColor" aria-hidden="true"><path d="M11.6 9c0-2 1.7-3 1.8-3.1-1-1.4-2.5-1.6-3-1.6-1.3-.1-2.5.8-3.1.8-.7 0-1.7-.8-2.8-.8C3 4.3 1.6 5.2.9 6.5c-1.5 2.6-.4 6.4 1 8.5.7 1 1.5 2.1 2.6 2.1 1 0 1.4-.7 2.7-.7s1.6.7 2.7.7c1.1 0 1.8-1 2.5-2 .8-1.1 1.1-2.2 1.1-2.3 0 0-2-.8-2-3.1zM9.5 3C10 2.3 10.4 1.4 10.3.5c-.8 0-1.8.5-2.4 1.2-.5.6-1 1.5-.9 2.4.9.1 1.8-.4 2.5-1.1z"/></svg>
+            <b>Терминал</b><span>Файл</span><span>Правка</span><span>Вид</span><span>Окно</span><span>Справка</span>
+            <div class="right">
+              <button class="mb-icon" id="mbicon" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Меню voicemode">
+                <svg class="idle" width="17" height="15" viewBox="0 0 24 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 8v4M7.5 5v10M12 2v16M16.5 6v8M21 9v2"/></svg>
+                <svg class="rec" width="16" height="16" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="currentColor"/><path d="M7 10v4M10.3 7.5v9M13.7 9v6M17 11v2" stroke="#000" stroke-width="2" stroke-linecap="round"/></svg>
+              </button>
+              <svg width="17" height="13" viewBox="0 0 20 15" fill="currentColor" aria-hidden="true"><path d="M10 12.2a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zM4.9 9.2a7.2 7.2 0 0 1 10.2 0l-1.4 1.4a5.2 5.2 0 0 0-7.4 0zM1.6 5.9a11.8 11.8 0 0 1 16.8 0L17 7.3a9.8 9.8 0 0 0-14 0z"/></svg>
+              <svg width="25" height="12" viewBox="0 0 25 12" fill="none" aria-hidden="true"><rect x=".5" y=".5" width="21" height="11" rx="3" stroke="currentColor" opacity=".45"/><rect x="2" y="2" width="15" height="8" rx="1.6" fill="currentColor"/><path d="M23 4v4" stroke="currentColor" stroke-width="1.5" opacity=".45"/></svg>
+              <span>Ср 16 сент.  15:20</span>
+            </div>
+          </div>
+
+          <div class="win notes" aria-hidden="true">
+            <div class="win-bar"><i></i><i></i><i></i><span>Вход</span></div>
+            <div class="notes-body"><h4>Supabase</h4>Войдите в аккаунт проекта<div class="pw">••••••••</div></div>
+          </div>
+
+          <div class="win term" aria-hidden="true">
+            <div class="win-bar"><i></i><i></i><i></i><span>zsh — ~/voicemode</span></div>
+            <div class="term-body">
+              <p class="t-dim">Last login: Wed Sep 16 15:02 on ttys003</p>
+              <p><span class="t-acc">~/voicemode</span> git:(main) npm run dev</p>
+              <p class="t-dim">ready in 412 ms · http://localhost:3000</p>
+              <p>&nbsp;</p>
+              <div class="t-prompt"><span class="t-acc">›</span><span class="t-input" id="tinput"></span><span class="caret"></span></div>
+            </div>
+          </div>
+
+          <div class="dock" aria-hidden="true">
+            <i style="--c: linear-gradient(#6ec3ff, #2a73e8)"></i><i style="--c: linear-gradient(#fefefe, #d8d8dc)"></i><i style="--c: linear-gradient(#3b3b42, #16161a)"></i><i style="--c: linear-gradient(#ffcf5a, #f29a1e)"></i><i style="--c: linear-gradient(#7ee08e, #25a55a)"></i><i style="--c: linear-gradient(#b48cff, #6f45d8)"></i><i style="--c: linear-gradient(#ff9a8a, #e0485a)"></i><i style="--c: linear-gradient(#5fe0e8, #148aa6)"></i>
+          </div>
+
+          <div id="stage-island-slot"></div>
+          <div id="stage-pill-slot"></div>
+          <div id="stage-menu-slot"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="board" aria-labelledby="h-island">
+    <h2 id="h-island">Остров · состояния</h2>
+    <p>Остров растёт из выреза и никогда не забирает фокус. Итог показывает иконкой приложения и галочкой в «ушах» выреза, без подписи.</p>
+    <div class="tiles" id="tiles-island"></div>
+  </section>
+
+  <section class="board" aria-labelledby="h-pill">
+    <h2 id="h-pill">Пилюля · состояния</h2>
+    <p>В покое пилюля — полоска 56 × 8 над Dock. Во время записи рамка светится в такт голосу, живой текст растёт вверх отдельным пузырём.</p>
+    <div class="tiles" id="tiles-pill"></div>
+  </section>
+
+  <section class="board" aria-labelledby="h-menu">
+    <h2 id="h-menu">Меню в строке меню</h2>
+    <p>Обычное меню macOS 26: системный шрифт, секции, галочки и подменю. Фирменные цвета остаются в главном окне.</p>
+    <div class="tiles menus" id="tiles-menu"></div>
+  </section>
+
+  <div class="spec">
+    <div><h3>Наведение</h3><ul><li>Курсор на вырезе: остров сразу подпрыгивает на 6 pt.</li><li>Через 0,3 с открывается панель 444 × 180 pt.</li><li>Курсор ушёл: панель закрывается через 0,35 с.</li><li>Во время записи и в полноэкранных приложениях панель не открывается.</li></ul></div>
+    <div><h3>Запись</h3><ul><li><kbd>fn</kbd> удерживаешь — запись, отпустил — вставка.</li><li>Клик по кругу в панели — запись без рук, справа кнопка стоп.</li><li><kbd>esc</kbd> отменяет.</li><li>Новые слова проявляются из размытия, последние два приглушены.</li></ul></div>
+    <div><h3>Итог</h3><ul><li>Оформление: блик бежит по тексту, слева спиннер.</li><li>Вставлено: текст улетает в вырез, в «ушах» иконка приложения и галочка, 1,2 с.</li><li>Поле пароля: замок и одна строка, остров не раскрывается.</li><li>Карточка: остров держит текст с кнопками, пока её не закроют.</li></ul></div>
+    <div><h3>Окна и экраны</h3><ul><li>Панель — NSPanel без фокуса, клики проходят сквозь всё, кроме самого острова.</li><li>На экране без выреза остров становится стеклянной пилюлей у верхнего края.</li><li>Пружина 0,5 с; при «Уменьшить движение» — плавное появление без блика.</li></ul></div>
+  </div>
+</div>
+
+<template id="tpl-island">
+  <div class="island" data-state="idle">
+    <div class="layer l-peek"><div class="row-top"><span class="dot"></span><span class="sp"></span><span class="kbd">fn</span></div></div>
+    <div class="layer l-panel">
+      <div class="row-top">
+        <span class="status"><span class="dot"></span>Готов</span><span class="sp"></span>
+        <button class="ibtn bare" type="button" aria-label="Настройки"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.8v2.6M12 18.6v2.6M21.2 12h-2.6M5.4 12H2.8M18.5 5.5l-1.8 1.8M7.3 16.7l-1.8 1.8M18.5 18.5l-1.8-1.8M7.3 7.3L5.5 5.5"/></svg></button>
+      </div>
+      <div class="panel-body">
+        <button class="orb" type="button" data-act="record" aria-label="Начать запись"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg></button>
+        <div><p class="last-text">Вынеси загрузку пользователя в хук <code>useUser</code> и добавь массив зависимостей.</p><div class="last-meta">Терминал · 2 мин назад</div></div>
+        <div class="last-actions">
+          <button class="ibtn" type="button" data-act="copy" aria-label="Скопировать"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="8.5" y="8.5" width="11" height="11" rx="2.5"/><path d="M15.5 8.5V6.5a2 2 0 0 0-2-2h-7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2"/></svg></button>
+          <button class="ibtn" type="button" data-act="paste" aria-label="Вставить ещё раз"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M19 5v6a3 3 0 0 1-3 3H6M9.5 10.5L6 14l3.5 3.5"/></svg></button>
+        </div>
+      </div>
+      <div class="row-bottom">
+        <div class="mseg" role="group" aria-label="Язык"><button type="button" aria-pressed="true" data-lang="ru">RU</button><button type="button" aria-pressed="false" data-lang="en">EN</button><button type="button" aria-pressed="false" data-lang="auto">Авто</button></div>
+        <button class="chip" type="button" data-act="smart" aria-pressed="true"><span class="sw"></span>Структура</button>
+        <button class="chip" type="button"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg>MacBook Pro</button>
+        <span class="sp"></span>
+        <button class="chip" type="button">История</button>
+      </div>
+    </div>
+    <div class="layer l-listen">
+      <div class="row-top"><span class="wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span class="spin"></span><span class="sp"></span><span class="timer">0:00</span><button class="stopb" type="button" data-act="stop" aria-label="Остановить"></button></div>
+      <div class="livebox"><p class="live-text"></p></div>
+    </div>
+    <div class="layer l-done"><div class="row-top"><span class="appic">&gt;_</span><span class="sp"></span><span class="check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"/></svg></span></div></div>
+    <div class="layer l-notice"><div class="row-top"><span class="warn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></svg></span><span class="sp"></span><span class="notice-text">Поле пароля</span></div></div>
+    <div class="layer l-card">
+      <div class="row-top"><span class="grip" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.8"/><circle cx="15" cy="6" r="1.8"/><circle cx="9" cy="12" r="1.8"/><circle cx="15" cy="12" r="1.8"/><circle cx="9" cy="18" r="1.8"/><circle cx="15" cy="18" r="1.8"/></svg></span><span class="sp"></span><button class="ibtn bare" type="button" data-act="close" aria-label="Закрыть"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="M7 7l10 10M17 7L7 17"/></svg></button></div>
+      <p class="card-text"></p>
+      <div class="card-actions"><button class="pbtn white" type="button" data-act="copy">Скопировать</button><button class="pbtn" type="button" data-act="insert">Вставить</button></div>
+    </div>
+  </div>
+</template>
+
+<template id="tpl-pill">
+  <div class="pill-wrap" data-state="hidden">
+    <div class="bubble">
+      <div class="live-part"><p class="live-text"></p></div>
+      <div class="card-part"><p class="card-text"></p><div class="card-actions"><button class="pbtn white" type="button" data-act="copy">Скопировать</button><button class="pbtn" type="button" data-act="insert">Вставить</button><span class="sp"></span><button class="pbtn" type="button" data-act="close" aria-label="Закрыть">✕</button></div></div>
+    </div>
+    <div class="pill">
+      <div class="p-layer p-peek"><button class="orb sm" type="button" data-act="record" aria-label="Начать запись"></button><span class="kbd">fn</span><span class="p-label">запись</span></div>
+      <div class="p-layer p-listen"><span class="orb sm pulse" aria-hidden="true"></span><span class="spin"></span><span class="wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span class="sp"></span><span class="timer">0:00</span><button class="stopb" type="button" data-act="stop" aria-label="Остановить"></button></div>
+      <div class="p-layer p-done"><span class="appic">&gt;_</span><span class="p-label">Терминал</span><span class="sp"></span><span class="check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"/></svg></span></div>
+      <div class="p-layer p-notice"><span class="warn" style="padding-left:8px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></svg></span><span class="p-label">Поле пароля</span></div>
+    </div>
+  </div>
+</template>
+
+<template id="tpl-menu">
+  <div class="menu" role="menu" aria-label="voicemode">
+    <div class="mhead-app"><span class="dot"></span><b>voicemode</b><span>Whisper turbo</span></div>
+    <div class="msep"></div>
+    <div class="msec">Последняя</div>
+    <div class="mlast"><p>Вынеси загрузку пользователя в хук <code>useUser</code> и добавь массив зависимостей.</p><span>Терминал · 14:57</span></div>
+    <div class="mi" role="menuitem" tabindex="-1" data-act="paste"><span class="ck"></span>Вставить ещё раз<span class="sc">⌃⌥V</span></div>
+    <div class="mi" role="menuitem" tabindex="-1" data-act="copy"><span class="ck"></span>Скопировать<span class="sc">⌃⌥C</span></div>
+    <div class="mi has" role="menuitem" tabindex="-1"><span class="ck"></span>Недавние<span class="sc">›</span>
+      <div class="sub" role="menu">
+        <div class="mi" role="menuitem" tabindex="-1"><span class="ck"></span><span class="t">1. Поправь useEffect в Header.</span><span class="sc">14:55</span></div>
+        <div class="mi" role="menuitem" tabindex="-1"><span class="ck"></span><span class="t">Задеплой feature/auth на Vercel</span><span class="sc">14:13</span></div>
+        <div class="mi" role="menuitem" tabindex="-1"><span class="ck"></span><span class="t">Созвон перенесли на четыре</span><span class="sc">13:46</span></div>
+        <div class="msep"></div>
+        <div class="mi" role="menuitem" tabindex="-1"><span class="ck"></span>Вся история…</div>
+      </div>
+    </div>
+    <div class="msep"></div>
+    <div class="mi has" role="menuitem" tabindex="-1"><span class="ck"></span>Язык<span class="sc" data-label="lang">Русский ›</span>
+      <div class="sub" role="menu">
+        <div class="mi" role="menuitemradio" tabindex="-1" data-lang="ru"><span class="ck">✓</span>Русский</div>
+        <div class="mi" role="menuitemradio" tabindex="-1" data-lang="en"><span class="ck"></span>English</div>
+        <div class="mi" role="menuitemradio" tabindex="-1" data-lang="auto"><span class="ck"></span>Авто</div>
+      </div>
+    </div>
+    <div class="mi has" role="menuitem" tabindex="-1"><span class="ck"></span>Плашка<span class="sc" data-label="style">Остров ›</span>
+      <div class="sub" role="menu">
+        <div class="mi" role="menuitemradio" tabindex="-1" data-style="island"><span class="ck">✓</span>Остров у выреза</div>
+        <div class="mi" role="menuitemradio" tabindex="-1" data-style="pill"><span class="ck"></span>Пилюля снизу</div>
+      </div>
+    </div>
+    <div class="mi" role="menuitemcheckbox" tabindex="-1" data-act="smart"><span class="ck">✓</span>Умная структура</div>
+    <div class="msep"></div>
+    <div class="mi" role="menuitem" tabindex="-1"><span class="ck"></span>Открыть voicemode…<span class="sc">⌘,</span></div>
+    <div class="mi" role="menuitem" tabindex="-1"><span class="ck"></span>Выйти<span class="sc">⌘Q</span></div>
+  </div>
+</template>
+
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const S = { style: 'island', scenario: 'short', output: 'paste', wall: 'dark', lang: 'ru', smart: true,
+              phase: 'panel', hands: false, words: 0, startedAt: 0, pinned: true };
+
+  const SCEN = {
+    short: { words: 'поправь useEffect в Header, он дёргается при каждом рендере'.split(' '),
+             final: () => 'Поправь useEffect в Header, он дёргается при каждом рендере.', think: 700 },
+    long: { words: 'сегодня три дела во-первых обнови Next.js во-вторых задеплой feature/auth на Vercel в-третьих скинь превью'.split(' '),
+            final: () => S.smart ? 'Сегодня три дела:\n1. Обнови Next.js.\n2. Задеплой feature/auth на Vercel.\n3. Скинь превью.'
+                                 : 'Сегодня три дела. Во-первых, обнови Next.js. Во-вторых, задеплой feature/auth на Vercel. В-третьих, скинь превью.',
+            think: 1300 },
+  };
+
+  const CODE = /^([a-z]+[A-Z][A-Za-z0-9]*|[A-Za-z][A-Za-z0-9]*([./_:][A-Za-z0-9]+)+|\/[a-z]+)$/;
+  const esc = t => t.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  function word(w) {
+    const m = w.match(/^(.*?)([.,:;!?…]*)$/);
+    return CODE.test(m[1]) ? `<code>${esc(m[1])}</code>${esc(m[2])}` : esc(w);
+  }
+  const rich = text => text.split('\n').map(line => line.split(' ').map(word).join(' ')).join('\n');
+
+  // ---------- build stage ----------
+  const tplIsland = $('#tpl-island'), tplPill = $('#tpl-pill'), tplMenu = $('#tpl-menu');
+  const desk = $('#desk');
+  $('#stage-island-slot').replaceWith(tplIsland.content.firstElementChild.cloneNode(true));
+  $('#stage-pill-slot').replaceWith(tplPill.content.firstElementChild.cloneNode(true));
+  $('#stage-menu-slot').replaceWith(tplMenu.content.firstElementChild.cloneNode(true));
+  const island = $('.island', desk), pill = $('.pill-wrap', desk), menu = $('.menu', desk);
+  const tinput = $('#tinput');
+
+  function liveHTML(count, fresh) {
+    const words = SCEN[S.scenario === 'password' ? 'short' : S.scenario].words.slice(0, count);
+    return words.map((w, i) => {
+      const pending = i >= words.length - 2;
+      const cls = [pending ? 'p' : '', fresh && i === words.length - 1 && !reduce ? 'new' : ''].filter(Boolean).join(' ');
+      return cls ? `<span class="${cls}">${word(w)}</span>` : word(w);
+    }).join(' ');
+  }
+
+  function render() {
+    const ip = S.style === 'island' ? S.phase : 'idle';
+    island.dataset.state = ip === 'listen' && S.words === 0 ? 'listen0' : ip;
+    island.classList.toggle('hands', S.hands);
+    const pp = S.style === 'pill' ? S.phase : 'hidden';
+    pill.dataset.state = pp === 'panel' ? 'peek' : pp;
+    pill.classList.toggle('has-text', S.words > 0);
+    pill.classList.toggle('hands', S.hands);
+    desk.classList.toggle('recording', S.phase === 'listen' || S.phase === 'finish');
+  }
+
+  function setPhase(p) { S.phase = p; render(); }
+
+  // ---------- hover ----------
+  let openTimer, closeTimer;
+  function hoverIn(style) {
+    if (S.style !== style) return;
+    S.pinned = false;
+    clearTimeout(closeTimer);
+    if (S.phase === 'idle') {
+      setPhase('peek');
+      clearTimeout(openTimer);
+      openTimer = setTimeout(() => { if (S.phase === 'peek' && style === 'island') setPhase('panel'); }, 300);
+    }
+  }
+  function hoverOut() {
+    clearTimeout(openTimer);
+    if (S.phase === 'peek' || S.phase === 'panel') closeTimer = setTimeout(() => { if (S.phase === 'peek' || S.phase === 'panel') setPhase('idle'); }, 350);
+  }
+  island.addEventListener('pointerenter', () => hoverIn('island'));
+  island.addEventListener('pointerleave', hoverOut);
+  $('.pill', pill).addEventListener('pointerenter', () => hoverIn('pill'));
+  pill.addEventListener('pointerleave', hoverOut);
+
+  // ---------- dictation ----------
+  let wordTimer, clock, levelRAF, doneTimer;
+  let level = 0;
+
+  function start(hands) {
+    if (['listen', 'finish'].includes(S.phase)) return;
+    clearTimeout(doneTimer); clearTimeout(openTimer); clearTimeout(closeTimer);
+    if (S.scenario === 'password') {
+      setPhase('notice');
+      doneTimer = setTimeout(() => setPhase('idle'), 1800);
+      return;
+    }
+    S.hands = hands; S.words = 0; S.startedAt = performance.now();
+    $$('.live-text', desk).forEach(el => el.innerHTML = '');
+    setPhase('listen');
+    const words = SCEN[S.scenario].words;
+    wordTimer = setInterval(() => {
+      if (S.words >= words.length) return;
+      S.words++;
+      $$('.live-text', desk).forEach(el => el.innerHTML = liveHTML(S.words, true));
+      render();
+    }, 300);
+    clock = setInterval(tick, 200); tick();
+    loop();
+  }
+
+  function tick() {
+    const s = Math.floor((performance.now() - S.startedAt) / 1000);
+    $$('.timer', desk).forEach(el => el.textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`);
+  }
+
+  function loop() {
+    cancelAnimationFrame(levelRAF);
+    let last = 0;
+    const words = SCEN[S.scenario]?.words || [];
+    const step = t => {
+      const speaking = S.phase === 'listen' && S.words < words.length;
+      const target = S.phase === 'listen' ? (speaking ? .35 + Math.random() * .65 : .06) : 0;
+      level += (target - level) * .22;
+      if (t - last > 70) {
+        last = t;
+        desk.style.setProperty('--lvl', level.toFixed(3));
+        island.style.setProperty('--lvl', level.toFixed(3));
+        pill.style.setProperty('--lvl', level.toFixed(3));
+        $$('.wave', desk).forEach(w => [...w.children].forEach((bar, i, all) => {
+          const shape = Math.sin((i + 1) / (all.length + 1) * Math.PI);
+          const h = 3 + (w.clientHeight - 3) * Math.min(1, level * shape * (.55 + Math.random() * .7));
+          bar.style.height = `${h.toFixed(1)}px`;
+        }));
+      }
+      if (S.phase === 'listen' || level > .01) levelRAF = requestAnimationFrame(step);
+    };
+    levelRAF = requestAnimationFrame(step);
+  }
+
+  function finish() {
+    if (S.phase !== 'listen') return;
+    clearInterval(wordTimer);
+    if (S.words === 0) { stopClock(); setPhase('idle'); return; }
+    const scen = SCEN[S.scenario];
+    S.words = scen.words.length;
+    $$('.live-text', desk).forEach(el => el.innerHTML = liveHTML(S.words, false).replace(/class="p"/g, ''));
+    setPhase('finish');
+    doneTimer = setTimeout(() => {
+      stopClock();
+      const text = scen.final();
+      if (S.output === 'card') {
+        $$('.card-text', desk).forEach(el => el.innerHTML = rich(text));
+        setPhase('card');
+      } else {
+        insert(text);
+        setPhase('done');
+        doneTimer = setTimeout(() => { S.hands = false; setPhase('idle'); }, 1200);
+      }
+    }, scen.think);
+  }
+
+  function stopClock() { clearInterval(clock); }
+  function cancel() { clearInterval(wordTimer); stopClock(); clearTimeout(doneTimer); S.hands = false; S.words = 0; setPhase('idle'); }
+
+  function insert(text) {
+    tinput.textContent = text;
+    tinput.classList.remove('flash'); void tinput.offsetWidth; tinput.classList.add('flash');
+  }
+
+  // clicks inside island, pill and menu
+  desk.addEventListener('click', e => {
+    const el = e.target.closest('[data-act], [data-lang], [data-style]');
+    if (!el) {
+      if (!e.target.closest('.menu') && !e.target.closest('#mbicon')) closeMenu();
+      return;
+    }
+    if (el.dataset.lang) { S.lang = el.dataset.lang; syncToggles(); return; }
+    if (el.dataset.style) { setStyle(el.dataset.style); closeMenu(); return; }
+    switch (el.dataset.act) {
+      case 'record': start(true); break;
+      case 'stop': finish(); break;
+      case 'smart': S.smart = !S.smart; syncToggles(); break;
+      case 'copy': flashLabel(el, 'Скопировано'); break;
+      case 'paste': closeMenu(); insert(SCEN.short.final()); break;
+      case 'insert': insert($('.card-text', S.style === 'island' ? island : pill).textContent); setPhase('done'); doneTimer = setTimeout(() => setPhase('idle'), 1200); break;
+      case 'close': setPhase('idle'); break;
+    }
+  });
+
+  function flashLabel(el, text) {
+    if (el.classList.contains('mi') || el.classList.contains('ibtn')) { closeMenu(); el.animate([{ transform: 'scale(.9)' }, { transform: 'none' }], 200); return; }
+    const old = el.textContent; el.textContent = text; setTimeout(() => el.textContent = old, 1100);
+  }
+
+  // ---------- menu ----------
+  const mbicon = $('#mbicon');
+  function closeMenu() { menu.classList.remove('open'); mbicon.setAttribute('aria-expanded', 'false'); }
+  mbicon.addEventListener('click', e => {
+    e.stopPropagation();
+    const open = !menu.classList.contains('open');
+    menu.classList.toggle('open', open);
+    mbicon.setAttribute('aria-expanded', String(open));
+  });
+
+  function syncToggles() {
+    $$('[data-act="smart"]').forEach(el => {
+      if (el.classList.contains('chip')) el.setAttribute('aria-pressed', String(S.smart));
+      else $('.ck', el).textContent = S.smart ? '✓' : '';
+    });
+    $$('.mseg [data-lang]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === S.lang)));
+    $$('.mi[data-lang]').forEach(m => $('.ck', m).textContent = m.dataset.lang === S.lang ? '✓' : '');
+    $$('.mi[data-style]').forEach(m => $('.ck', m).textContent = m.dataset.style === S.style ? '✓' : '');
+    const langName = { ru: 'Русский', en: 'English', auto: 'Авто' }[S.lang];
+    $$('[data-label="lang"]').forEach(el => el.textContent = `${langName} ›`);
+    $$('[data-label="style"]').forEach(el => el.textContent = `${S.style === 'island' ? 'Остров' : 'Пилюля'} ›`);
+  }
+
+  // ---------- toolbar ----------
+  function setStyle(v) { cancel(); S.style = v; syncSeg('style', v); syncToggles(); }
+  function syncSeg(key, v) { $$(`.seg[data-key="${key}"] button`).forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === v))); }
+  $$('.seg[data-key]').forEach(seg => seg.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    const key = seg.dataset.key, v = b.dataset.v;
+    if (key === 'style') return setStyle(v);
+    S[key] = v; syncSeg(key, v);
+    if (key === 'wall') { desk.dataset.wall = v; menu.classList.toggle('light', v === 'light'); }
+    if (key === 'scenario' || key === 'output') cancel();
+  }));
+
+  const fn = $('#fn');
+  const press = () => { fn.classList.add('down'); if (S.phase === 'listen' && S.hands) { finish(); return; } start(false); };
+  const release = () => { fn.classList.remove('down'); if (!S.hands) finish(); };
+  fn.addEventListener('pointerdown', e => { fn.setPointerCapture(e.pointerId); press(); });
+  fn.addEventListener('pointerup', release);
+  fn.addEventListener('pointercancel', release);
+  let spaceDown = false;
+  addEventListener('keydown', e => {
+    if (e.key === 'Escape') { closeMenu(); if (['listen', 'finish', 'card', 'notice'].includes(S.phase)) cancel(); }
+    if (e.code === 'Space' && !e.repeat && !e.target.closest('button, input, textarea')) { e.preventDefault(); spaceDown = true; press(); }
+  });
+  addEventListener('keyup', e => { if (e.code === 'Space' && spaceDown) { spaceDown = false; e.preventDefault(); release(); } });
+
+  // ---------- storyboard ----------
+  function strip(w, h, light) {
+    const fit = document.createElement('div');
+    fit.className = 'fit'; fit.dataset.w = w; fit.dataset.h = h;
+    fit.innerHTML = `<div class="fit-inner"><div class="strip${light ? ' lightwall' : ''}"></div></div>`;
+    return fit;
+  }
+  function tile(host, title, size, node) {
+    const fig = document.createElement('figure');
+    fig.className = 'tile';
+    fig.append(node);
+    const cap = document.createElement('figcaption');
+    cap.innerHTML = `<b>${title}</b><span>${size}</span>`;
+    fig.append(cap);
+    host.append(fig);
+  }
+  function staticWave(root, n) {
+    $$('.wave', root).forEach(w => [...w.children].forEach((bar, i, all) => {
+      const shape = Math.sin((i + 1) / (all.length + 1) * Math.PI);
+      bar.style.height = `${(4 + 12 * shape * (.55 + ((i * 37) % 10) / 20)).toFixed(1)}px`;
+    }));
+  }
+  const listenWords = 7;
+  const islandStates = [
+    ['Покой', 'вырез', 'idle'], ['Наведение', '204 × 36', 'peek'], ['Панель', '444 × 180', 'panel'],
+    ['Запись, начало', '304 × 30', 'listen0'], ['Запись', '464 × 106', 'listen'], ['Оформление', '464 × 106', 'finish'],
+    ['Вставлено', '256 × 30', 'done'], ['Поле пароля', '364 × 30', 'notice'], ['Карточка', '464 × 200', 'card'],
+  ];
+  const hostI = $('#tiles-island');
+  islandStates.forEach(([title, size, st]) => {
+    const fit = strip(560, 230);
+    const node = tplIsland.content.firstElementChild.cloneNode(true);
+    node.dataset.state = st;
+    node.style.setProperty('--lvl', st === 'listen' ? .6 : 0);
+    $('.live-text', node).innerHTML = st === 'finish' ? liveHTML(SCEN.short.words.length, false).replace(/class="p"/g, '') : liveHTML(listenWords, false);
+    $('.timer', node).textContent = '0:03';
+    $('.card-text', node).innerHTML = rich(SCEN.long.final());
+    staticWave(node);
+    $('.strip', fit).append(node);
+    tile(hostI, title, size, fit);
+  });
+
+  const pillStates = [
+    ['Покой', '56 × 8', 'idle'], ['Наведение', '158 × 40', 'peek'], ['Запись', '250 × 44', 'listen'],
+    ['Оформление', '250 × 44', 'finish'], ['Вставлено', '150 × 40', 'done'], ['Карточка', 'до 520', 'card'],
+  ];
+  const hostP = $('#tiles-pill');
+  pillStates.forEach(([title, size, st]) => {
+    const fit = strip(560, 250, st === 'done');
+    const node = tplPill.content.firstElementChild.cloneNode(true);
+    node.dataset.state = st;
+    node.classList.toggle('has-text', st === 'listen');
+    node.style.bottom = '26px';
+    node.style.setProperty('--lvl', st === 'listen' ? .55 : 0);
+    $('.live-text', node).innerHTML = st === 'finish' ? liveHTML(SCEN.short.words.length, false).replace(/class="p"/g, '') : liveHTML(listenWords, false);
+    $('.timer', node).textContent = '0:03';
+    $('.card-text', node).innerHTML = rich(SCEN.short.final());
+    staticWave(node);
+    $('.strip', fit).append(node);
+    tile(hostP, title, size, fit);
+  });
+
+  const hostM = $('#tiles-menu');
+  [['Тёмная тема', false], ['Светлая тема', true]].forEach(([title, light]) => {
+    const fit = strip(420, 470, light);
+    const node = tplMenu.content.firstElementChild.cloneNode(true);
+    node.classList.add('static');
+    node.classList.toggle('light', light);
+    node.style.margin = '28px auto 0';
+    $('.strip', fit).append(node);
+    tile(hostM, title, '296 pt · NSMenu', fit);
+  });
+
+  // ---------- scaling ----------
+  function fitAll() {
+    $$('.fit').forEach(f => {
+      const w = +f.dataset.w, h = +f.dataset.h, s = f.clientWidth / w;
+      const inner = f.firstElementChild;
+      inner.style.width = `${w}px`; inner.style.height = `${h}px`;
+      inner.style.transform = `scale(${s})`;
+      f.style.height = `${h * s}px`;
+    });
+  }
+  new ResizeObserver(fitAll).observe(document.body);
+  fitAll();
+  syncToggles();
+  render();
+})();
+</script>
