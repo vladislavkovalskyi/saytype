@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-26
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Metal Toolchain
+        run: xcrun -f metal >/dev/null 2>&1 || xcodebuild -downloadComponent MetalToolchain
+
+      - name: Package tests
+        working-directory: Packages/VoicemodeKit
+        run: swift test --skip VMTranscriptionTests
+
+      - name: Generate project
+        run: xcodegen generate
+
+      - name: Build app
+        run: |
+          xcodebuild build \
+            -project voicemode.xcodeproj \
+            -scheme Voicemode \
+            -configuration Debug \
+            -destination 'generic/platform=macOS' \
+            -derivedDataPath build/ci \
+            -skipMacroValidation \
+            -skipPackagePluginValidation \
+            ARCHS=arm64 \
+            CODE_SIGNING_ALLOWED=NO

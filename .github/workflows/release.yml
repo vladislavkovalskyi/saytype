@@ -1,0 +1,166 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  check:
+    # A release published by hand with `gh release create` also pushes the tag; skip it here.
+    runs-on: ubuntu-latest
+    outputs:
+      exists: ${{ steps.release.outputs.exists }}
+    steps:
+      - id: release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release $GITHUB_REF_NAME already exists; nothing to build"
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  release:
+    needs: check
+    if: needs.check.outputs.exists != 'true'
+    runs-on: macos-26
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # The build number is the commit count; gh-pages holds the published appcast.
+          fetch-depth: 0
+
+      - name: Install tools
+        run: brew install xcodegen create-dmg
+
+      - name: Metal Toolchain
+        run: xcrun -f metal >/dev/null 2>&1 || xcodebuild -downloadComponent MetalToolchain
+
+      - name: Import signing certificate
+        env:
+          MACOS_CERTIFICATE_P12_BASE64: ${{ secrets.MACOS_CERTIFICATE_P12_BASE64 }}
+          MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+        run: |
+          if [ -z "$MACOS_CERTIFICATE_P12_BASE64" ]; then
+            echo "::warning::MACOS_CERTIFICATE_P12_BASE64 is not set: no signing identity, the release script will stop"
+            exit 0
+          fi
+          keychain="$RUNNER_TEMP/signing.keychain-db"
+          keychain_password="$(openssl rand -base64 32)"
+          echo "::add-mask::$keychain_password"
+          certificate="$RUNNER_TEMP/certificate.p12"
+          (umask 077; printf '%s' "$MACOS_CERTIFICATE_P12_BASE64" | base64 --decode > "$certificate")
+          security create-keychain -p "$keychain_password" "$keychain"
+          security set-keychain-settings -lut 21600 "$keychain"
+          security unlock-keychain -p "$keychain_password" "$keychain"
+          security import "$certificate" -k "$keychain" -f pkcs12 -P "$MACOS_CERTIFICATE_PASSWORD" \
+            -T /usr/bin/codesign -T /usr/bin/security >/dev/null
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$keychain_password" "$keychain" >/dev/null
+          security list-keychains -d user -s "$keychain" $(security list-keychains -d user | tr -d '"')
+          rm -f "$certificate"
+          echo "SIGNING_KEYCHAIN=$keychain" >> "$GITHUB_ENV"
+          security find-identity -v -p codesigning "$keychain" | sed -n 's/.*"\(.*\)"$/identity: \1/p'
+
+      - name: Notarization key
+        env:
+          NOTARY_API_KEY_P8_BASE64: ${{ secrets.NOTARY_API_KEY_P8_BASE64 }}
+          NOTARY_API_KEY_ID: ${{ secrets.NOTARY_API_KEY_ID }}
+          NOTARY_API_ISSUER_ID: ${{ secrets.NOTARY_API_ISSUER_ID }}
+        run: |
+          if [ -z "$NOTARY_API_KEY_P8_BASE64" ] || [ -z "$NOTARY_API_KEY_ID" ] || [ -z "$NOTARY_API_ISSUER_ID" ]; then
+            echo "::warning::Notarization secrets are not set: the DMG will not be notarized"
+            exit 0
+          fi
+          key="$RUNNER_TEMP/AuthKey_notary.p8"
+          (umask 077; printf '%s' "$NOTARY_API_KEY_P8_BASE64" | base64 --decode > "$key")
+          echo "NOTARY_API_KEY_PATH=$key" >> "$GITHUB_ENV"
+
+      - name: Sparkle key
+        env:
+          SPARKLE_ED_PRIVATE_KEY: ${{ secrets.SPARKLE_ED_PRIVATE_KEY }}
+        run: |
+          if [ -z "$SPARKLE_ED_PRIVATE_KEY" ]; then
+            echo "::warning::SPARKLE_ED_PRIVATE_KEY is not set: the appcast will not be updated"
+          fi
+
+      - name: Published appcast
+        run: |
+          mkdir -p build/release
+          if git show origin/gh-pages:appcast.xml > build/release/appcast.xml 2>/dev/null; then
+            echo "Extending the appcast from gh-pages"
+          else
+            rm -f build/release/appcast.xml
+            echo "No published appcast yet"
+          fi
+
+      - name: Build release
+        env:
+          NOTARY_API_KEY_ID: ${{ secrets.NOTARY_API_KEY_ID }}
+          NOTARY_API_ISSUER_ID: ${{ secrets.NOTARY_API_ISSUER_ID }}
+          SPARKLE_ED_PRIVATE_KEY: ${{ secrets.SPARKLE_ED_PRIVATE_KEY }}
+        run: scripts/release.sh --version "${GITHUB_REF_NAME#v}"
+
+      - name: GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          . build/release/release.env
+          notes="SHA-256 of \`voicemode-$VERSION.dmg\`: \`$SHA256\`"
+          if [ "$NOTARIZED" != "true" ]; then
+            notes="$notes
+
+          Not notarized. On first launch open System Settings → Privacy & Security → Open Anyway, or run \`xattr -dr com.apple.quarantine /Applications/voicemode.app\`."
+          fi
+          gh release create "$GITHUB_REF_NAME" \
+            "$DMG" \
+            "$DMG_STABLE" \
+            "$DMG.sha256" \
+            --title "voicemode $VERSION" \
+            --notes "$notes" \
+            --generate-notes \
+            --verify-tag
+
+      - name: Publish appcast to gh-pages
+        run: |
+          . build/release/release.env
+          if [ "$APPCAST_UPDATED" != "true" ]; then
+            echo "Appcast was not generated; gh-pages left as is"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          pages="$RUNNER_TEMP/gh-pages"
+          if git rev-parse --verify --quiet origin/gh-pages >/dev/null; then
+            git worktree add -B gh-pages "$pages" origin/gh-pages
+          else
+            git worktree add --detach "$pages"
+            git -C "$pages" checkout --orphan gh-pages
+            git -C "$pages" rm -rf --quiet .
+          fi
+          cp build/release/appcast.xml "$pages/appcast.xml"
+          touch "$pages/.nojekyll"
+          git -C "$pages" add appcast.xml .nojekyll
+          if git -C "$pages" diff --cached --quiet; then
+            echo "Appcast unchanged"
+            exit 0
+          fi
+          git -C "$pages" commit -m "chore(appcast): voicemode $VERSION"
+          git -C "$pages" push origin gh-pages
+
+      - name: Remove signing material
+        if: always()
+        run: |
+          if [ -n "${SIGNING_KEYCHAIN:-}" ]; then
+            security delete-keychain "$SIGNING_KEYCHAIN" || true
+          fi
+          rm -f "$RUNNER_TEMP/AuthKey_notary.p8" "$RUNNER_TEMP/certificate.p12"
