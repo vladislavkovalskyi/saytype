@@ -1,4 +1,4 @@
-import AVFoundation
+@preconcurrency import AVFoundation
 import Foundation
 
 /// Captures the default microphone as 16 kHz mono Float32, the format Whisper expects.

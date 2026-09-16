@@ -64,7 +64,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
     public var latinTerms = true
     public var dropTrailingPeriodInShortPhrases = false
 
-    public var whisperModel = "large-v3-v20240930_626MB"
+    public var whisperModel = "large-v3-v20240930_turbo_632MB"
     public var systemEngineFallback = true
     public var historyRetentionDays = 30
 

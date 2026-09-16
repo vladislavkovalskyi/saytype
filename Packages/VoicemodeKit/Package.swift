@@ -26,6 +26,7 @@ let package = Package(
             ]
         ),
         .target(name: "VMSystem", dependencies: ["VMCore"]),
+        .executableTarget(name: "vm-bench", dependencies: ["VMCore", "VMAudio", "VMTranscription"]),
         .testTarget(name: "VMCoreTests", dependencies: ["VMCore"]),
         .testTarget(name: "VMTranscriptionTests", dependencies: ["VMTranscription"]),
         .testTarget(name: "VMSystemTests", dependencies: ["VMSystem"]),
