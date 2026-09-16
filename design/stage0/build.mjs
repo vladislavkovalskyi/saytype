@@ -132,6 +132,7 @@ for (const file of readdirSync(srcDir).filter((f) => f.endsWith('.html')).sort()
 <body>
 <x-dc>
 <helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&amp;family=Unbounded:wght@500;600;700&amp;family=Geologica:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap">
   <style>
 ${shared.trim()}
 ${local.trim()}

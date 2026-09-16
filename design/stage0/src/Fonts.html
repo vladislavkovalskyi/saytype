@@ -1,0 +1,71 @@
+<style>
+body { background: #121110; }
+.sheet { width: 1440px; min-height: 940px; background: #121110; padding: 44px 48px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; }
+.opt { border-radius: 24px; padding: 26px 26px 24px; background: rgba(255,255,255,.035); box-shadow: inset 0 0 0 1px rgba(255,255,255,.07); display: flex; flex-direction: column; gap: 20px; }
+.opt.cur { box-shadow: inset 0 0 0 1.5px oklch(0.8 0.14 65 / .8); }
+.tag { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.tag b { font-size: 15px; font-weight: 600; color: #f3efe8; }
+.tag span { font-size: 12px; color: rgba(243,239,232,.5); white-space: nowrap; }
+.hero { height: 212px; border-radius: 18px; position: relative; overflow: hidden; padding: 24px 22px; display: flex; flex-direction: column; justify-content: flex-end; }
+.hero .pill { position: absolute; left: 22px; right: 22px; top: 22px; }
+.sample-h { font-size: 27px; line-height: 1.15; letter-spacing: -.02em; color: #fbf7f0; text-wrap: balance; }
+.sample-b { font-size: 14.5px; line-height: 1.5; color: rgba(243,239,232,.72); text-wrap: pretty; }
+.row { display: flex; align-items: center; gap: 14px; padding: 12px 14px; border-radius: 14px; background: rgba(255,255,255,.045); box-shadow: inset 0 0 0 1px rgba(255,255,255,.05); }
+.row .n { font-size: 13.5px; color: rgba(246,243,238,.93); }
+.row .d { font-size: 12px; color: rgba(246,243,238,.5); margin-top: 2px; }
+.nums { display: flex; align-items: baseline; gap: 10px; }
+.nums b { font-size: 30px; letter-spacing: -.02em; color: #fbf7f0; line-height: 1; }
+.nums span { font-size: 12.5px; color: rgba(243,239,232,.5); }
+.pangram { font-size: 13px; line-height: 1.5; color: rgba(243,239,232,.5); }
+.why { font-size: 13px; line-height: 1.55; color: rgba(243,239,232,.66); border-top: 1px solid rgba(255,255,255,.07); padding-top: 16px; text-wrap: pretty; }
+.why em { font-style: normal; color: rgba(243,239,232,.9); }
+
+.fA .d-face { font-family: "Unbounded", "Onest", sans-serif; font-weight: 600; }
+.fA .u-face, .fA .row, .fA .sample-b, .fA .pangram, .fA .live, .fA .tag, .fA .why { font-family: "Onest", sans-serif; }
+.fB .d-face { font-family: "Geologica", sans-serif; font-weight: 600; letter-spacing: -.03em; }
+.fB .u-face, .fB .row, .fB .sample-b, .fB .pangram, .fB .live, .fB .tag, .fB .why { font-family: "Geologica", sans-serif; }
+.fC .d-face { font-family: "Onest", sans-serif; font-weight: 700; letter-spacing: -.035em; }
+.fC .u-face, .fC .row, .fC .sample-b, .fC .pangram, .fC .live, .fC .tag, .fC .why { font-family: "Onest", sans-serif; }
+</style>
+<div class="sheet">
+
+  <div class="opt cur fA">
+    <div class="tag"><b>A · Unbounded + Onest</b><span>сейчас на всех экранах</span></div>
+    <div class="hero wp-a"><div class="grain"></div>
+      <div class="pill glass-dark"><div class="rec"></div><p class="live" style="flex: 1;">поправь <span class="code">useEffect</span> в <span class="code">Header</span></p><span class="kbd">esc</span></div>
+      <div class="sample-h d-face" style="position: relative; z-index: 2;">Говори — и это уже текст</div>
+    </div>
+    <p class="sample-b">Зажми Fn, скажи, отпусти. Оформленный текст появится там, где стоит курсор.</p>
+    <div class="row"><div style="flex: 1;"><div class="n">Умная структура</div><div class="d">Списки и абзацы в длинных фразах</div></div><div class="toggle on"></div></div>
+    <div class="nums"><b class="d-face">1 240</b><span>слов сегодня</span></div>
+    <p class="pangram">Съешь же ещё этих мягких французских булок, да выпей чаю.</p>
+    <p class="why"><em>Широкие округлые заголовки</em> повторяют форму пилюли и острова, Onest спокойно читается в мелком тексте. Контраст заголовка и текста самый сильный из трёх. Минус: Unbounded яркий — только для заголовков и цифр, иначе шумно.</p>
+  </div>
+
+  <div class="opt fB">
+    <div class="tag"><b>B · Geologica</b><span>одна гарнитура</span></div>
+    <div class="hero wp-a"><div class="grain"></div>
+      <div class="pill glass-dark"><div class="rec"></div><p class="live" style="flex: 1;">поправь <span class="code">useEffect</span> в <span class="code">Header</span></p><span class="kbd">esc</span></div>
+      <div class="sample-h d-face" style="position: relative; z-index: 2; font-size: 31px;">Говори — и это уже текст</div>
+    </div>
+    <p class="sample-b">Зажми Fn, скажи, отпусти. Оформленный текст появится там, где стоит курсор.</p>
+    <div class="row"><div style="flex: 1;"><div class="n">Умная структура</div><div class="d">Списки и абзацы в длинных фразах</div></div><div class="toggle on"></div></div>
+    <div class="nums"><b class="d-face">1 240</b><span>слов сегодня</span></div>
+    <p class="pangram">Съешь же ещё этих мягких французских булок, да выпей чаю.</p>
+    <p class="why"><em>Одна гарнитура на всё</em>, с острыми срезами, которые видны в крупном размере. Выглядит собранно и технологично, кириллица рисовалась первой. Минус: заголовки меньше отличаются от текста.</p>
+  </div>
+
+  <div class="opt fC">
+    <div class="tag"><b>C · только Onest</b><span>самый спокойный</span></div>
+    <div class="hero wp-a"><div class="grain"></div>
+      <div class="pill glass-dark"><div class="rec"></div><p class="live" style="flex: 1;">поправь <span class="code">useEffect</span> в <span class="code">Header</span></p><span class="kbd">esc</span></div>
+      <div class="sample-h d-face" style="position: relative; z-index: 2; font-size: 32px;">Говори — и это уже текст</div>
+    </div>
+    <p class="sample-b">Зажми Fn, скажи, отпусти. Оформленный текст появится там, где стоит курсор.</p>
+    <div class="row"><div style="flex: 1;"><div class="n">Умная структура</div><div class="d">Списки и абзацы в длинных фразах</div></div><div class="toggle on"></div></div>
+    <div class="nums"><b class="d-face">1 240</b><span>слов сегодня</span></div>
+    <p class="pangram">Съешь же ещё этих мягких французских булок, да выпей чаю.</p>
+    <p class="why"><em>Чистая тёплая кириллица</em>, плотные жирные заголовки без лишнего характера. Ближе всего к нативному macOS, но живее системного шрифта. Минус: самый сдержанный — может снова показаться обычным.</p>
+  </div>
+
+</div>
