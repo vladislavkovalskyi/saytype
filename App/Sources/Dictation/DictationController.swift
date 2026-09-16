@@ -14,9 +14,27 @@ final class DictationController {
         case idle
         case listening
         case finishing
-        case inserted(appName: String?)
+        case inserted(TargetApp?)
         case card(String)
-        case notice(String)
+        case notice(Notice)
+    }
+
+    /// The app that had focus when recording started; the text goes there.
+    struct TargetApp: Equatable {
+        let name: String
+        let bundleID: String?
+        let icon: NSImage?
+    }
+
+    /// Short one-line messages; the overlay shows them without expanding.
+    enum Notice: Equatable {
+        case passwordField
+        case modelMissing
+        case modelFailed
+        case microphoneUnavailable
+        case recognitionFailed
+        case nothingHeard
+        case copied
     }
 
     enum ModelState: Equatable {
@@ -50,8 +68,7 @@ final class DictationController {
     @ObservationIgnored private var live = LiveAgreement()
     @ObservationIgnored private var engine: WhisperKitEngine?
     @ObservationIgnored private var engineVariant: String?
-    @ObservationIgnored private var targetBundleID: String?
-    @ObservationIgnored private var targetAppName: String?
+    @ObservationIgnored private var target: TargetApp?
     @ObservationIgnored private let store = ModelStore()
     @ObservationIgnored private let historyStore = HistoryStore()
     /// Optional local LLM that adds lists and paragraphs to long dictations.
@@ -167,11 +184,11 @@ final class DictationController {
     private func startRecording(handsFree: Bool) {
         hideTask?.cancel()
         if FocusInspector.isSecureFieldFocused() {
-            show(.notice("Поле пароля"), for: 2)
+            show(.notice(.passwordField), for: 2)
             return
         }
         guard modelState == .ready || modelState == .loading else {
-            show(.notice(modelState == .missing ? "Модель не скачана" : "Модель не загрузилась"), for: 2.5)
+            show(.notice(modelState == .missing ? .modelMissing : .modelFailed), for: 2.5)
             return
         }
         if phase == .listening {
@@ -179,8 +196,7 @@ final class DictationController {
             self.handsFree = handsFree
             return
         }
-        targetBundleID = FocusInspector.frontmostBundleID()
-        targetAppName = FocusInspector.frontmostAppName()
+        target = Self.frontmostTarget()
         samples = []
         live = LiveAgreement()
         committedText = ""
@@ -188,6 +204,7 @@ final class DictationController {
         levels = levels.map { _ in 0 }
         self.handsFree = handsFree
         startedAt = Date()
+        capture.deviceUID = settings.value.microphoneUID
         do {
             let stream = try capture.start()
             captureTask = Task { [weak self] in
@@ -196,7 +213,7 @@ final class DictationController {
                 }
             }
         } catch {
-            show(.notice("Микрофон недоступен"), for: 2.5)
+            show(.notice(.microphoneUnavailable), for: 2.5)
             return
         }
         phase = .listening
@@ -269,16 +286,16 @@ final class DictationController {
         do {
             transcript = try await engine.transcribe(recorded, hints: hints)
         } catch {
-            show(.notice("Не удалось распознать"), for: 2.5)
+            show(.notice(.recognitionFailed), for: 2.5)
             return
         }
         let formatted = TextPipeline(settings: value).format(transcript)
         let text = await smart.apply(to: formatted, settings: value)
         guard !text.isEmpty else {
-            show(.notice("Ничего не слышно"), for: 1.5)
+            show(.notice(.nothingHeard), for: 1.5)
             return
         }
-        let record = DictationRecord(text: text, raw: transcript.text, appName: targetAppName, bundleID: targetBundleID, duration: duration, date: Date())
+        let record = DictationRecord(text: text, raw: transcript.text, appName: target?.name, bundleID: target?.bundleID, duration: duration, date: Date())
         history.insert(record, at: 0)
         let retention = value.historyRetentionDays
         Task { history = await historyStore.add(record, retentionDays: retention) }
@@ -288,20 +305,20 @@ final class DictationController {
     private func deliver(_ text: String, settings value: AppSettings) async {
         switch value.outputMode {
         case .paste:
-            let pressReturn = targetBundleID.map(value.autoEnterApps.contains) ?? false
+            let pressReturn = target?.bundleID.map(value.autoEnterApps.contains) ?? false
             switch await Paster.paste(text, pressReturn: pressReturn) {
             case .pasted:
                 if value.sounds { Sounds.inserted() }
-                show(.inserted(appName: targetAppName), for: 1.1)
+                show(.inserted(target), for: 1.2)
             case .secureField:
-                show(.notice("Поле пароля"), for: 2)
+                show(.notice(.passwordField), for: 2)
             }
         case .card:
             hideTask?.cancel()
             phase = .card(text)
         case .clipboard:
             Paster.copy(text)
-            show(.notice("Скопировано"), for: 1.1)
+            show(.notice(.copied), for: 1.1)
         }
         handsFree = false
     }
@@ -313,8 +330,50 @@ final class DictationController {
     func copyCard() {
         if case .card(let text) = phase {
             Paster.copy(text)
-            show(.notice("Скопировано"), for: 1.1)
+            show(.notice(.copied), for: 1.1)
         }
+    }
+
+    /// Pastes the card's text into the app that was focused when recording started.
+    func insertCard() {
+        guard case .card(let text) = phase else { return }
+        Task {
+            _ = await Paster.paste(text)
+            show(.inserted(target), for: 1.2)
+        }
+    }
+
+    // MARK: Overlay controls
+
+    /// A click on the record button: hands-free recording, stopped by the stop button or the key.
+    func toggleRecordingFromOverlay() {
+        if phase == .listening {
+            finishRecording()
+        } else if phase == .idle || isTransient {
+            startRecording(handsFree: true)
+        }
+    }
+
+    func cancelFromOverlay() {
+        guard phase == .listening else { return }
+        cancelRecording()
+    }
+
+    /// Voice level of the latest audio chunk, 0…1.
+    var currentLevel: Float { levels.last ?? 0 }
+
+    var lastRecord: DictationRecord? { history.first }
+
+    private var isTransient: Bool {
+        switch phase {
+        case .inserted, .notice: true
+        default: false
+        }
+    }
+
+    private static func frontmostTarget() -> TargetApp? {
+        guard let app = NSWorkspace.shared.frontmostApplication else { return nil }
+        return TargetApp(name: app.localizedName ?? "", bundleID: app.bundleIdentifier, icon: app.icon)
     }
 
     func demoSet(phase: Phase, committed: String, pending: String) {

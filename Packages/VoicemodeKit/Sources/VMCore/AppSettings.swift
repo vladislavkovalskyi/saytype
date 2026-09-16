@@ -65,6 +65,8 @@ public struct AppSettings: Codable, Equatable, Sendable {
     public var dictionary: [DictionaryEntry] = DictionaryEntry.starter
     public var dropTrailingPeriodInShortPhrases = false
 
+    /// Core Audio UID of the chosen microphone; `nil` follows the system default.
+    public var microphoneUID: String?
     public var whisperModel = "large-v3-v20240930_turbo_632MB"
     public var systemEngineFallback = true
     public var historyRetentionDays = 30
@@ -92,6 +94,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
         latinTerms = try c.decodeIfPresent(Bool.self, forKey: .latinTerms) ?? defaults.latinTerms
         dictionary = try c.decodeIfPresent([DictionaryEntry].self, forKey: .dictionary) ?? defaults.dictionary
         dropTrailingPeriodInShortPhrases = try c.decodeIfPresent(Bool.self, forKey: .dropTrailingPeriodInShortPhrases) ?? defaults.dropTrailingPeriodInShortPhrases
+        microphoneUID = try c.decodeIfPresent(String.self, forKey: .microphoneUID)
         whisperModel = try c.decodeIfPresent(String.self, forKey: .whisperModel) ?? defaults.whisperModel
         systemEngineFallback = try c.decodeIfPresent(Bool.self, forKey: .systemEngineFallback) ?? defaults.systemEngineFallback
         historyRetentionDays = try c.decodeIfPresent(Int.self, forKey: .historyRetentionDays) ?? defaults.historyRetentionDays

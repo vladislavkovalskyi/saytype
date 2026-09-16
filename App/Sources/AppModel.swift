@@ -20,8 +20,22 @@ final class AppModel {
     @ObservationIgnored private var monitoredKey: AppSettings.RecordKey?
 
     func start() {
+        let launchArguments = ProcessInfo.processInfo.arguments
+        if let i = launchArguments.firstIndex(of: "--snapshot-overlays"), i + 1 < launchArguments.count {
+            OverlaySnapshots.run(into: URL(fileURLWithPath: launchArguments[i + 1]), model: self)
+            exit(0)
+        }
         refreshPermissions()
-        overlay = OverlayController(dictation: dictation, settings: settings)
+        let overlayModel = OverlayModel(
+            dictation: dictation,
+            settings: settings,
+            openMain: { [weak self] section in
+                self?.mainSection = section
+                self?.windows.showMain()
+            },
+            smartStructure: smartStructureBinding
+        )
+        overlay = OverlayController(model: overlayModel)
         dictation.activate(listening: !Self.isPreviewLaunch)
         monitoredKey = settings.value.recordKey
         // macOS has no callback for Accessibility and Input Monitoring changes.
@@ -56,7 +70,7 @@ final class AppModel {
 
     /// `--demo-*` and `--show-*` launches only draw the UI. They never take the record key,
     /// so a preview next to the real app cannot record or paste a second time.
-    static let isPreviewLaunch = ProcessInfo.processInfo.arguments.contains { $0.hasPrefix("--demo") || $0.hasPrefix("--show") }
+    static let isPreviewLaunch = ProcessInfo.processInfo.arguments.contains { $0.hasPrefix("--demo") || $0.hasPrefix("--show") || $0.hasPrefix("--snapshot") }
 
     private func tick() {
         guard !Self.isPreviewLaunch else { return }

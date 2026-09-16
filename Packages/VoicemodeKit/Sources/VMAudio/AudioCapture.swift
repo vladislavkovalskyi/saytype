@@ -1,7 +1,7 @@
 @preconcurrency import AVFoundation
 import Foundation
 
-/// Captures the default microphone as 16 kHz mono Float32, the format Whisper expects.
+/// Captures a microphone as 16 kHz mono Float32, the format Whisper expects.
 ///
 /// The tap runs on a real-time audio thread, so nothing here is actor-isolated:
 /// buffers leave through an `AsyncStream` and state is guarded by a lock.
@@ -24,6 +24,13 @@ public final class AudioCapture: @unchecked Sendable {
     private var continuation: AsyncStream<Chunk>.Continuation?
     private var configObserver: NSObjectProtocol?
 
+    /// UID of the microphone to use; `nil` or a disconnected device means the system default.
+    public var deviceUID: String? {
+        get { lock.withLock { _deviceUID } }
+        set { lock.withLock { _deviceUID = newValue } }
+    }
+    private var _deviceUID: String?
+
     public init() {}
 
     deinit {
@@ -35,6 +42,7 @@ public final class AudioCapture: @unchecked Sendable {
         stop()
         let (stream, continuation) = AsyncStream.makeStream(of: Chunk.self, bufferingPolicy: .unbounded)
         lock.withLock { self.continuation = continuation }
+        selectDevice()
         try installTap()
         engine.prepare()
         try engine.start()
@@ -65,9 +73,17 @@ public final class AudioCapture: @unchecked Sendable {
     private func restart() throws {
         engine.inputNode.removeTap(onBus: 0)
         engine.stop()
+        selectDevice()
         try installTap()
         engine.prepare()
         try engine.start()
+    }
+
+    /// Points the engine's input unit at the chosen device before the tap reads its format.
+    private func selectDevice() {
+        guard let device = AudioDevices.resolve(uid: deviceUID), let unit = engine.inputNode.audioUnit else { return }
+        var id = device.id
+        AudioUnitSetProperty(unit, kAudioOutputUnitProperty_CurrentDevice, kAudioUnitScope_Global, 0, &id, UInt32(MemoryLayout<AudioDeviceID>.size))
     }
 
     private func installTap() throws {

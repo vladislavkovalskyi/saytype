@@ -1,4 +1,4 @@
-import Foundation
+import AppKit
 import VMCore
 
 /// Plays the overlay through its states with sample text, for screenshots and
@@ -20,11 +20,11 @@ extension DictationController {
             try? await Task.sleep(for: .seconds(1.5))
             demoSet(phase: .finishing, committed: words.joined(separator: " "), pending: "")
             try? await Task.sleep(for: .seconds(1.5))
-            demoSet(phase: .inserted(appName: "Терминал"), committed: "", pending: "")
+            demoSet(phase: .inserted(TargetApp(name: "Terminal", bundleID: "com.apple.Terminal", icon: NSWorkspace.shared.icon(forFile: "/System/Applications/Utilities/Terminal.app"))), committed: "", pending: "")
             try? await Task.sleep(for: .seconds(2))
             demoSet(phase: .card("Поправь useEffect в Header, он дёргается при каждом рендере."), committed: "", pending: "")
             try? await Task.sleep(for: .seconds(3))
-            demoSet(phase: .notice("Поле пароля"), committed: "", pending: "")
+            demoSet(phase: .notice(.passwordField), committed: "", pending: "")
             try? await Task.sleep(for: .seconds(2))
             demoSet(phase: .idle, committed: "", pending: "")
         }
