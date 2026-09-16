@@ -10,13 +10,15 @@ public enum TextFormatter {
         let paragraphs = settings.punctuation
             ? Paragraphs.split(transcript, pause: paragraphPause)
             : [transcript.text]
-        let rewriter = settings.latinTerms ? DictionaryRewriter(entries: settings.dictionary) : nil
+        let rewriter = settings.latinTerms ? DictionaryRewriter(entries: settings.dictionary, builtIn: settings.builtInDictionary) : nil
 
         var result: [String] = []
         for paragraph in paragraphs {
             var text = paragraph
             if let rewriter { text = rewriter.apply(to: text) }
             text = Cleanup.removeFillers(text, mode: settings.fillerMode)
+            if !settings.wordFilters.isEmpty { text = WordFilter.remove(settings.wordFilters, from: text) }
+            if settings.censorProfanity { text = WordFilter.censorProfanity(text) }
             if !settings.punctuation { text = Punctuation.strip(text) }
             if settings.smartStructure { text = Lists.format(text) }
             text = text.trimmingCharacters(in: .whitespacesAndNewlines)

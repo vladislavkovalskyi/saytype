@@ -28,28 +28,6 @@ public struct AppSettings: Codable, Equatable, Sendable {
         case clipboard
     }
 
-    public enum SpeechLanguage: String, Codable, CaseIterable, Sendable {
-        case russian = "ru"
-        case english = "en"
-        case auto
-
-        /// The default for a new install: the system language when saytype
-        /// knows it, otherwise detection from speech.
-        public static var systemDefault: SpeechLanguage {
-            matching(preferredLanguages: Locale.preferredLanguages)
-        }
-
-        /// `["ru-RU", "en-US"]` → `.russian`: only the first, primary language counts.
-        public static func matching(preferredLanguages: [String]) -> SpeechLanguage {
-            guard let first = preferredLanguages.first else { return .auto }
-            switch Locale.Language(identifier: first).languageCode {
-            case .russian: return .russian
-            case .english: return .english
-            default: return .auto
-            }
-        }
-    }
-
     public enum FillerMode: String, Codable, CaseIterable, Sendable {
         /// Keep every word.
         case keep
@@ -78,7 +56,14 @@ public struct AppSettings: Codable, Equatable, Sendable {
     public var smartStructureMinWords = 40
     public var fillerMode = FillerMode.hesitations
     public var latinTerms = true
-    public var dictionary: [DictionaryEntry] = DictionaryEntry.starter
+    /// The user's own entries. The built-in dictionary lives in `BuiltInDictionary`.
+    public var dictionary: [DictionaryEntry] = []
+    /// Hundreds of developer, AI and design terms shipped with the app.
+    public var builtInDictionary = true
+    /// Words and phrases removed from every dictation, e.g. "короче", "literally".
+    public var wordFilters: [String] = []
+    /// Masks swear words as "б***".
+    public var censorProfanity = false
     public var dropTrailingPeriodInShortPhrases = false
 
     /// Core Audio UID of the chosen microphone; `nil` follows the system default.
@@ -109,6 +94,9 @@ public struct AppSettings: Codable, Equatable, Sendable {
         fillerMode = try c.decodeIfPresent(FillerMode.self, forKey: .fillerMode) ?? defaults.fillerMode
         latinTerms = try c.decodeIfPresent(Bool.self, forKey: .latinTerms) ?? defaults.latinTerms
         dictionary = try c.decodeIfPresent([DictionaryEntry].self, forKey: .dictionary) ?? defaults.dictionary
+        builtInDictionary = try c.decodeIfPresent(Bool.self, forKey: .builtInDictionary) ?? defaults.builtInDictionary
+        wordFilters = try c.decodeIfPresent([String].self, forKey: .wordFilters) ?? defaults.wordFilters
+        censorProfanity = try c.decodeIfPresent(Bool.self, forKey: .censorProfanity) ?? defaults.censorProfanity
         dropTrailingPeriodInShortPhrases = try c.decodeIfPresent(Bool.self, forKey: .dropTrailingPeriodInShortPhrases) ?? defaults.dropTrailingPeriodInShortPhrases
         microphoneUID = try c.decodeIfPresent(String.self, forKey: .microphoneUID)
         whisperModel = try c.decodeIfPresent(String.self, forKey: .whisperModel) ?? defaults.whisperModel

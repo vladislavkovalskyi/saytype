@@ -40,8 +40,12 @@ public struct DictionaryRewriter: Sendable {
     private let canonicalizer: TermCanonicalizer
     private let heardRules: [(pattern: NSRegularExpression, written: String)]
 
-    public init(entries: [DictionaryEntry], builtInTerms: [String] = PromptBuilder.builtInTerms) {
-        canonicalizer = TermCanonicalizer(terms: entries.map(\.written) + builtInTerms)
+    private let builtIn: Bool
+
+    /// - Parameter builtIn: also apply `BuiltInDictionary` after the user's own entries.
+    public init(entries: [DictionaryEntry], builtIn: Bool = false, builtInTerms: [String] = PromptBuilder.builtInTerms) {
+        self.builtIn = builtIn
+        canonicalizer = TermCanonicalizer(terms: entries.map(\.written) + builtInTerms + (builtIn ? BuiltInDictionary.canonicalTerms : []))
         heardRules = entries.compactMap { entry in
             let heard = entry.heard.trimmingCharacters(in: .whitespacesAndNewlines)
             guard !heard.isEmpty else { return nil }
@@ -58,6 +62,8 @@ public struct DictionaryRewriter: Sendable {
             let range = NSRange(result.startIndex..., in: result)
             result = rule.pattern.stringByReplacingMatches(in: result, range: range, withTemplate: NSRegularExpression.escapedTemplate(for: rule.written))
         }
+        // The user's entries run first, so they win over a built-in spelling of the same words.
+        if builtIn { result = BuiltInDictionary.apply(to: result) }
         return canonicalizer.apply(to: result)
     }
 

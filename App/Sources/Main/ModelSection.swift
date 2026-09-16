@@ -126,6 +126,7 @@ private struct CurrentModelCard: View {
         case .russian: String(localized: "Russian, English terms", comment: "Speech language of the model")
         case .english: String(localized: "English", comment: "Speech language of the model")
         case .auto: String(localized: "detected from speech", comment: "Speech language of the model")
+        case let language: language.localizedName()
         }
     }
 

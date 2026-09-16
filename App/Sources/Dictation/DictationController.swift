@@ -479,15 +479,6 @@ final class DictationController {
     }
 }
 
-extension AppSettings.SpeechLanguage {
-    var whisperCode: String? {
-        switch self {
-        case .russian: "ru"
-        case .english: "en"
-        case .auto: nil
-        }
-    }
-}
 
 enum Sounds {
     static func start() { play("Tink") }

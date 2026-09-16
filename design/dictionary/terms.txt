@@ -1,0 +1,684 @@
+# saytype built-in dictionary.
+#
+#   Written: heard, heard, ...
+#
+# "Written" is the spelling that gets inserted. Heard forms are how Whisper tends to write
+# the term in Russian speech; the generator adds case endings ("в реакте", "с докером") and
+# drops any form macOS knows as an ordinary Russian word. "!" keeps a heard form that is a
+# Russian word (without case endings); "!!" keeps a loanword with its case endings (докер). A term with no heard forms still fixes spelling of
+# Latin variants ("next js" → "Next.js") when it isn't a plain English word.
+#
+#   swift scripts/build-dictionary.swift
+
+## ai: AI and agents
+Claude: клод, клауд, клоуд, клауди
+Claude Code: клод код, клауд код, клодкод
+Claude Desktop: клод десктоп, клауд десктоп
+Claude Opus: клод опус, клауд опус
+Claude Sonnet: клод соннет, клод сонет, клауд соннет
+Claude Haiku: клод хайку, клауд хайку
+Anthropic: антропик, энтропик, антропиk
+ChatGPT: чат джипити, чатджипити, чат гпт, чатгпт, чат жпт, чат джи пи ти
+GPT: джипити, джи пи ти
+GPT-4o: джипити четыре о, гпт четыре о
+GPT-5: джипити пять, гпт пять
+OpenAI: опен эй ай, опенай, опен аи, опенэйай, оупен эй ай
+Codex
+Codex CLI: кодекс си эл ай
+Gemini: джемини, гемини, джеминай
+Google AI Studio: гугл эй ай студио, гугл ай студио
+NotebookLM: ноутбук эл эм, ноутбук элэм
+Copilot: копайлот, копилот, ко пайлот
+GitHub Copilot: гитхаб копайлот, гитхаб копилот
+Cursor
+Windsurf: виндсерф, винд серф
+Cline: клайн
+Aider: эйдер
+Zed: зед
+Perplexity: перплексити, перплекси
+Midjourney: миджорни, мидджорни, мид джорни, миджерни
+Stable Diffusion: стейбл диффьюжн, стейбл дифьюжн, стейбл диффузион
+DALL-E: далл и, дали и
+Sora
+Grok: грок
+xAI: икс эй ай, экс эй ай
+DeepSeek: дипсик, дип сик, дипсиик
+Qwen: квен, кьювен, квэн
+Llama: ллама
+Mistral: мистрал
+Kimi: кими
+Hugging Face: хаггинг фейс, хагинг фейс, хаггинфейс, хагинфейс
+LangChain: лангчейн, ланг чейн, лэнгчейн, лэнг чейн
+LangGraph: лангграф, ланг граф, лэнг граф
+LlamaIndex: ламаиндекс, лама индекс, ллама индекс
+Ollama: оллама, олама
+LM Studio: эл эм студио, элэм студио
+vLLM: ви эл эл эм, вилэлэм
+OpenRouter: опенроутер, опен роутер
+LiteLLM: лайт эл эл эм, лайтэлэлэм
+Vercel AI SDK: версель эй ай эс ди кей
+AI SDK: эй ай эс ди кей
+LLM: эл эл эм, элэлэм, ллм
+LLMs: эл эл эмы
+RAG: рэг, раг, эр эй джи
+MCP: эм си пи, эмсипи
+MCP server: эм си пи сервер, эмсипи сервер
+AI: эй ай, эйай
+AGI: эй джи ай
+ML: эм эл
+NLP: эн эл пи
+GPU: джи пи ю, гпу
+CPU: си пи ю, цпу
+NPU: эн пи ю
+CUDA
+Whisper: виспер, вишпер
+WhisperKit: виспер кит, висперкит
+ElevenLabs: элевен лабс, илевен лабс
+Replicate: репликейт
+Runway: ранвей
+v0: ви зеро, ви ноль
+Bolt.new: болт нью
+Lovable: лавабл
+Replit: реплит
+Devin: девин
+Manus: манус
+PyTorch: пайторч, пай торч
+TensorFlow: тензорфлоу, тензор флоу
+Keras: керас
+JAX: джакс
+MLX: эм эл икс, млх
+Core ML: кор эм эл, коре эм эл
+ONNX: онникс, оникс
+Jupyter: юпитер ноутбук, джупитер
+Google Colab: гугл колаб, колаб
+Kaggle: кагл, каггл
+scikit-learn: сайкит лерн, скайкит лерн
+NumPy: нампай, нам пай
+pandas: пандас
+Matplotlib: матплотлиб
+embeddings: эмбеддинги, эмбединги
+fine-tuning: файнтюнинг, файн тюнинг
+LoRA
+tokenizer: токенайзер
+system prompt: систем промпт
+few-shot: фью шот
+chain-of-thought: чейн оф тот
+vibe coding: вайб кодинг, вайбкодинг
+
+## frontend: Frontend
+React: реакт
+React Native: реакт нейтив, реакт натив
+Next.js: некст джс, некст джей эс, некстджс, некст жс, нэкст джс
+Nuxt: накст, нукст
+Vue: вью, вьюджс
+Vue.js: вью джей эс, вью джс
+Svelte: свелт, свелте
+SvelteKit: свелткит, свелт кит
+SolidJS: солид джс, солид джей эс
+Angular: ангуляр, ангулар, энгуляр
+Astro
+Remix
+Qwik: квик
+Vite: вит, вайт джс
+Webpack: вебпак, вебпек, веб пак
+Turbopack: турбопак, турбо пак
+Turborepo: турборепо, турбо репо
+esbuild: есбилд, ес билд, иесбилд
+Rollup: роллап
+Babel: бабель
+SWC: эс дабл ю си
+TypeScript: тайпскрипт, тайп скрипт, тайпскрип
+JavaScript: джаваскрипт, джава скрипт, жаваскрипт, яваскрипт
+ECMAScript: экмаскрипт
+Node.js: ноджс, нод джс, ноуд джей эс, нод джей эс, нодджс
+Deno: дено
+Bun
+npm: эн пи эм, энпиэм
+npx: эн пи икс
+pnpm: пи эн пи эм, пнпм
+Yarn: ярн
+jQuery: джейквери, джей квери
+htmx: эйч ти эм экс, хтмх
+Alpine.js: алпайн джс, альпайн джс
+Three.js: три джс, три джей эс, сри джс
+D3.js: ди три джс, д три
+Chart.js: чарт джс
+Socket.IO: сокет ай о, сокетио
+Express.js: экспресс джс
+Tailwind: тейлвинд, тэйлвинд, тейлвиндом
+Tailwind CSS: тейлвинд си эс эс, тейлвинд цсс
+shadcn/ui: шадсиэн, шадцн, шадсн, шэдсиэн, шад си эн
+Radix UI: радикс, радикс ю ай
+Material UI: материал ю ай, материал юай
+Chakra UI: чакра ю ай
+Ant Design: ант дизайн
+DaisyUI: дейзи ю ай, дэйзи юай
+Headless UI: хедлесс ю ай
+Bootstrap: !!бутстрап
+Sass: сасс
+SCSS: эс си эс эс
+PostCSS: пост си эс эс
+CSS Modules: си эс эс модули
+styled-components: стайлд компонентс, стайлед компонентс
+Framer Motion: фреймер моушен, фреймер моушн
+Motion
+GSAP: гсап, джисап, джи сап
+Lottie: лотти
+Rive: рив
+Storybook: сторибук
+Zustand: цуштанд, зустанд, цустанд, зюстанд
+Redux: редакс
+Redux Toolkit: редакс тулкит
+MobX: мобикс, моб экс
+Jotai: джотай
+Recoil: рекойл
+TanStack Query: танстак квери, тан стак квери
+TanStack Table: танстак тейбл
+React Query: реакт квери
+React Router: реакт роутер
+React Hook Form: реакт хук форм
+Formik: формик
+Zod: зод
+Axios: аксиос
+SWR: эс дабл ю ар
+ESLint: еслинт, ес линт, эслинт, иэслинт
+Prettier: преттиер, притиер, притир, претиер
+Biome
+Jest: джест
+Vitest: витест, ви тест
+Playwright: плейрайт, плей райт
+Cypress: сайпресс, сайпрес
+Puppeteer: паппетир, папетир, пуппетир
+Testing Library: тестинг лайбрари
+useState: юз стейт, юзстейт
+useEffect: юз эффект, юзэффект, юз ефект
+useMemo: юз мемо, юзмемо
+useCallback: юз колбэк, юз коллбек, юз колбек
+useRef: юз реф, юзреф
+useContext: юз контекст
+useReducer: юз редьюсер, юз редюсер
+useLayoutEffect: юз лейаут эффект
+useTransition: юз транзишн
+useQuery: юз квери
+useMutation: юз мутейшн
+useRouter: юз роутер
+JSX: джей эс икс, джсх
+TSX: ти эс икс
+localStorage: локал сторадж, локалсторадж
+sessionStorage: сешн сторадж, сессион сторадж
+IndexedDB: индексед ди би
+WebSocket: вебсокет, веб сокет, вебсокеты
+WebRTC: веб ар ти си, вебртс
+WebAssembly: веб ассембли, вебассембли
+WASM: васм
+Service Worker: сервис воркер
+Web Worker: веб воркер
+iframe: айфрейм
+Shadow DOM: шэдоу дом
+flexbox: флексбокс, флекс бокс
+CSS Grid: си эс эс грид
+z-index: зет индекс, з индекс
+border-radius: бордер радиус
+box-shadow: бокс шедоу
+media query: медиа квери
+viewport: вьюпорт
+favicon: фавикон, фавиконка
+SVG: эс ви джи, свг
+WebP: вебп, веб пи
+SSR: эс эс эр
+SSG: эс эс джи
+ISR: ай эс эр
+CSR: си эс эр
+SPA: эс пи эй
+PWA: пи дабл ю эй, пва
+Server Components: сервер компонентс
+Server Actions: сервер экшенс
+App Router: апп роутер, эп роутер
+Pages Router: пейджес роутер
+Core Web Vitals: кор веб виталс
+Lighthouse: лайтхаус
+
+## backend: Backend
+NestJS: нест джс, нест джей эс, нестджс
+Fastify: фастифай
+Hono: хоно
+Koa: коа джс
+Django: джанго
+Django REST Framework: джанго рест фреймворк
+FastAPI: фаст апи, фастапи, фаст эй пи ай
+Flask: фласк
+Pydantic: пайдантик, пидантик
+SQLAlchemy: эс кью эл алхими, скьюэл алхимия
+Celery: селери
+Spring Boot: спринг бут
+Laravel: ларавель, ларавел
+Symfony
+Ruby on Rails: руби он рейлс
+Phoenix
+Go: голанг, го ланг
+Gin
+Rust: !раст, растом
+Axum: аксум
+Tokio
+Python: пайтон, пайтоне
+Java: !!джава
+Kotlin: котлин
+Scala
+Elixir
+PHP: пи эйч пи, пхп
+C++: си плюс плюс, цэ плюс плюс
+C#: си шарп
+.NET: дотнет, дот нет
+Swift: свифт
+Zig: зиг
+GraphQL: графкуэль, граф кью эл, графкл, граф куэль
+Apollo GraphQL: аполло графкуэль
+REST API: рест апи, рест эй пи ай
+REST
+gRPC: джи ар пи си
+tRPC: ти ар пи си
+OpenAPI: опен апи, опенапи
+Swagger: сваггер, свагер
+JSON: джейсон, джсон
+JSON Schema: джейсон схема
+YAML: ямл, ямэль
+TOML: томл
+XML: икс эм эл
+CSV: си эс ви
+Protobuf: протобаф, протобуф
+Kafka: !кафка
+RabbitMQ: раббит эм кью, рэббит эм кью, реббит
+NATS: натс
+Redis: !редис, редиса, редисе
+Memcached: мемкешд, мем кеш ди
+JWT: джей дабл ю ти, джвт, жвт
+OAuth: оаут, о аут, оаус, о ауф
+OAuth 2.0: оаут два ноль
+OpenID Connect: опен ай ди коннект
+SSO: эс эс о
+2FA: два эф эй, ту эф эй
+RBAC: ар бэк
+CORS: корс
+CSRF: си эс ар эф
+XSS: икс эс эс
+SQL injection: эс кью эл инъекция
+webhook: вебхук
+cron: крон
+cron job: крон джоб
+localhost: локалхост, локал хост
+.env: дот енв, дот env, точка енв, дотенв
+package.json: пакедж джейсон, пэкедж джейсон, пекедж джейсон
+package-lock.json: пакедж лок джейсон
+tsconfig.json: ти эс конфиг, тс конфиг
+README: ридми, рид ми
+Makefile: мейкфайл, мэйкфайл
+Dockerfile: докерфайл, докер файл
+.gitignore: гитигнор, гит игнор
+Stripe: страйп
+PayPal: пейпал
+Twilio: твилио
+SendGrid: сендгрид
+Postmark: постмарк
+Auth0: аус зиро, аутс зиро, ауф ноль
+NextAuth: некст аус, некстаус, некст аут
+Better Auth: беттер аус
+Clerk
+Supabase Auth: супабейс аус
+Firebase Auth: файрбейс аус
+
+## data: Databases and data
+PostgreSQL: постгрескуэль, постгрес кью эл, постгре скуэль
+Postgres: постгрес, постгресе, постгре
+MySQL: май эс кью эл, майскл, май сиквел, майэскьюэль
+SQLite: эс кью лайт, скулайт, эскьюлайт, скьюлайт
+SQL: эс кью эл, скуэль, сиквел, !скл
+NoSQL: но эс кью эл, ноускуэль
+MongoDB: монго, монгодб, монго ди би, монгодиби
+Mongoose: монгус
+Supabase: супабейс, супабаза, супа бейс, супабейсе
+Firebase: файрбейс, фаербейс, файр бейс
+Firestore: файрстор, фаерстор
+Prisma: !призма, призмы, призмой
+Drizzle: дриззл, дризл
+Drizzle ORM: дриззл орм
+TypeORM: тайп орм, тайпорм
+Sequelize: сиквелайз
+ORM: о ар эм, орм
+ClickHouse: кликхаус, клик хаус
+Elasticsearch: эластиксерч, эластик серч, эластиксёрч
+OpenSearch: опенсерч
+DynamoDB: динамо ди би, динамодиби
+Cassandra
+CockroachDB: кокроач ди би
+Neon
+PlanetScale: планетскейл, планет скейл
+Turso: турсо
+Upstash: апсташ, ап стэш
+PocketBase: покетбейс, покет бейс
+Appwrite: апврайт, эпп райт
+Convex: конвекс
+Pinecone: пайнкоун, пайн коун
+Qdrant: кьюдрант, куадрант
+Weaviate: вивиэйт, вевиэйт
+pgvector: пи джи вектор
+Snowflake: сноуфлейк
+BigQuery: биг квери, бигквери
+dbt: ди би ти
+Airflow: эйрфлоу
+Apache Spark: апач спарк
+Metabase: метабейс
+Grafana: графана
+Prometheus: прометеус, прометеуса
+Kibana: кибана
+Datadog: датадог
+Sentry: сентри
+PostHog: постхог, пост хог
+Mixpanel: микспанель, микс панель
+Amplitude
+Google Analytics: гугл аналитикс
+Yandex Metrica: яндекс метрика
+ETL: и ти эл
+CRUD: крад, круд
+
+## devops: DevOps and cloud
+Docker: !!докер
+Docker Compose: докер композ, докер компоуз
+Docker Hub: докер хаб
+Kubernetes: кубернетес, кубернетис, кубер, куберы, кубернетесе
+kubectl: кубконтрол, куб си ти эл, кубектл
+Helm: хелм
+Terraform: терраформ, тераформ
+OpenTofu: опен тофу
+Ansible: ансибл, ансибле
+Pulumi: пулуми
+Nginx: нджинкс, энджинкс, нгинкс, нжинкс, энжинкс
+Caddy
+Traefik: трэфик
+Apache
+AWS: эй дабл ю эс, авс, амазон веб сервисес
+S3: эс три, эс3
+EC2: и си ту, и си два
+Lambda: авс лямбда, эй дабл ю эс лямбда
+CloudFront: клауд фронт, клаудфронт
+Route 53: роут фифти три
+ECS: и си эс
+EKS: и кей эс
+Google Cloud: гугл клауд
+GCP: джи си пи
+Cloud Run: клауд ран
+Azure: азур
+Cloudflare: клаудфлер, клауд флер, клаудфлэр, клаудфлейр
+Cloudflare Workers: клаудфлер воркерс, клаудфлер воркеры
+Cloudflare Pages: клаудфлер пейджес
+Vercel: версель, верцель, вёрсел, версел, верселе
+Netlify: нетлифай, нетлифае
+Railway: рейлвей, рейлуэй
+Render
+Fly.io: флай ай о, флай ио
+Heroku: героку, хероку
+DigitalOcean: диджитал оушен, диджиталоушен
+Hetzner: хетцнер, хецнер
+Coolify: кулифай
+GitHub: гитхаб, гитхабе, гитхабу
+GitHub Actions: гитхаб экшенс, гитхаб экшнс
+GitHub Pages: гитхаб пейджес
+GitLab: гитлаб
+GitLab CI: гитлаб си ай
+Bitbucket: битбакет
+Git: !гит
+git rebase: гит ребейз
+git stash: гит стеш
+pull request: пулл реквест, пул реквест, пулреквест
+merge request: мерж реквест, мёрж реквест
+CI/CD: си ай си ди, сиай сиди
+CI: си ай
+Jenkins: дженкинс
+CircleCI: серкл си ай
+Argo CD: арго си ди
+Linux: !!линукс, линуксе
+Ubuntu: убунту
+Debian: дебиан
+Alpine Linux: алпайн линукс
+Arch Linux: арч линукс
+SSH: эс эс эйч, ссш
+SSL: эс эс эл
+TLS: ти эл эс
+HTTPS: эйч ти ти пи эс
+HTTP: эйч ти ти пи
+HTTP/2: эйч ти ти пи два
+DNS: ди эн эс
+CDN: си ди эн
+VPN: ви пи эн, !!впн
+VPS: ви пи эс, впс
+IP: ай пи
+URL: ю ар эл, !!урл
+URI: ю ар ай
+TCP: ти си пи
+UDP: ю ди пи
+SLA: эс эл эй
+uptime: аптайм
+load balancer: лоад балансер
+Let's Encrypt: летс энкрипт
+Homebrew: хоумбрю, хомбрю, хоум брю
+Bash
+Zsh: зет шелл, зш, зи шелл
+tmux: тимукс, тмукс, ти макс
+Vim: вим
+Neovim: неовим, нео вим
+cURL: курл, си ю ар эл
+wget: вгет, дабл ю гет
+
+## mobile: Apple and mobile
+Swift Package Manager: свифт пакедж менеджер
+SwiftUI: свифт ю ай, свифтюай, свифт юай
+UIKit: ю ай кит, юайкит
+AppKit: апп кит, эппкит, эп кит
+SwiftData: свифт дата
+Core Data: кор дата
+Combine
+Xcode: икс код, экс код, икскод
+Xcode Cloud: икс код клауд
+TestFlight: тестфлайт, тест флайт
+App Store: эп стор, апп стор, !!апстор, эпп стор
+App Store Connect: апп стор коннект, эп стор коннект
+Apple Developer: эппл девелопер
+iOS: ай ос, !!айос
+iPadOS: айпад ос
+macOS: мак ос, макос, мак оу эс
+watchOS: вотч ос
+visionOS: вижн ос
+iPhone: !!айфон
+iPad: !!айпад
+MacBook: !!макбук
+MacBook Pro: макбук про
+Mac mini: мак мини
+AirPods: эйрподс, аирподс
+Apple Silicon: эппл силикон
+Liquid Glass: ликвид гласс, ликвид глас
+Human Interface Guidelines: хьюман интерфейс гайдлайнс
+Android: !андроид
+Android Studio: андроид студио
+Jetpack Compose: джетпак композ
+Gradle: грейдл, градл
+Flutter: !!флаттер
+Dart
+Expo
+Expo Go: экспо го
+Capacitor: капаситор
+Electron: электрон джс
+Tauri: таури
+Kotlin Multiplatform: котлин мультиплатформ
+
+## design: Design
+Figma: фигма, фигме, фигмой, фигму, фигмы
+FigJam: фигджем, фиг джем
+Framer: фреймер
+Sketch
+Adobe: адоби, адобе, эдоуби
+Photoshop: !!фотошоп, фотошопе
+Adobe Illustrator: адоби иллюстратор
+After Effects: афтер эффектс
+Premiere Pro: премьер про
+Lightroom: лайтрум
+InDesign: индизайн
+Blender
+Spline
+Dribbble: дриббл, дрибл
+Behance: беханс, бихэнс, бехансе
+Pinterest: пинтерест
+Canva
+Unsplash: анспэш, анспл эш, ансплэш
+Google Fonts: гугл фонтс
+SF Pro: эс эф про
+SF Symbols: эс эф симболс
+Material Design: материал дизайн
+UI: ю ай, юай
+UX: ю экс, юикс
+UI/UX: ю ай ю экс, юай юикс
+UI kit
+auto layout: авто лейаут, автолейаут
+glassmorphism: глассморфизм
+neumorphism: неоморфизм
+dark mode: дарк мод
+light mode: лайт мод
+CTA: си ти эй
+wireframe: вайрфрейм
+mockup
+Pixelmator: пиксельматор
+Rive
+Principle: принсипл
+ProtoPie: протопай
+
+## tools: Tools and services
+VS Code: вс код, ви эс код, вскод, вэ эс код
+Visual Studio: вижуал студио
+JetBrains: джетбрейнс
+WebStorm: вебшторм
+IntelliJ IDEA: интеллидж, интеллиджей
+PyCharm: пайчарм
+Android Studio
+Warp: ворп
+iTerm2: айтерм, ай терм
+Ghostty: гостти, гости терминал
+Raycast: рейкаст, рэйкаст
+Alfred
+Postman: постман
+Insomnia
+Bruno
+Notion: ноушен, ноушн, ноушене
+Obsidian
+Linear
+Jira: джира, джире, джиру
+Confluence: конфлюенс
+Trello: трелло
+Asana: асана
+ClickUp: кликап
+Miro
+Loom: лум
+Slack: слак, слэк, слаке
+Discord: !дискорд, дискорде
+Zoom
+Google Meet: гугл мит
+Microsoft Teams: майкрософт тимс
+Telegram Bot API: телеграм бот апи
+Gmail: джимейл, жмейл
+Google Docs: гугл докс
+Google Sheets: гугл шитс
+Google Drive: гугл драйв
+Dropbox: !!дропбокс
+1Password: ван пассворд
+Bitwarden: битварден
+Stack Overflow: стек оверфлоу, стэк оверфлоу
+Hacker News: хакер ньюс
+Product Hunt: продакт хант
+Reddit: реддит, редит
+YouTube: !!ютуб, !ютьюб
+LinkedIn: линкедин, линкедине
+WhatsApp: вотсап, !!ватсап, вацап, вотсапе
+TikTok: тикток, тиктоке
+Instagram: !!инстаграм
+Twitter: !!твиттер
+X
+Google: гугл, гугле
+Apple: !!эппл, эпл
+Microsoft: майкрософт
+Meta
+Amazon
+Nvidia: нвидиа, энвидиа, нвидия
+AMD: эй эм ди
+Intel: интел
+Tesla
+Shopify: шопифай
+WordPress: вордпресс, ворд пресс
+Webflow: вебфлоу, веб флоу
+Tilda
+Zapier: запир, зэпиер
+n8n: эн восемь эн, нэйтн
+Make.com: мейк ком
+Airtable: эйртейбл
+Calendly: календли
+Typeform: тайпформ
+Cal.com: кал ком
+
+## slang: Acronyms and slang
+API: апи, эй пи ай, эйпиай
+SDK: эс ди кей, эсдикей
+CLI: си эл ай, сиэлай
+IDE: ай ди и, айдиай
+PR: пи ар
+MR: эм ар
+MVP: эм ви пи, эмвипи
+POC: пи о си
+LGTM: эл джи ти эм
+WIP
+TODO: ту ду, тудушка
+FIXME: фикс ми
+ASAP: !!асап, эй эс эй пи
+FYI: эф вай ай
+ETA: и ти эй
+QA: кью эй, кьюэй
+DX: ди экс
+DevOps: девопс, дев опс
+SRE: эс ар и
+SEO: сео, эс и о
+SaaS: сас, саас
+PaaS: паас
+B2B: би ту би, би два би
+B2C: би ту си
+CRM: си ар эм, црм
+ERP: и ар пи
+KPI: кей пи ай, кпи
+OKR: о кей ар, окр
+CTO: си ти о
+CEO: си и о
+PM: пи эм
+HR: эйч ар
+OOP: о о пи, ооп
+DRY
+KISS
+SOLID
+TDD: ти ди ди
+BDD: би ди ди
+E2E: и ту и
+DDD: ди ди ди
+MVC: эм ви си
+MVVM: эм ви ви эм
+UUID: ю ю ай ди
+ID: ай ди, айди
+UTF-8: ю ти эф восемь
+ASCII: аски
+regex: регекс, реджекс
+JSONL: джейсон эл
+PDF: пи ди эф
+DOM
+BOM: бом
+P2P: пи ту пи
+LTS: эл ти эс
+RC: ар си
+SemVer: семвер
+monorepo: монорепо
+edge case: эдж кейс
+hotfix: хотфикс
+rollback: роллбэк, ролбек
+feature flag: фича флаг
+A/B test: а би тест, эй би тест

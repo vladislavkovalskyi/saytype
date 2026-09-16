@@ -22,8 +22,8 @@ public enum PromptBuilder {
 
     /// Terms developers dictate most often. The user's dictionary goes first.
     public static let builtInTerms = [
-        "useEffect", "useState", "React", "Next.js", "TypeScript", "Vercel", "Supabase",
-        "Docker Compose", "Postgres", "Redis", "Prisma", "Zod", "GitHub Actions",
-        "React Query", "SwiftUI", "Tailwind", "npm", "API", "README", "Claude Code",
+        "Claude Code", "ChatGPT", "Cursor", "useEffect", "useState", "React", "Next.js", "TypeScript",
+        "Vercel", "Supabase", "Docker", "Postgres", "Redis", "Prisma", "Tailwind", "GitHub",
+        "API", "SwiftUI", "Figma",
     ]
 }
