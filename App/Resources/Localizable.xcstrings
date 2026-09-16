@@ -202,58 +202,6 @@
         }
       }
     },
-    "%lld terms · passed to Whisper as hints" : {
-      "localizations" : {
-        "en" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld term · passed to Whisper as hints"
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld terms · passed to Whisper as hints"
-                }
-              }
-            }
-          }
-        },
-        "ru" : {
-          "variations" : {
-            "plural" : {
-              "few" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld термина · подсказываются Whisper при распознавании"
-                }
-              },
-              "many" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld терминов · подсказываются Whisper при распознавании"
-                }
-              },
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld термин · подсказываются Whisper при распознавании"
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld термина · подсказываются Whisper при распознавании"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "%lld words" : {
       "localizations" : {
         "en" : {
@@ -560,12 +508,32 @@
         }
       }
     },
+    "About" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "О приложении"
+          }
+        }
+      }
+    },
     "Accessibility" : {
       "localizations" : {
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Универсальный доступ"
+          }
+        }
+      }
+    },
+    "Acronyms and slang" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Аббревиатуры и сленг"
           }
         }
       }
@@ -622,12 +590,42 @@
         }
       }
     },
+    "AI and agents" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ИИ и агенты"
+          }
+        }
+      }
+    },
+    "AI, frontend, backend, design" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ИИ, фронтенд, бэкенд, дизайн"
+          }
+        }
+      }
+    },
     "All" : {
       "localizations" : {
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Все"
+          }
+        }
+      }
+    },
+    "All categories" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Все категории"
           }
         }
       }
@@ -683,6 +681,16 @@
         }
       }
     },
+    "Apple and mobile" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple и мобильная разработка"
+          }
+        }
+      }
+    },
     "Applies to" : {
       "localizations" : {
         "ru" : {
@@ -723,12 +731,32 @@
         }
       }
     },
+    "Audio and text never leave this Mac. The network is used only to download models and check for updates." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Звук и текст не покидают этот Mac. Сеть нужна только для загрузки моделей и проверки обновлений."
+          }
+        }
+      }
+    },
     "audio never leaves the Mac" : {
       "localizations" : {
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "голос не покидает Mac"
+          }
+        }
+      }
+    },
+    "Author" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Автор"
           }
         }
       }
@@ -770,6 +798,56 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Назад"
+          }
+        }
+      }
+    },
+    "Backend" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Бэкенд"
+          }
+        }
+      }
+    },
+    "Built with" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Компоненты"
+          }
+        }
+      }
+    },
+    "Built-in" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Встроенные"
+          }
+        }
+      }
+    },
+    "built-in" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "встроенный"
+          }
+        }
+      }
+    },
+    "Built-in dictionary" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Встроенный словарь"
           }
         }
       }
@@ -945,6 +1023,16 @@
         }
       }
     },
+    "Databases and data" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Базы данных и данные"
+          }
+        }
+      }
+    },
     "Delete" : {
       "localizations" : {
         "ru" : {
@@ -965,6 +1053,16 @@
         }
       }
     },
+    "Design" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Дизайн"
+          }
+        }
+      }
+    },
     "detected from speech" : {
       "comment" : "Speech language of the model",
       "localizations" : {
@@ -972,6 +1070,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "определяется по речи"
+          }
+        }
+      }
+    },
+    "DevOps and cloud" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DevOps и облака"
           }
         }
       }
@@ -1121,16 +1229,6 @@
         }
       }
     },
-    "Empty" : {
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Пусто"
-          }
-        }
-      }
-    },
     "EN" : {
       "shouldTranslate" : false
     },
@@ -1264,6 +1362,16 @@
         }
       }
     },
+    "font · OFL" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "шрифт · OFL"
+          }
+        }
+      }
+    },
     "for agent commands and search" : {
       "localizations" : {
         "ru" : {
@@ -1300,6 +1408,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "из истории"
+          }
+        }
+      }
+    },
+    "Frontend" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Фронтенд"
           }
         }
       }
@@ -1510,6 +1628,16 @@
         }
       }
     },
+    "How spoken terms are written" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Как записываются произнесённые термины"
+          }
+        }
+      }
+    },
     "in Header" : {
       "comment" : "Dimmed end of the sample live text in the overlay preview: fix useEffect in Header",
       "localizations" : {
@@ -1672,6 +1800,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Регистр"
+          }
+        }
+      }
+    },
+    "License" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Лицензия"
           }
         }
       }
@@ -2345,6 +2483,26 @@
         }
       }
     },
+    "Releases" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Релизы"
+          }
+        }
+      }
+    },
+    "Report an issue" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сообщить о проблеме"
+          }
+        }
+      }
+    },
     "Result" : {
       "localizations" : {
         "ru" : {
@@ -2568,6 +2726,16 @@
         }
       }
     },
+    "Source code" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Исходный код"
+          }
+        }
+      }
+    },
     "Speech language" : {
       "localizations" : {
         "ru" : {
@@ -2717,6 +2885,16 @@
         }
       }
     },
+    "Tools and services" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Инструменты и сервисы"
+          }
+        }
+      }
+    },
     "Try it" : {
       "localizations" : {
         "ru" : {
@@ -2758,6 +2936,16 @@
         }
       }
     },
+    "Updates are off in this build" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Обновления отключены в этой сборке"
+          }
+        }
+      }
+    },
     "Use" : {
       "localizations" : {
         "ru" : {
@@ -2778,12 +2966,32 @@
         }
       }
     },
+    "Version %@ (%@)" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Версия %@ (%@)"
+          }
+        }
+      }
+    },
     "Voice input for macOS. Transcribes speech on this Mac, without internet." : {
       "localizations" : {
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Голосовой ввод для macOS. Распознаёт речь на этом Mac, без интернета."
+          }
+        }
+      }
+    },
+    "Voice typing for macOS. Speech is recognized on this Mac." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Голосовой ввод для macOS. Речь распознаётся на этом Mac."
           }
         }
       }
@@ -2827,6 +3035,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "да"
+          }
+        }
+      }
+    },
+    "Your terms" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ваши термины"
           }
         }
       }

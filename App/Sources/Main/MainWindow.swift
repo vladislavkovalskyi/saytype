@@ -30,7 +30,7 @@ enum MainSection: String, CaseIterable, Identifiable {
         case .history: "ObjectStack"
         case .model: "ObjectChip"
         case .permissions: "ObjectLock"
-        case .about: "ObjectAppicon"
+        case .about: "ObjectCapsule"
         }
     }
 
