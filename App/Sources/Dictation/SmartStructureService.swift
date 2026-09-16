@@ -29,7 +29,8 @@ final class SmartStructureService {
     let downloadSize = 944
 
     init() {
-        state = store.isDownloaded ? .ready : .missing
+        // Previews show a set-up app; they never load the model.
+        state = store.isDownloaded || AppModel.isPreviewLaunch ? .ready : .missing
     }
 
     /// The switch in settings: on when enabled and the model is on disk or downloading.

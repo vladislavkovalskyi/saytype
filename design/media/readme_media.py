@@ -147,3 +147,24 @@ tile.alpha_composite(pill, ((1200 - pill.width) // 2, 520 - 136 - pill.height + 
 tile.convert("RGB").save(OUT / "pill.png", optimize=True)
 
 print("wrote", sorted(p.name for p in OUT.glob("*.png")))
+
+# ---------- social preview, 1280x640 ----------
+social = wallpaper(2560, 1280)
+panel = island("3-panel")
+panel = panel.crop(panel.getchannel("A").getbbox())
+scale = 1.45
+panel = panel.resize((round(panel.width * scale), round(panel.height * scale)), Image.LANCZOS)
+social.alpha_composite(panel, (2560 - panel.width - 150, 0))
+icon = Image.open(Path(__file__).resolve().parents[2] / "App/Resources/Assets.xcassets/AppIcon.appiconset/icon_512x512@2x.png").convert("RGBA").resize((300, 300), Image.LANCZOS)
+social.alpha_composite(icon, (150, 420))
+d = ImageDraw.Draw(social)
+onest = str(Path(__file__).resolve().parents[2] / "App/Resources/Fonts/Onest.ttf")
+title = ImageFont.truetype(onest, 170)
+title.set_variation_by_axes([700])
+d.text((150, 760), "saytype", font=title, fill="white")
+sub = ImageFont.truetype(onest, 58)
+sub.set_variation_by_axes([500])
+d.text((156, 990), "Hold fn, talk, get formatted text.", font=sub, fill=(255, 255, 255, 215))
+d.text((156, 1070), "Offline Whisper for macOS.", font=sub, fill=(255, 255, 255, 150))
+social.convert("RGB").resize((1280, 640), Image.LANCZOS).save(OUT / "social.png", optimize=True)
+print("social preview written")

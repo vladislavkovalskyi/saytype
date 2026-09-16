@@ -88,10 +88,12 @@ final class DictationController {
 
     func activate(listening: Bool = true) {
         if listening { startKeyMonitor() }
-        loadModelIfPresent()
         if AppModel.isPreviewLaunch {
+            // Previews draw a set-up app with sample data and never load a model.
             history = Self.sampleHistory()
+            modelState = .ready
         } else {
+            loadModelIfPresent()
             Task { history = await historyStore.all() }
         }
     }
