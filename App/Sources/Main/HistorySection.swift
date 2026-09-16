@@ -219,6 +219,10 @@ private struct RecordDetail: View {
     let record: DictationRecord
     @Binding var mode: Mode
     @State private var copied = false
+    /// Words of the final text picked for a spelling fix.
+    @State private var picked: ClosedRange<Int>?
+    /// "хедер → Header" for a moment after a fix was added.
+    @State private var added: String?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -239,7 +243,7 @@ private struct RecordDetail: View {
             ScrollView {
                 Group {
                     switch mode {
-                    case .result: DictatedText(text: record.text)
+                    case .result: DictatedText(text: record.text, selection: $picked)
                     case .raw: DictatedText(text: record.raw)
                     case .diff: DiffText(raw: record.raw, text: record.text)
                     }
@@ -250,39 +254,86 @@ private struct RecordDetail: View {
                 .draggable(record.text)
             }
             .frame(maxHeight: .infinity)
-
-            HStack(spacing: 8) {
-                Button(action: copy) {
-                    Label { Text(copied ? "Copied" : "Copy") } icon: { Icon(copied ? .check : .copy, size: 14, stroke: 2) }
+            .overlay(alignment: .bottom) {
+                if let added {
+                    Label {
+                        HStack(spacing: 0) {
+                            Text("Added to dictionary")
+                            Text(verbatim: " · \(added)")
+                        }
+                    } icon: { Icon(.check, size: 14, stroke: 2.2) }
                         .labelStyle(IconFirstLabelStyle())
+                        .font(.onest(13, .semibold))
+                        .foregroundStyle(Color.ink)
+                        .lineLimit(1)
+                        .padding(.horizontal, 14)
+                        .frame(height: 32)
+                        .background(Capsule().fill(.white).shadow(color: Color(hex: 0x140A1E, opacity: 0.18), radius: 7, y: 4))
+                        .padding(.bottom, 8)
+                        .transition(.opacity.combined(with: .move(edge: .bottom)))
                 }
-                .buttonStyle(WhiteButtonStyle())
-
-                Label { Text("Drag") } icon: { Icon(.grip, size: 14) }
-                    .labelStyle(IconFirstLabelStyle())
-                    .font(.onest(13, .medium))
-                    .padding(.horizontal, 13)
-                    .frame(height: 32)
-                    .background(ChipFill())
-                    .contentShape(Capsule())
-                    .draggable(record.text)
-
-                Button("Paste again", action: insertAgain)
-                    .buttonStyle(ChipButtonStyle())
-
-                Spacer()
-
-                Button {
-                    model.dictation.removeFromHistory(record.id)
-                } label: {
-                    Label { Text("Delete") } icon: { Icon(.trash, size: 14, stroke: 2) }
-                        .labelStyle(IconFirstLabelStyle())
-                }
-                .buttonStyle(ChipButtonStyle())
             }
-            .padding(.horizontal, 24)
-            .padding(.bottom, 20)
-            .padding(.top, 8)
+
+            if let picked {
+                FixWordBar(record: record, words: picked) {
+                    self.picked = nil
+                } done: { entry in
+                    self.picked = nil
+                    confirm(entry)
+                }
+                .id(picked)
+                .padding(.horizontal, 24)
+                .padding(.bottom, 20)
+                .padding(.top, 8)
+            } else {
+                actions
+            }
+        }
+        .onChange(of: mode) { picked = nil }
+    }
+
+    private var actions: some View {
+        HStack(spacing: 8) {
+            Button(action: copy) {
+                Label { Text(copied ? "Copied" : "Copy") } icon: { Icon(copied ? .check : .copy, size: 14, stroke: 2) }
+                    .labelStyle(IconFirstLabelStyle())
+            }
+            .buttonStyle(WhiteButtonStyle())
+
+            Label { Text("Drag") } icon: { Icon(.grip, size: 14) }
+                .labelStyle(IconFirstLabelStyle())
+                .font(.onest(13, .medium))
+                .padding(.horizontal, 13)
+                .frame(height: 32)
+                .background(ChipFill())
+                .contentShape(Capsule())
+                .draggable(record.text)
+
+            Button("Paste again", action: insertAgain)
+                .buttonStyle(ChipButtonStyle())
+
+            Spacer()
+
+            Button {
+                model.dictation.removeFromHistory(record.id)
+            } label: {
+                Label { Text("Delete") } icon: { Icon(.trash, size: 14, stroke: 2) }
+                    .labelStyle(IconFirstLabelStyle())
+            }
+            .buttonStyle(ChipButtonStyle())
+        }
+        .padding(.horizontal, 24)
+        .padding(.bottom, 20)
+        .padding(.top, 8)
+    }
+
+    private func confirm(_ entry: DictionaryEntry) {
+        let readout = entry.heard.isEmpty ? entry.written : "\(entry.heard) → \(entry.written)"
+        withAnimation(.snappy(duration: 0.2)) { added = readout }
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(2))
+            guard added == readout else { return }
+            withAnimation(.snappy(duration: 0.3)) { added = nil }
         }
     }
 
@@ -310,5 +361,74 @@ private struct RecordDetail: View {
             try? await Task.sleep(for: .milliseconds(350))
             dictation.insertAgain(record)
         }
+    }
+}
+
+/// Picked words → how to write them, added to the dictionary.
+private struct FixWordBar: View {
+    @Environment(AppModel.self) private var model
+    let record: DictationRecord
+    let words: ClosedRange<Int>
+    let cancel: () -> Void
+    let done: (DictionaryEntry) -> Void
+    /// What Whisper heard for the picked words; aligned once, not on every key press.
+    private let heard: String
+    @State private var spelling = ""
+    @FocusState private var isFocused: Bool
+
+    init(record: DictationRecord, words: ClosedRange<Int>, cancel: @escaping () -> Void, done: @escaping (DictionaryEntry) -> Void) {
+        self.record = record
+        self.words = words
+        self.cancel = cancel
+        self.done = done
+        heard = HistoryCorrection.heard(raw: record.raw, text: record.text, words: words)
+    }
+
+    var body: some View {
+        let entry = HistoryCorrection.entry(heard: heard, written: spelling)
+        HStack(spacing: 8) {
+            Text(verbatim: heard)
+                .font(.onest(14, .medium))
+                .lineLimit(1)
+                .truncationMode(.middle)
+            Icon(.arrowRight, size: 14, stroke: 2)
+                .opacity(0.8)
+            TextField(text: $spelling) { EmptyView() }
+                .textFieldStyle(.plain)
+                .font(.onest(14))
+                .foregroundStyle(.white)
+                .tint(.white)
+                .focused($isFocused)
+                .onSubmit { add(entry) }
+                .padding(.horizontal, 12)
+                .frame(height: 32)
+                .frame(minWidth: 160, maxWidth: .infinity)
+                .background(Capsule().fill(.white.opacity(0.14)).overlay(Capsule().strokeBorder(.white.opacity(isFocused ? 0.5 : 0.24), lineWidth: 1)))
+            Button("Add to dictionary") { add(entry) }
+                .buttonStyle(WhiteButtonStyle())
+                .disabled(entry == nil)
+                .opacity(entry == nil ? 0.6 : 1)
+            Button(action: cancel) {
+                Icon(.xmark, size: 14, stroke: 2)
+                    .frame(width: 32, height: 32)
+                    .background(ChipFill())
+                    .contentShape(Circle())
+            }
+            .buttonStyle(.plain)
+        }
+        .onAppear {
+            // Starts from the picked words as they were written, e.g. "Хедер" for "Header".
+            let picked = Words.split(record.text)
+            spelling = words.upperBound < picked.count
+                ? picked[words].map { $0.trimmingCharacters(in: .punctuationCharacters) }.joined(separator: " ")
+                : ""
+            isFocused = true
+        }
+    }
+
+    private func add(_ entry: DictionaryEntry?) {
+        guard let entry else { return }
+        model.settings.value.dictionary.addCorrection(entry)
+        done(entry)
     }
 }

@@ -33,6 +33,16 @@ struct KeysSection: View {
                         RowDivider()
                         ToggleRow("Double-press", detail: "hands-free recording", isOn: $settings.value.doubleTapHandsFree, accent: world.accent)
                         RowDivider()
+                        // Hands-free recording also starts from the overlay button, so this stays on with double-press off.
+                        SettingsRow("Stop after silence", detail: "hands-free recording") {
+                            WorldSegmented(selection: $settings.value.autoStopSilenceSeconds, options: [
+                                (0, "Off"),
+                                (3, "3 s"),
+                                (5, "5 s"),
+                                (10, "10 s"),
+                            ])
+                        }
+                        RowDivider()
                         SettingsRow("Cancel") { Keycap("esc") }
                         RowDivider()
                         ToggleRow("Start and end sounds", isOn: $settings.value.sounds, accent: world.accent)
@@ -60,12 +70,12 @@ struct KeysSection: View {
                         }
                     }
                     .padding(16)
-                    .frame(width: 532, height: 250, alignment: .top)
+                    .frame(width: 532, height: 284, alignment: .top)
                     .frost()
                 }
 
                 AfterRecordingPanel(world: world)
-                    .frame(width: 1068, height: 308, alignment: .topLeading)
+                    .frame(width: 1068, height: 274, alignment: .topLeading)
                     .frost()
                     .padding(.top, 16)
             }
@@ -230,8 +240,51 @@ private struct AfterRecordingPanel: View {
             }
             .opacity(settings.value.outputMode == .paste ? 1 : 0.5)
             .padding(.top, 14)
+
+            RowDivider()
+            HStack(spacing: 0) {
+                ShortcutItem(title: "Paste again", action: .pasteAgain)
+                Rectangle().fill(.white.opacity(0.14)).frame(width: 1, height: 32)
+                ShortcutItem(title: "Copy last dictation", action: .copyLast)
+                Rectangle().fill(.white.opacity(0.14)).frame(width: 1, height: 32)
+                ShortcutItem(title: "Switch mode", action: .cycleMode)
+            }
         }
         .padding(.top, 18)
+    }
+}
+
+// MARK: Shortcuts
+
+/// One global shortcut with its recorder.
+private struct ShortcutItem: View {
+    @Environment(AppModel.self) private var model
+    let title: LocalizedStringKey
+    let action: ShortcutAction
+    @State private var isRecording = false
+
+    var body: some View {
+        let settings = model.settings
+        let keyPath = action.keyPath
+        let others = ShortcutAction.allCases.filter { $0 != action }.compactMap { settings.value.shortcuts[keyPath: $0.keyPath] }
+        HStack(spacing: 12) {
+            RowTitle(title: title, detail: detail)
+            Spacer(minLength: 0)
+            ShortcutRecorder(
+                shortcut: Binding { settings.value.shortcuts[keyPath: keyPath] } set: { settings.value.shortcuts[keyPath: keyPath] = $0 },
+                others: others,
+                isRecording: $isRecording
+            )
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 8)
+        .frame(maxWidth: .infinity, minHeight: 56)
+    }
+
+    private var detail: Text? {
+        if isRecording { return Text("esc cancels, ⌫ turns off", comment: "Shown while the shortcut recorder listens") }
+        if model.takenShortcuts.contains(action) { return Text("Taken by another app") }
+        return nil
     }
 }
 

@@ -26,26 +26,44 @@ public enum DictationPipeline {
             return PipelineResult(text: TextFormatter.format(Transcript(text: source, words: transcript.words), settings: style))
         }
 
+        // A line collects the raw words up to the next break and is formatted as one text, so
+        // "удали последнее предложение" works on Whisper's sentences in every punctuation style.
         var output = ""
+        var line = ""
         var send = false
+        let capitalizeLines = style.punctuationStyle == .full && style.letterCase == .asSpoken
+        func flushLine() {
+            guard !line.isEmpty else { return }
+            let source = mode.developer ? DeveloperFormatter.apply(line) : line
+            var text = TextFormatter.format(Transcript(text: source), settings: style)
+            line = ""
+            guard !text.isEmpty else { return }
+            let afterBreak = output.last?.isNewline == true
+            if afterBreak, capitalizeLines { text = text.capitalizingFirstWord() }
+            if !output.isEmpty, !afterBreak { output += " " }
+            output += text
+        }
         for piece in pieces {
             switch piece {
             case .text(let raw):
-                let source = mode.developer ? DeveloperFormatter.apply(raw) : raw
-                let text = TextFormatter.format(Transcript(text: source), settings: style)
-                guard !text.isEmpty else { continue }
-                if let last = output.last, !last.isNewline { output += " " }
-                output += text
+                line = line.isEmpty ? raw : line + " " + raw
             case .command(.newLine):
+                flushLine()
                 output = output.trimmingTrailingSpaces() + "\n"
             case .command(.newParagraph):
-                output = output.trimmingTrailingSpaces() + "\n\n"
+                flushLine()
+                output = output.trimmingTrailingWhitespace() + "\n\n"
             case .command(.deleteLastSentence):
-                output = VoiceCommands.droppingLastSentence(output)
+                if line.contains(where: { !$0.isWhitespace }) {
+                    line = VoiceCommands.droppingLastSentence(line)
+                } else {
+                    output = VoiceCommands.droppingLastSentence(output)
+                }
             case .command(.send):
                 send = true
             }
         }
+        flushLine()
         return PipelineResult(text: output.trimmingCharacters(in: .whitespacesAndNewlines), send: send)
     }
 }
@@ -55,5 +73,20 @@ extension String {
         var s = Substring(self)
         while s.last == " " { s = s.dropLast() }
         return String(s)
+    }
+
+    fileprivate func trimmingTrailingWhitespace() -> String {
+        var s = Substring(self)
+        while s.last?.isWhitespace == true { s = s.dropLast() }
+        return String(s)
+    }
+
+    /// "как дела?" → "Как дела?" at the start of a line. Terms keep their case: useEffect, iPhone, src/app.tsx.
+    fileprivate func capitalizingFirstWord() -> String {
+        guard let index = firstIndex(where: \.isLetter), self[index].isLowercase,
+              self[..<index].allSatisfy({ "«\"'(„“".contains($0) }) else { return self }
+        let word = self[index...].prefix { !$0.isWhitespace }
+        guard !word.dropFirst().contains(where: \.isUppercase), !Words.isCodeLike(String(word)) else { return self }
+        return replacingCharacters(in: index...index, with: self[index].uppercased())
     }
 }
