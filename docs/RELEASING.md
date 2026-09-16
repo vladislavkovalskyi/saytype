@@ -206,6 +206,6 @@ this dialog. Users have two ways in:
   "voicemode" was blocked, confirm with Touch ID or the password, then **Open**.
 - Terminal: `xattr -dr com.apple.quarantine /Applications/voicemode.app`
 
-The Homebrew cask clears the quarantine flag in `postflight`. Remove that block once releases are
-notarized. Sparkle clears the flag on the updates it installs, so only the first install needs
-either step.
+The Homebrew cask clears the quarantine flag in `postflight_steps`. Remove that block once
+releases are notarized. Sparkle clears the flag on the updates it installs, so only the first
+install needs either step.
