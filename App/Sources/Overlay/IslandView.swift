@@ -491,10 +491,18 @@ private struct IslandCard: View {
                 .onDrag { NSItemProvider(object: text as NSString) }
             Spacer(minLength: 0)
             HStack(spacing: 6) {
-                Button("Copy") { dictation.copyCard() }
-                    .buttonStyle(CapsuleButtonStyle(prominent: true))
-                Button("Paste") { dictation.insertCard() }
-                    .buttonStyle(CapsuleButtonStyle())
+                Button {
+                    dictation.copyCard()
+                } label: {
+                    CardAction(title: "Copy", key: dictation.cardShortcutsActive ? "⌘C" : nil, ink: Color(hex: 0x1A1318))
+                }
+                .buttonStyle(CapsuleButtonStyle(prominent: true))
+                Button {
+                    dictation.insertCard()
+                } label: {
+                    CardAction(title: "Paste", key: dictation.cardShortcutsActive ? "V" : nil, ink: .white)
+                }
+                .buttonStyle(CapsuleButtonStyle())
                 Spacer()
             }
             .padding(.horizontal, 18)

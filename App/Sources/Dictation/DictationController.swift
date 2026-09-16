@@ -1,4 +1,5 @@
 import AppKit
+import Carbon.HIToolbox
 import Observation
 import VMAudio
 import VMCore
@@ -46,7 +47,11 @@ final class DictationController {
         case failed(String)
     }
 
-    private(set) var phase = Phase.idle
+    private(set) var phase = Phase.idle {
+        didSet { updateCardShortcuts() }
+    }
+    /// ⌘C, V and esc act on the card from any app until the user types something else.
+    private(set) var cardShortcutsActive = false
     private(set) var modelState = ModelState.missing
     private(set) var handsFree = false
     private(set) var levels = [Float](repeating: 0, count: 28)
@@ -336,6 +341,56 @@ final class DictationController {
         if case .card = phase { phase = .idle }
     }
 
+    // MARK: Card shortcuts
+
+    @ObservationIgnored private var cardKeys: KeyInterceptor?
+    @ObservationIgnored private var cardKeysStop: Task<Void, Never>?
+
+    private func updateCardShortcuts() {
+        if case .card = phase {
+            cardKeysStop?.cancel()
+            // Previews and snapshots must never swallow the user's keys.
+            if cardKeys == nil, !AppModel.isPreviewLaunch {
+                let keys = KeyInterceptor { [weak self] press in
+                    self?.handleCardKey(press) ?? false
+                }
+                // Swallowing keys needs Accessibility; without it the buttons still work.
+                if keys.start() { cardKeys = keys }
+            }
+            cardShortcutsActive = cardKeys != nil
+        } else if cardKeys != nil {
+            cardShortcutsActive = false
+            // Keep the tap a moment longer so the key-up of V or C is swallowed too.
+            cardKeysStop?.cancel()
+            cardKeysStop = Task { [weak self] in
+                try? await Task.sleep(for: .milliseconds(300))
+                guard let self, !Task.isCancelled else { return }
+                if case .card = self.phase { return }
+                self.cardKeys?.stop()
+                self.cardKeys = nil
+            }
+        }
+    }
+
+    private func handleCardKey(_ press: KeyInterceptor.Press) -> Bool {
+        guard case .card = phase, cardShortcutsActive else { return false }
+        switch Int(press.keyCode) {
+        case kVK_ANSI_C where press.command && !press.option && !press.control:
+            copyCard()
+            return true
+        case kVK_ANSI_V where !press.hasModifiers:
+            if !press.isRepeat { insertCard() }
+            return true
+        case kVK_Escape where !press.hasModifiers:
+            dismissCard()
+            return true
+        default:
+            // Typing in the focused app: leave the card up but stop taking its keys.
+            cardShortcutsActive = false
+            return false
+        }
+    }
+
     func copyCard() {
         if case .card(let text) = phase {
             Paster.copy(text)
@@ -346,9 +401,14 @@ final class DictationController {
     /// Pastes the card's text into the app that was focused when recording started.
     func insertCard() {
         guard case .card(let text) = phase else { return }
+        // Leave the card state first, so a second press can't paste twice.
+        hideTask?.cancel()
+        phase = .idle
         Task {
-            _ = await Paster.paste(text)
-            show(.inserted(target), for: 1.2)
+            switch await Paster.paste(text) {
+            case .pasted: show(.inserted(target), for: 1.2)
+            case .secureField: show(.notice(.passwordField), for: 2)
+            }
         }
     }
 
@@ -390,6 +450,10 @@ final class DictationController {
         committedText = committed
         pendingText = pending
         if startedAt == nil { startedAt = Date() }
+    }
+
+    func demoCardShortcuts() {
+        cardShortcutsActive = true
     }
 
     func demoModelReady() {

@@ -195,10 +195,18 @@ private struct PillBubble: View {
                         .contentShape(Rectangle())
                         .onDrag { NSItemProvider(object: text as NSString) }
                     HStack(spacing: 6) {
-                        Button("Copy") { dictation.copyCard() }
-                            .buttonStyle(CapsuleButtonStyle(prominent: true, light: light))
-                        Button("Paste") { dictation.insertCard() }
-                            .buttonStyle(CapsuleButtonStyle(light: light))
+                        Button {
+                            dictation.copyCard()
+                        } label: {
+                            CardAction(title: "Copy", key: dictation.cardShortcutsActive ? "⌘C" : nil, ink: light ? .white : Color(hex: 0x1A1318))
+                        }
+                        .buttonStyle(CapsuleButtonStyle(prominent: true, light: light))
+                        Button {
+                            dictation.insertCard()
+                        } label: {
+                            CardAction(title: "Paste", key: dictation.cardShortcutsActive ? "V" : nil, ink: light ? Color(hex: 0x1A1318) : .white)
+                        }
+                        .buttonStyle(CapsuleButtonStyle(light: light))
                         Spacer()
                         Button {
                             dictation.dismissCard()

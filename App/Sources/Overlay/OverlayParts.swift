@@ -294,3 +294,24 @@ extension DictationRecord {
         return [appName, ago].compactMap { $0 }.joined(separator: " · ")
     }
 }
+
+/// Card button label with the key that does the same from any app.
+struct CardAction: View {
+    let title: LocalizedStringKey
+    let key: String?
+    let ink: Color
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Text(title)
+            if let key {
+                Text(key)
+                    .font(.onest(10.5, .semibold))
+                    .foregroundStyle(ink.opacity(0.7))
+                    .padding(.horizontal, 5)
+                    .frame(minWidth: 18, minHeight: 17)
+                    .background(RoundedRectangle(cornerRadius: 4.5, style: .continuous).fill(ink.opacity(0.12)))
+            }
+        }
+    }
+}

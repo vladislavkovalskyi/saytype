@@ -115,6 +115,9 @@ Setup takes eight short steps. Whisper downloads once (632 MB), then Core ML pre
 | <kbd>esc</kbd> | cancel |
 | <kbd>⌃</kbd><kbd>⌥</kbd><kbd>V</kbd> | paste the last dictation again |
 | <kbd>⌃</kbd><kbd>⌥</kbd><kbd>C</kbd> | copy the last dictation |
+| <kbd>⌘</kbd><kbd>C</kbd> on the card | copy the text (output mode “Card”) |
+| <kbd>V</kbd> on the card | paste it into the field you're typing in |
+| <kbd>esc</kbd> on the card | close the card |
 
 ## Settings
 

@@ -37,6 +37,7 @@ enum OverlaySnapshots {
             settings.value.overlayStyle = style
             for (name, phase, hover, committed, pending) in states {
                 dictation.demoSet(phase: phase, committed: committed, pending: pending)
+                if case .card = phase { dictation.demoCardShortcuts() }
                 model.setHoverForSnapshot(hover)
                 let size = style == .island ? OverlayController.islandPanelSize : OverlayController.pillPanelSize
                 let transparent = ProcessInfo.processInfo.arguments.contains("--transparent")
