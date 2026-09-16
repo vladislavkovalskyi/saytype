@@ -70,7 +70,10 @@ final class DictationController {
     @ObservationIgnored private var engineVariant: String?
     @ObservationIgnored private var target: TargetApp?
     @ObservationIgnored private let store = ModelStore()
-    @ObservationIgnored private let historyStore = HistoryStore()
+    /// Preview launches get a throwaway history file, so they can never show or change the real one.
+    @ObservationIgnored private let historyStore = AppModel.isPreviewLaunch
+        ? HistoryStore(url: FileManager.default.temporaryDirectory.appending(path: "saytype-preview-history-\(UUID().uuidString).json"))
+        : HistoryStore()
     /// Optional local LLM that adds lists and paragraphs to long dictations.
     let smart = SmartStructureService()
 
@@ -86,7 +89,11 @@ final class DictationController {
     func activate(listening: Bool = true) {
         if listening { startKeyMonitor() }
         loadModelIfPresent()
-        Task { history = await historyStore.all() }
+        if AppModel.isPreviewLaunch {
+            history = Self.sampleHistory()
+        } else {
+            Task { history = await historyStore.all() }
+        }
     }
 
     var isModelDownloaded: Bool { store.isDownloaded(settings.value.whisperModel) }

@@ -8,7 +8,8 @@ import VMCore
 final class SettingsStore {
     private static let key = "settings.v1"
     private let defaults: UserDefaults
-    /// Demo and preview launches (`--demo-overlay`, `--show-onboarding`, …) never overwrite real settings.
+    /// Demo and preview launches (`--demo-overlay`, `--show-main`, …) neither read nor write the
+    /// user's settings: the dictionary and preferences stay private in screenshots.
     private let persists = !AppModel.isPreviewLaunch
 
     var value: AppSettings {
@@ -20,7 +21,7 @@ final class SettingsStore {
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
-        if let data = defaults.data(forKey: Self.key),
+        if persists, let data = defaults.data(forKey: Self.key),
            let stored = try? JSONDecoder().decode(AppSettings.self, from: data) {
             value = stored
         } else {
