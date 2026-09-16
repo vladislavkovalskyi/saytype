@@ -267,21 +267,34 @@ private struct DictionaryTile: View {
     let action: () -> Void
 
     var body: some View {
-        let entries = model.settings.value.dictionary
+        let settings = model.settings.value
+        let entries = settings.dictionary
+        let builtIn = settings.builtInDictionary ? BuiltInDictionary.terms : []
+        let count = entries.count + builtIn.count
         Tile(title: "Dictionary", art: TileArt(name: "ObjectAa", width: 180, right: -18, bottom: -30), action: action) {
-            if let first = entries.first {
-                TileValue(value: Text("\(entries.count) terms"), detail: example(first))
+            if count > 0 {
+                TileValue(value: Text("\(count) terms"), detail: example(entries: entries, builtIn: builtIn))
             } else {
                 TileValue(value: Text("No terms"), detail: Text(verbatim: ""))
             }
         }
     }
 
-    private func example(_ entry: DictionaryEntry) -> Text {
-        var written = AttributedString(entry.written)
-        written.font = .mono(13 * 0.88)
-        guard !entry.heard.isEmpty else { return Text(written) }
-        return Text(AttributedString("\(entry.heard) → ") + written)
+    /// The user's newest term, otherwise a built-in one: "клод код → Claude Code".
+    private func example(entries: [DictionaryEntry], builtIn: [BuiltInDictionary.Term]) -> Text {
+        if let first = entries.first {
+            return example(heard: first.heard, written: first.written)
+        }
+        let term = builtIn.first { $0.written == "Claude Code" && !$0.heard.isEmpty } ?? builtIn.first { !$0.heard.isEmpty }
+        guard let term else { return Text(verbatim: "") }
+        return example(heard: term.heard[0], written: term.written)
+    }
+
+    private func example(heard: String, written: String) -> Text {
+        var code = AttributedString(written)
+        code.font = .mono(13 * 0.88)
+        guard !heard.isEmpty else { return Text(code) }
+        return Text(AttributedString("\(heard) → ") + code)
     }
 }
 
