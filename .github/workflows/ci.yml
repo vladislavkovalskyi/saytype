@@ -28,7 +28,10 @@ jobs:
 
       - name: Package tests
         working-directory: Packages/VoicemodeKit
-        run: swift test --skip VMTranscriptionTests
+        run: |
+          swift test --skip VMTranscriptionTests
+          # SwiftPM drops the Sparkle pin that Xcode keeps in this file; restore it for the app build.
+          git checkout -- Package.resolved
 
       - name: Generate project
         run: xcodegen generate
