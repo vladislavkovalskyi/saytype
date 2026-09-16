@@ -12,6 +12,8 @@ final class AppModel {
     @ObservationIgnored private(set) lazy var windows = WindowManager(model: self)
     @ObservationIgnored private var overlay: OverlayController?
     private(set) var permissions: [Permission: PermissionState] = [:]
+    /// Section shown in the main window.
+    var mainSection = MainSection.home
 
     @ObservationIgnored private var permissionTimer: Timer?
     @ObservationIgnored private var monitoredKey: AppSettings.RecordKey?
@@ -29,6 +31,12 @@ final class AppModel {
         if let i = arguments.firstIndex(of: "--demo-overlay"), i + 1 < arguments.count,
            let style = AppSettings.OverlayStyle(rawValue: arguments[i + 1]) {
             dictation.runDemo(style: style, settings: settings)
+            return
+        }
+        if let i = arguments.firstIndex(of: "--show-main"), i + 1 < arguments.count,
+           let section = MainSection(rawValue: arguments[i + 1]) {
+            mainSection = section
+            windows.showMain()
             return
         }
         if !settings.value.onboardingCompleted {

@@ -43,26 +43,31 @@ enum MainSection: String, CaseIterable, Identifiable {
 }
 
 struct MainWindow: View {
-    @State private var section = MainSection.home
+    @Environment(AppModel.self) private var model
 
     var body: some View {
+        @Bindable var model = model
+        let section = model.mainSection
         ZStack(alignment: .topLeading) {
             WorldBackground(world: section.world)
                 .animation(.smooth(duration: 0.35), value: section)
 
             HStack(alignment: .top, spacing: 18) {
-                SectionRail(selection: $section)
-                SectionContent(section: section)
+                SectionRail(selection: $model.mainSection)
+                    .padding(.top, 2)
+                SectionContent(section: $model.mainSection)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             }
-            .padding(.top, 52)
-            .padding([.leading, .bottom, .trailing], 16)
+            .padding(.top, 56)
+            .padding(.leading, 14)
+            .padding([.bottom, .trailing], 16)
 
             Text(section.title)
                 .font(.onest(13, .semibold))
                 .foregroundStyle(.white.opacity(0.9))
                 .frame(maxWidth: .infinity)
                 .padding(.top, 14)
+                .allowsHitTesting(false)
         }
         .frame(width: 1180, height: 740)
         .foregroundStyle(.white)
@@ -105,17 +110,17 @@ private struct SectionRail: View {
 }
 
 private struct SectionContent: View {
-    let section: MainSection
+    @Binding var section: MainSection
 
     var body: some View {
         switch section {
-        case .home:
-            HomeSection()
-        default:
-            VStack(alignment: .leading, spacing: 6) {
-                Text(section.title).font(.onest(30, .bold))
-            }
-            .padding(.top, 10)
+        case .home: HomeSection(section: $section)
+        case .keys: KeysSection()
+        case .text: TextSection()
+        case .dictionary: DictionarySection()
+        case .history: HistorySection()
+        case .model: ModelSection()
+        case .permissions: PermissionsSection()
         }
     }
 }
