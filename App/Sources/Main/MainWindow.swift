@@ -1,7 +1,7 @@
 import SwiftUI
 
 enum MainSection: String, CaseIterable, Identifiable {
-    case home, keys, text, dictionary, history, model, permissions, about
+    case home, keys, text, modes, dictionary, history, model, permissions, about
 
     /// Sections pinned to the bottom of the rail.
     static let footer: [MainSection] = [.permissions, .about]
@@ -13,6 +13,7 @@ enum MainSection: String, CaseIterable, Identifiable {
         case .home: String(localized: "Home", comment: "Main window section")
         case .keys: String(localized: "Key and overlay", comment: "Main window section: record key and the recording overlay")
         case .text: String(localized: "Text", comment: "Main window section")
+        case .modes: String(localized: "Modes", comment: "Main window section: text rules per app")
         case .dictionary: String(localized: "Dictionary", comment: "Main window section")
         case .history: String(localized: "History", comment: "Main window section")
         case .model: String(localized: "Model", comment: "Main window section")
@@ -26,6 +27,7 @@ enum MainSection: String, CaseIterable, Identifiable {
         case .home: "ObjectAppicon"
         case .keys: "ObjectKeycap"
         case .text: "ObjectTextcard"
+        case .modes: "ObjectMic"
         case .dictionary: "ObjectAa"
         case .history: "ObjectStack"
         case .model: "ObjectChip"
@@ -39,6 +41,7 @@ enum MainSection: String, CaseIterable, Identifiable {
         case .home: .ember
         case .keys: .blue
         case .text: .teal
+        case .modes: .coral
         case .dictionary: .pink
         case .history: .violet
         case .model: .cyan
@@ -123,6 +126,7 @@ private struct SectionContent: View {
         case .home: HomeSection(section: $section)
         case .keys: KeysSection()
         case .text: TextSection()
+        case .modes: ModesSection()
         case .dictionary: DictionarySection()
         case .history: HistorySection()
         case .model: ModelSection()

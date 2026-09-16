@@ -42,7 +42,7 @@ public actor WhisperKitEngine: TranscriptionEngine {
 
         var options = DecodingOptions(
             verbose: false,
-            task: .transcribe,
+            task: hints.translate ? .translate : .transcribe,
             language: hints.language,
             temperature: 0,
             usePrefillPrompt: true,

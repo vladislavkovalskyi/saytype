@@ -105,11 +105,19 @@ final class AppModel {
     private func registerHotKeys() {
         let keys = GlobalHotKeys()
         let dictation = dictation
-        keys.register(.pasteAgain) {
-            if let last = dictation.lastRecord { dictation.insertAgain(last) }
+        let shortcuts = settings.value.shortcuts
+        if let shortcut = shortcuts.pasteAgain {
+            keys.register(GlobalHotKeys.Shortcut(shortcut)) {
+                if let last = dictation.lastRecord { dictation.insertAgain(last) }
+            }
         }
-        keys.register(.copyLast) {
-            if let last = dictation.lastRecord { Paster.copy(last.text) }
+        if let shortcut = shortcuts.copyLast {
+            keys.register(GlobalHotKeys.Shortcut(shortcut)) {
+                if let last = dictation.lastRecord { Paster.copy(last.text) }
+            }
+        }
+        if let shortcut = shortcuts.cycleMode {
+            keys.register(GlobalHotKeys.Shortcut(shortcut)) { dictation.cycleMode() }
         }
         hotKeys = keys
     }

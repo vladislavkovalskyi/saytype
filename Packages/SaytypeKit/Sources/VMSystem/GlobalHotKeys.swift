@@ -1,5 +1,6 @@
 import Carbon.HIToolbox
 import Foundation
+import VMCore
 
 /// System-wide shortcuts through Carbon hot keys. They need no permission and work in
 /// any app; the key code is the physical key, so ⌃⌥V is the same key on every layout.
@@ -19,8 +20,9 @@ public final class GlobalHotKeys {
             modifiers = UInt32(flags)
         }
 
-        public static let pasteAgain = Shortcut(keyCode: kVK_ANSI_V, control: true, option: true)
-        public static let copyLast = Shortcut(keyCode: kVK_ANSI_C, control: true, option: true)
+        public init(_ shortcut: KeyShortcut) {
+            self.init(keyCode: shortcut.keyCode, control: shortcut.control, option: shortcut.option, command: shortcut.command, shift: shortcut.shift)
+        }
     }
 
     private static let signature: OSType = 0x534B_4559 // "SKEY"

@@ -82,6 +82,22 @@ public struct AppSettings: Codable, Equatable, Sendable {
     /// Masks swear words as "б***".
     public var censorProfanity = false
     public var dropTrailingPeriodInShortPhrases = false
+    /// "новая строка", "удали последнее предложение", "отправь" act instead of being typed.
+    public var voiceCommands = true
+
+    /// Modes in the order they are listed and cycled.
+    public var modes = DictationMode.defaults
+    /// A mode picked by hand; `nil` picks the mode by the focused app.
+    public var fixedModeID: String?
+    public var languageModel = LanguageModel()
+    /// Folders of code projects whose identifiers are taught to Whisper.
+    public var projectFolders: [String] = []
+
+    public var shortcuts = Shortcuts()
+    /// Hands-free recording stops after this many seconds of silence; 0 never stops.
+    public var autoStopSilenceSeconds: Double = 0
+    /// For "time saved": how fast the user would type the same words.
+    public var typingWordsPerMinute = 40
 
     /// Core Audio UID of the chosen microphone; `nil` follows the system default.
     public var microphoneUID: String?
@@ -119,6 +135,15 @@ public struct AppSettings: Codable, Equatable, Sendable {
         wordFilters = try c.decodeIfPresent([String].self, forKey: .wordFilters) ?? defaults.wordFilters
         censorProfanity = try c.decodeIfPresent(Bool.self, forKey: .censorProfanity) ?? defaults.censorProfanity
         dropTrailingPeriodInShortPhrases = try c.decodeIfPresent(Bool.self, forKey: .dropTrailingPeriodInShortPhrases) ?? defaults.dropTrailingPeriodInShortPhrases
+        voiceCommands = try c.decodeIfPresent(Bool.self, forKey: .voiceCommands) ?? defaults.voiceCommands
+        modes = try c.decodeIfPresent([DictationMode].self, forKey: .modes) ?? defaults.modes
+        if !modes.contains(where: \.isStandard) { modes.insert(DictationMode(id: DictationMode.standardID), at: 0) }
+        fixedModeID = try c.decodeIfPresent(String.self, forKey: .fixedModeID)
+        languageModel = try c.decodeIfPresent(LanguageModel.self, forKey: .languageModel) ?? defaults.languageModel
+        projectFolders = try c.decodeIfPresent([String].self, forKey: .projectFolders) ?? defaults.projectFolders
+        shortcuts = try c.decodeIfPresent(Shortcuts.self, forKey: .shortcuts) ?? defaults.shortcuts
+        autoStopSilenceSeconds = try c.decodeIfPresent(Double.self, forKey: .autoStopSilenceSeconds) ?? defaults.autoStopSilenceSeconds
+        typingWordsPerMinute = try c.decodeIfPresent(Int.self, forKey: .typingWordsPerMinute) ?? defaults.typingWordsPerMinute
         microphoneUID = try c.decodeIfPresent(String.self, forKey: .microphoneUID)
         whisperModel = try c.decodeIfPresent(String.self, forKey: .whisperModel) ?? defaults.whisperModel
         systemEngineFallback = try c.decodeIfPresent(Bool.self, forKey: .systemEngineFallback) ?? defaults.systemEngineFallback

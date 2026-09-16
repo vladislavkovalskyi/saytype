@@ -102,6 +102,22 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         language.submenu = languages
         menu.addItem(language)
 
+        let mode = NSMenuItem(title: String(localized: "Mode"), action: nil, keyEquivalent: "")
+        let modes = NSMenu()
+        let current = settings.value.fixedModeID
+        modes.addItem(ClosureMenuItem(title: DictationMode.automaticTitle, isOn: current == nil) { settings.value.fixedModeID = nil })
+        modes.addItem(.separator())
+        for value in settings.value.modes {
+            modes.addItem(ClosureMenuItem(title: value.title, isOn: current == value.id) { settings.value.fixedModeID = value.id })
+        }
+        modes.addItem(.separator())
+        modes.addItem(ClosureMenuItem(title: String(localized: "Edit Modes…")) { [model] in
+            model.mainSection = .modes
+            model.windows.showMain()
+        })
+        mode.submenu = modes
+        menu.addItem(mode)
+
         let overlay = NSMenuItem(title: String(localized: "Overlay"), action: nil, keyEquivalent: "")
         let overlays = NSMenu()
         overlays.addItem(ClosureMenuItem(title: String(localized: "Island at the Notch"), isOn: settings.value.overlayStyle == .island) { settings.value.overlayStyle = .island })

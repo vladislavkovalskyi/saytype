@@ -108,6 +108,7 @@ extension DictationController.Notice {
         case .recognitionFailed: "Couldn't transcribe"
         case .nothingHeard: "Nothing heard"
         case .copied: "Copied"
+        case .mode(let title): "\(title)"
         }
     }
 
@@ -118,6 +119,7 @@ extension DictationController.Notice {
         case .microphoneUnavailable: "mic.slash.fill"
         case .recognitionFailed, .nothingHeard: "waveform.slash"
         case .copied: "doc.on.doc.fill"
+        case .mode: "square.stack.3d.up.fill"
         }
     }
 
@@ -131,6 +133,7 @@ extension DictationController.Notice {
         case .recognitionFailed: String(localized: "Couldn't transcribe")
         case .nothingHeard: String(localized: "Nothing heard")
         case .copied: String(localized: "Copied")
+        case .mode(let title): title
         }
     }
 }

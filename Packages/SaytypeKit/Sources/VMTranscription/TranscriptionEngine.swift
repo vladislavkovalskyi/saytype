@@ -16,10 +16,13 @@ public struct TranscriptionHints: Sendable, Equatable {
     /// Text the decoder sees as preceding context: a punctuated sample plus glossary terms.
     public var prompt: String?
     public var wordTimestamps: Bool
+    /// English text from speech in any language, Whisper's own translation.
+    public var translate: Bool
 
-    public init(language: String? = "ru", prompt: String? = nil, wordTimestamps: Bool = true) {
+    public init(language: String? = "ru", prompt: String? = nil, wordTimestamps: Bool = true, translate: Bool = false) {
         self.language = language
         self.prompt = prompt
         self.wordTimestamps = wordTimestamps
+        self.translate = translate
     }
 }

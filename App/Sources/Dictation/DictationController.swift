@@ -36,6 +36,15 @@ final class DictationController {
         case recognitionFailed
         case nothingHeard
         case copied
+        /// The mode shortcut picked a mode; the title of the mode or of automatic selection.
+        case mode(String)
+    }
+
+    /// What the final pass is doing, for the overlay.
+    enum FinishingStage: Equatable {
+        case transcribing
+        /// A language model rewrites or translates; esc inserts the text without it.
+        case rewriting
     }
 
     enum ModelState: Equatable {
@@ -58,6 +67,9 @@ final class DictationController {
     private(set) var committedText = ""
     private(set) var pendingText = ""
     private(set) var startedAt: Date?
+    private(set) var finishingStage = FinishingStage.transcribing
+    /// The mode of the current or last dictation.
+    private(set) var activeMode = DictationMode(id: DictationMode.standardID)
     private(set) var history: [DictationRecord] = []
     var stats: HistoryStats { HistoryStats(records: history) }
     private(set) var keyMonitorActive = false
@@ -74,6 +86,9 @@ final class DictationController {
     @ObservationIgnored private var engine: WhisperKitEngine?
     @ObservationIgnored private var engineVariant: String?
     @ObservationIgnored private var target: TargetApp?
+    @ObservationIgnored private var silence = SilenceDetector(limit: 0)
+    /// Resumes the final pass without the rewrite; set while the model runs.
+    @ObservationIgnored private var skipRewriteAction: (() -> Void)?
     @ObservationIgnored private let store = ModelStore()
     /// Preview launches get a throwaway history file, so they can never show or change the real one.
     @ObservationIgnored private let historyStore = AppModel.isPreviewLaunch
@@ -81,6 +96,8 @@ final class DictationController {
         : HistoryStore()
     /// Optional local LLM that adds lists and paragraphs to long dictations.
     let smart = SmartStructureService()
+    /// Optional local LLM for modes that rewrite or translate.
+    let rewriter = RewriteService()
 
     /// Live passes stop above this length; the final pass still covers everything.
     private let liveLimitSeconds = 30.0
@@ -186,6 +203,10 @@ final class DictationController {
     // MARK: Record key
 
     func handle(_ input: RecordKeyGesture.Input) {
+        if input == .escape, phase == .finishing, finishingStage == .rewriting {
+            skipRewrite()
+            return
+        }
         guard let command = gesture.handle(input) else { return }
         switch command {
         case .startRecording: startRecording(handsFree: false)
@@ -208,9 +229,12 @@ final class DictationController {
         if phase == .listening {
             // Double tap arrives while the first tap's recording is still running.
             self.handsFree = handsFree
+            if handsFree { silence = SilenceDetector(limit: settings.value.autoStopSilenceSeconds) }
             return
         }
         target = Self.frontmostTarget()
+        activeMode = settings.value.mode(for: target?.bundleID)
+        silence = SilenceDetector(limit: handsFree ? settings.value.autoStopSilenceSeconds : 0)
         samples = []
         live = LiveAgreement()
         committedText = ""
@@ -231,7 +255,9 @@ final class DictationController {
             return
         }
         phase = .listening
-        smart.warmUp(settings: settings.value)
+        finishingStage = .transcribing
+        smart.warmUp(settings: settings.value.applying(activeMode))
+        if activeMode.usesLanguageModel { rewriter.warmUp(settings.value) }
         if settings.value.sounds { Sounds.start() }
         runLiveLoop()
     }
@@ -240,6 +266,10 @@ final class DictationController {
         samples.append(contentsOf: chunk.samples)
         levels.removeFirst()
         levels.append(chunk.level)
+        let seconds = Double(chunk.samples.count) / AudioCapture.sampleRate
+        if handsFree, phase == .listening, silence.update(level: chunk.level, duration: seconds) {
+            finishRecording()
+        }
     }
 
     private func runLiveLoop() {
@@ -294,8 +324,16 @@ final class DictationController {
 
     private func finalize(_ recorded: [Float], duration: Double, engine: WhisperKitEngine) async {
         let value = settings.value
+        let mode = activeMode
         let terms = DictionaryRewriter.promptTerms(entries: value.dictionary)
-        let hints = TranscriptionHints(language: value.language.whisperCode, prompt: PromptBuilder.prompt(glossary: terms), wordTimestamps: true)
+        // Whisper translates only when no language model will: the model keeps terms intact.
+        let whisperTranslates = mode.translateToEnglish && !rewriter.isReady(value)
+        let hints = TranscriptionHints(
+            language: value.language.whisperCode,
+            prompt: PromptBuilder.prompt(glossary: terms),
+            wordTimestamps: true,
+            translate: whisperTranslates
+        )
         let transcript: Transcript
         do {
             transcript = try await engine.transcribe(recorded, hints: hints)
@@ -303,8 +341,19 @@ final class DictationController {
             show(.notice(.recognitionFailed), for: 2.5)
             return
         }
-        let formatted = TextPipeline(settings: value).format(transcript)
-        let text = await smart.apply(to: formatted, settings: value)
+        let style = value.applying(mode)
+        let formatted = DictationPipeline.format(transcript, settings: value, mode: mode)
+        var text = formatted.text
+        if mode.usesLanguageModel || (mode.translateToEnglish && !whisperTranslates), !text.isEmpty, rewriter.isReady(value) {
+            finishingStage = .rewriting
+            if let rewritten = await rewriteSkippably(text, mode: mode, settings: value), !rewritten.isEmpty {
+                text = rewritten
+            }
+            finishingStage = .transcribing
+        } else {
+            text = await smart.apply(to: text, settings: style)
+        }
+        if mode.backticks { text = Backticks.wrap(text) }
         guard !text.isEmpty else {
             show(.notice(.nothingHeard), for: 1.5)
             return
@@ -313,13 +362,34 @@ final class DictationController {
         history.insert(record, at: 0)
         let retention = value.historyRetentionDays
         Task { history = await historyStore.add(record, retentionDays: retention) }
-        await deliver(text, settings: value)
+        await deliver(text, settings: style, pressReturn: formatted.send || mode.pressReturn)
     }
 
-    private func deliver(_ text: String, settings value: AppSettings) async {
+    /// Esc while the model rewrites: insert the formatted text now.
+    func skipRewrite() {
+        skipRewriteAction?()
+    }
+
+    /// The rewrite, or `nil` as soon as the user skips it, even if the model keeps running.
+    private func rewriteSkippably(_ text: String, mode: DictationMode, settings value: AppSettings) async -> String? {
+        let rewriter = rewriter
+        let result = await withCheckedContinuation { (continuation: CheckedContinuation<String?, Never>) in
+            let race = FirstResult(continuation)
+            let work = Task { await rewriter.rewrite(text, mode: mode, settings: value) }
+            skipRewriteAction = {
+                work.cancel()
+                race.finish(nil)
+            }
+            Task { race.finish(await work.value) }
+        }
+        skipRewriteAction = nil
+        return result
+    }
+
+    private func deliver(_ text: String, settings value: AppSettings, pressReturn modeReturn: Bool) async {
         switch value.outputMode {
         case .paste:
-            let pressReturn = target?.bundleID.map(value.autoEnterApps.contains) ?? false
+            let pressReturn = modeReturn || (target?.bundleID.map(value.autoEnterApps.contains) ?? false)
             switch await Paster.paste(text, pressReturn: pressReturn) {
             case .pasted:
                 if value.sounds { Sounds.inserted() }
@@ -412,6 +482,23 @@ final class DictationController {
         }
     }
 
+    // MARK: Modes
+
+    /// The mode a dictation would use right now, for the panel and the menu.
+    func currentMode() -> DictationMode {
+        if phase == .listening || phase == .finishing { return activeMode }
+        return settings.value.mode(for: NSWorkspace.shared.frontmostApplication?.bundleIdentifier)
+    }
+
+    /// The mode shortcut: automatic, then each mode by hand.
+    func cycleMode() {
+        settings.value.cycleMode()
+        guard phase == .idle || isTransient else { return }
+        let value = settings.value
+        let title = value.fixedModeID.flatMap { id in value.modes.first { $0.id == id }?.title } ?? DictationMode.automaticTitle
+        show(.notice(.mode(title)), for: 1.4)
+    }
+
     // MARK: Overlay controls
 
     /// A click on the record button: hands-free recording, stopped by the stop button or the key.
@@ -488,5 +575,20 @@ enum Sounds {
         guard let sound = NSSound(named: NSSound.Name(name)) else { return }
         sound.volume = 0.25
         sound.play()
+    }
+}
+
+/// Resumes a continuation once, with whichever result arrives first.
+@MainActor
+private final class FirstResult<Value: Sendable> {
+    private var continuation: CheckedContinuation<Value, Never>?
+
+    init(_ continuation: CheckedContinuation<Value, Never>) {
+        self.continuation = continuation
+    }
+
+    func finish(_ value: Value) {
+        continuation?.resume(returning: value)
+        continuation = nil
     }
 }
