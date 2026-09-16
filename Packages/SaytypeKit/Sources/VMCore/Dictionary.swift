@@ -1,4 +1,5 @@
 import Foundation
+import Synchronization
 
 /// A user dictionary entry: how a term sounds in Russian speech and how to write it.
 public struct DictionaryEntry: Codable, Equatable, Hashable, Identifiable, Sendable {
@@ -42,10 +43,15 @@ public struct DictionaryRewriter: Sendable {
 
     private let builtIn: Bool
 
-    /// - Parameter builtIn: also apply `BuiltInDictionary` after the user's own entries.
-    public init(entries: [DictionaryEntry], builtIn: Bool = false, builtInTerms: [String] = PromptBuilder.builtInTerms) {
+    /// - Parameters:
+    ///   - builtIn: also apply `BuiltInDictionary` after the user's own entries.
+    ///   - projectTerms: identifiers from the user's code folders: "use user data" → useUserData.
+    public init(entries: [DictionaryEntry], builtIn: Bool = false, builtInTerms: [String] = PromptBuilder.builtInTerms, projectTerms: [String] = []) {
         self.builtIn = builtIn
-        canonicalizer = TermCanonicalizer(terms: entries.map(\.written) + builtInTerms + (builtIn ? BuiltInDictionary.canonicalTerms : []))
+        canonicalizer = TermCanonicalizer(
+            terms: entries.map(\.written) + builtInTerms + (builtIn ? BuiltInDictionary.canonicalTerms : []),
+            projectTerms: projectTerms
+        )
         heardRules = entries.compactMap { entry in
             let heard = entry.heard.trimmingCharacters(in: .whitespacesAndNewlines)
             guard !heard.isEmpty else { return nil }
@@ -67,14 +73,33 @@ public struct DictionaryRewriter: Sendable {
         return canonicalizer.apply(to: result)
     }
 
-    /// Terms for the Whisper prompt: user entries first, then built-ins, without duplicates.
-    public static func promptTerms(entries: [DictionaryEntry], builtInTerms: [String] = PromptBuilder.builtInTerms) -> [String] {
+    /// Terms for the Whisper prompt: user entries first, then project identifiers, then
+    /// built-ins, without duplicates. `PromptBuilder` keeps as many as fit.
+    public static func promptTerms(entries: [DictionaryEntry], builtInTerms: [String] = PromptBuilder.builtInTerms, projectTerms: [String] = []) -> [String] {
         var seen = Set<String>()
-        return (entries.map(\.written) + builtInTerms).filter { term in
+        return (entries.map(\.written) + projectTerms.prefix(PromptBuilder.projectTermLimit) + builtInTerms).filter { term in
             let key = TermCanonicalizer.squash(term)
             guard !key.isEmpty, !seen.contains(key) else { return false }
             seen.insert(key)
             return true
         }
+    }
+
+    private struct CacheKey: Equatable {
+        let entries: [DictionaryEntry]
+        let builtIn: Bool
+        let projectTerms: [String]
+    }
+
+    private static let cache = Mutex<(key: CacheKey, rewriter: DictionaryRewriter)?>(nil)
+
+    /// The rewriter for these settings, built once and reused while they stay the same.
+    /// Building one compiles a regular expression per entry and indexes about a thousand terms.
+    public static func cached(entries: [DictionaryEntry], builtIn: Bool, projectTerms: [String] = []) -> DictionaryRewriter {
+        let key = CacheKey(entries: entries, builtIn: builtIn, projectTerms: projectTerms)
+        if let hit = cache.withLock({ $0?.key == key ? $0?.rewriter : nil }) { return hit }
+        let rewriter = DictionaryRewriter(entries: entries, builtIn: builtIn, projectTerms: projectTerms)
+        cache.withLock { $0 = (key, rewriter) }
+        return rewriter
     }
 }

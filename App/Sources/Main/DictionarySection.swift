@@ -37,11 +37,17 @@ struct DictionarySection: View {
                 .frame(height: 38)
                 .padding(.top, 16)
 
-                table(entries: settings.value.dictionary, builtInOn: settings.value.builtInDictionary)
-                    .frame(width: 1068, height: 458, alignment: .top)
-                    .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-                    .frost()
-                    .padding(.top, 16)
+                HStack(alignment: .top, spacing: 16) {
+                    table(entries: settings.value.dictionary, builtInOn: settings.value.builtInDictionary)
+                        .frame(width: 712, height: 458, alignment: .top)
+                        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                        .frost()
+                    ProjectsPanel(service: model.dictation.projects)
+                        .frame(width: 340, height: 458, alignment: .top)
+                        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                        .frost()
+                }
+                .padding(.top, 16)
             }
         }
         .onDisappear {
@@ -316,6 +322,169 @@ private struct BuiltInTermRow: View {
     }
 }
 
+// MARK: Projects
+
+/// Code folders whose identifiers teach Whisper and the formatter: `useUserData`, `OrderService`.
+private struct ProjectsPanel: View {
+    let service: ProjectTermsService
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 8) {
+                PanelLabel("Projects")
+                if !service.projects.isEmpty {
+                    Text(verbatim: Format.grouped(service.projects.count))
+                        .font(.onest(12.5, .semibold))
+                        .foregroundStyle(.white.opacity(0.45))
+                }
+                Spacer(minLength: 0)
+                Button {
+                    service.chooseFolders()
+                } label: {
+                    Label { Text("Add folder") } icon: { Icon(.plus, size: 13, stroke: 2.4) }
+                        .labelStyle(IconFirstLabelStyle())
+                }
+                .buttonStyle(ChipButtonStyle(height: 28))
+            }
+            .padding(.leading, 22)
+            .padding(.trailing, 12)
+            .frame(height: 40)
+            RowDivider(opacity: 0.13)
+
+            if service.projects.isEmpty {
+                Text("No folders")
+                    .font(.onest(14.5))
+                    .foregroundStyle(.white.opacity(0.6))
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                ScrollView {
+                    LazyVStack(spacing: 0) {
+                        ForEach(service.projects) { project in
+                            ProjectRow(project: project) {
+                                service.rescan(project.path)
+                            } remove: {
+                                service.remove(project.path)
+                            }
+                        }
+                    }
+                }
+                .scrollIndicators(.automatic)
+                .frame(maxHeight: .infinity, alignment: .top)
+
+                if !service.terms.isEmpty {
+                    RowDivider(opacity: 0.13)
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack(spacing: 8) {
+                            PanelLabel("Terms")
+                            Text(verbatim: Format.grouped(service.terms.count))
+                                .font(.onest(12.5, .semibold))
+                                .foregroundStyle(.white.opacity(0.45))
+                        }
+                        FlowLayout(spacing: 6, lineSpacing: 6) {
+                            ForEach(Self.chips(service.terms), id: \.self) { term in
+                                CodeSpan(text: term, size: 12, opacity: 0.16)
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 22)
+                    .padding(.vertical, 14)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            }
+        }
+    }
+}
+
+extension ProjectsPanel {
+    /// The best terms that fill three lines of chips. JetBrains Mono at 12 pt is 7.2 pt a letter.
+    static func chips(_ terms: [String], width: CGFloat = 296, lines: Int = 3) -> [String] {
+        var result: [String] = []
+        var line = 1
+        var x: CGFloat = 0
+        for term in terms.prefix(40) {
+            let chip = CGFloat(term.count) * 7.2 + 12
+            guard chip <= width else { continue }
+            if x > 0, x + 6 + chip > width {
+                line += 1
+                x = 0
+                if line > lines { break }
+            }
+            x += (x > 0 ? 6 : 0) + chip
+            result.append(term)
+        }
+        return result
+    }
+}
+
+/// A folder: name, path, term count, rescan and remove.
+private struct ProjectRow: View {
+    let project: ProjectTermsService.Project
+    let rescan: () -> Void
+    let remove: () -> Void
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 6) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(verbatim: project.name)
+                        .font(.onest(14.5, .medium))
+                        .lineLimit(1)
+                    Text(verbatim: project.displayPath)
+                        .font(.onest(12))
+                        .foregroundStyle(.white.opacity(0.6))
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                }
+                .help(project.path)
+                Spacer(minLength: 8)
+                readout
+                Button(action: rescan) {
+                    Image(systemName: "arrow.clockwise")
+                        .font(.system(size: 13, weight: .semibold))
+                        .frame(width: 28, height: 28)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .opacity(project.isScanning ? 0.25 : 0.6)
+                .disabled(project.isScanning)
+                .help("Rescan")
+                Button(action: remove) {
+                    Icon(.xmark, size: 16)
+                        .frame(width: 28, height: 28)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .opacity(0.5)
+                .help("Remove")
+            }
+            .padding(.leading, 22)
+            .padding(.trailing, 8)
+            .frame(height: 60)
+            RowDivider(opacity: 0.13)
+        }
+    }
+
+    @ViewBuilder private var readout: some View {
+        Group {
+            if project.isScanning {
+                HStack(spacing: 6) {
+                    ProgressView().controlSize(.mini).tint(.white)
+                    Text("Scanning")
+                }
+            } else if project.isMissing {
+                Text("Not found")
+            } else {
+                Text("\(project.termCount) terms")
+                    .help(project.scannedAt.map { Format.moment($0) } ?? "")
+            }
+        }
+        .font(.onest(12.5, .semibold))
+        .foregroundStyle(.white.opacity(0.7))
+        .lineLimit(1)
+        .fixedSize()
+    }
+}
+
 // MARK: Parts
 
 /// "Your terms 12" above a group of rows.
@@ -369,7 +538,7 @@ private struct SourceLabel: View {
     }
 }
 
-/// Column grid of the dictionary table: 1fr · 40 · 1fr · 150 · 60.
+/// Column grid of the dictionary table: 1fr · 40 · 1fr · 120 · 50.
 private struct DictionaryRowLayout<Heard: View, Arrow: View, Written: View, Source: View, Delete: View>: View {
     @ViewBuilder let heard: Heard
     @ViewBuilder let arrow: Arrow
@@ -387,9 +556,9 @@ private struct DictionaryRowLayout<Heard: View, Arrow: View, Written: View, Sour
             written
                 .frame(maxWidth: .infinity, alignment: .leading)
             source
-                .frame(width: 150, alignment: .leading)
+                .frame(width: 120, alignment: .leading)
             delete
-                .frame(width: 60, alignment: .leading)
+                .frame(width: 50, alignment: .leading)
         }
         .font(.onest(14.5))
     }
@@ -429,7 +598,7 @@ private struct EditableCell: View {
                 .focused(focus, equals: field)
                 .onSubmit { commit(text) }
         }
-        .frame(width: min(textWidth + 4, 380), alignment: .leading)
+        .frame(width: min(textWidth + 4, 210), alignment: .leading)
         .padding(.horizontal, isCode ? 7 : 0)
         .padding(.vertical, isCode ? 2 : 0)
         .background {

@@ -98,18 +98,22 @@ final class DictationController {
     let smart = SmartStructureService()
     /// Optional local LLM for modes that rewrite or translate.
     let rewriter = RewriteService()
+    /// Identifiers from the user's code folders.
+    let projects: ProjectTermsService
 
     /// Live passes stop above this length; the final pass still covers everything.
     private let liveLimitSeconds = 30.0
 
     init(settings: SettingsStore) {
         self.settings = settings
+        projects = ProjectTermsService(settings: settings)
     }
 
     // MARK: Lifecycle
 
     func activate(listening: Bool = true) {
         if listening { startKeyMonitor() }
+        projects.activate()
         if AppModel.isPreviewLaunch {
             // Previews draw a set-up app with sample data and never load a model.
             history = Self.sampleHistory()
@@ -325,7 +329,8 @@ final class DictationController {
     private func finalize(_ recorded: [Float], duration: Double, engine: WhisperKitEngine) async {
         let value = settings.value
         let mode = activeMode
-        let terms = DictionaryRewriter.promptTerms(entries: value.dictionary)
+        let projectTerms = projects.terms
+        let terms = DictionaryRewriter.promptTerms(entries: value.dictionary, projectTerms: projectTerms)
         // Whisper translates only when no language model will: the model keeps terms intact.
         let whisperTranslates = mode.translateToEnglish && !rewriter.isReady(value)
         let hints = TranscriptionHints(
@@ -342,7 +347,7 @@ final class DictationController {
             return
         }
         let style = value.applying(mode)
-        let formatted = DictationPipeline.format(transcript, settings: value, mode: mode)
+        let formatted = DictationPipeline.format(transcript, settings: value, mode: mode, projectTerms: projectTerms)
         var text = formatted.text
         if mode.usesLanguageModel || (mode.translateToEnglish && !whisperTranslates), !text.isEmpty, rewriter.isReady(value) {
             finishingStage = .rewriting
@@ -353,7 +358,7 @@ final class DictationController {
         } else {
             text = await smart.apply(to: text, settings: style)
         }
-        if mode.backticks { text = Backticks.wrap(text) }
+        if mode.backticks { text = Backticks.wrap(text, terms: projectTerms + value.dictionary.map(\.written)) }
         guard !text.isEmpty else {
             if formatted.send, style.outputMode == .paste {
                 // Only "отправь": send what is already typed in the field.

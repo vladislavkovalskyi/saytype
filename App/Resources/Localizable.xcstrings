@@ -619,6 +619,16 @@
         }
       }
     },
+    "Add folder" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добавить папку"
+          }
+        }
+      }
+    },
     "Add to dictionary" : {
       "localizations" : {
         "ru" : {
@@ -2467,6 +2477,16 @@
         }
       }
     },
+    "No folders" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет папок"
+          }
+        }
+      }
+    },
     "no marks, one paragraph" : {
       "localizations" : {
         "ru" : {
@@ -2554,6 +2574,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Не скачана"
+          }
+        }
+      }
+    },
+    "Not found" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не найдена"
           }
         }
       }
@@ -2892,6 +2922,16 @@
         }
       }
     },
+    "Projects" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проекты"
+          }
+        }
+      }
+    },
     "Punctuation" : {
       "localizations" : {
         "ru" : {
@@ -2993,12 +3033,32 @@
         }
       }
     },
+    "Remove" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Убрать"
+          }
+        }
+      }
+    },
     "Report an issue" : {
       "localizations" : {
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Сообщить о проблеме"
+          }
+        }
+      }
+    },
+    "Rescan" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пересканировать"
           }
         }
       }
@@ -3150,6 +3210,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "saytype в строке меню. Зажми %@ в любом приложении."
+          }
+        }
+      }
+    },
+    "Scanning" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сканирование"
           }
         }
       }
@@ -3429,6 +3499,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Занято другим приложением"
+          }
+        }
+      }
+    },
+    "Terms" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Термины"
           }
         }
       }

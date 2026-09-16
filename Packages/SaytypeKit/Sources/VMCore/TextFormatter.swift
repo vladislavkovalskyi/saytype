@@ -6,15 +6,18 @@ public enum TextFormatter {
     /// A pause at least this long after a finished sentence starts a new paragraph.
     public static let paragraphPause: Double = 1.5
 
-    public static func format(_ transcript: Transcript, settings: AppSettings) -> String {
+    /// - Parameter projectTerms: identifiers from the user's code folders, best first.
+    public static func format(_ transcript: Transcript, settings: AppSettings, projectTerms: [String] = []) -> String {
         let style = settings.punctuationStyle
         let paragraphs = style == .none
             ? [transcript.text]
             : Paragraphs.split(transcript, pause: paragraphPause)
-        let rewriter = settings.latinTerms ? DictionaryRewriter(entries: settings.dictionary, builtIn: settings.builtInDictionary) : nil
+        let rewriter = settings.latinTerms
+            ? DictionaryRewriter.cached(entries: settings.dictionary, builtIn: settings.builtInDictionary, projectTerms: projectTerms)
+            : nil
 
         let keptTerms = settings.letterCase == .lowercase
-            ? settings.dictionary.map(\.written) + (settings.builtInDictionary ? BuiltInDictionary.terms.map(\.written) : [])
+            ? settings.dictionary.map(\.written) + (settings.builtInDictionary ? BuiltInDictionary.terms.map(\.written) : []) + projectTerms
             : []
 
         var result: [String] = []
