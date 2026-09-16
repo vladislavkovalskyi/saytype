@@ -44,6 +44,7 @@ for png in sorted(src.glob("*.png")):
     folder = catalog / f"{asset}.imageset"
     folder.mkdir(exist_ok=True)
     im.save(folder / f"{asset}.png", optimize=True)
-    contents = {"images": [{"filename": f"{asset}.png", "idiom": "universal"}], "info": {"author": "xcode", "version": 1}}
+    # Lossy keeps the release DMG small; the glass renders show no visible difference.
+    contents = {"images": [{"filename": f"{asset}.png", "idiom": "universal"}], "info": {"author": "xcode", "version": 1}, "properties": {"compression-type": "lossy"}}
     (folder / "Contents.json").write_text(json.dumps(contents, indent=2))
     print(f"{asset}: {im.size[0]}x{im.size[1]}")
