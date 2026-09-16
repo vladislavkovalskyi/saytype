@@ -8,10 +8,12 @@ import VMCore
 final class SettingsStore {
     private static let key = "settings.v1"
     private let defaults: UserDefaults
+    /// Demo and preview launches (`--demo-overlay`, `--show-onboarding`, …) never overwrite real settings.
+    private let persists = !ProcessInfo.processInfo.arguments.contains { $0.hasPrefix("--demo") || $0.hasPrefix("--show") }
 
     var value: AppSettings {
         didSet {
-            guard value != oldValue, let data = try? JSONEncoder().encode(value) else { return }
+            guard persists, value != oldValue, let data = try? JSONEncoder().encode(value) else { return }
             defaults.set(data, forKey: Self.key)
         }
     }

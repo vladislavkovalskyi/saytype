@@ -3,6 +3,7 @@ import VMCore
 
 extension AttributedString {
     /// Dictated text with identifiers like `useEffect` set in the code font on a soft chip.
+    /// Prose keeps the font of the surrounding view; `size` is that font's size.
     static func dictated(_ text: String, size: CGFloat, chip: Color = .white.opacity(0.22)) -> AttributedString {
         var result = AttributedString()
         var token = ""
@@ -13,8 +14,6 @@ extension AttributedString {
             if Words.isCodeLike(token) {
                 run.font = .mono(size - 1, .medium)
                 run.backgroundColor = chip
-            } else {
-                run.font = .onest(size)
             }
             result += run
             token = ""
@@ -23,9 +22,7 @@ extension AttributedString {
         for character in text {
             if character.isWhitespace {
                 flush()
-                var space = AttributedString(String(character))
-                space.font = .onest(size)
-                result += space
+                result += AttributedString(String(character))
             } else {
                 token.append(character)
             }

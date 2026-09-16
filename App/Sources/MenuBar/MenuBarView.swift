@@ -123,6 +123,7 @@ private struct LastDictationCard: View {
             .opacity(0.85)
 
             Text(AttributedString.dictated(showRaw ? record.raw : record.text, size: 14.5))
+                .font(.onest(14.5))
                 .lineSpacing(3)
                 .lineLimit(6)
                 .frame(maxWidth: .infinity, alignment: .leading)

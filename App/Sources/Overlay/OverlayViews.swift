@@ -4,6 +4,7 @@ import VMCore
 struct OverlayRoot: View {
     let dictation: DictationController
     let settings: SettingsStore
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         Group {
@@ -31,8 +32,8 @@ struct OverlayRoot: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .animation(.bouncy(duration: 0.4), value: dictation.phase)
-        .animation(.snappy(duration: 0.25), value: dictation.committedText + dictation.pendingText)
+        .animation(reduceMotion ? .easeInOut(duration: 0.2) : .bouncy(duration: 0.4), value: dictation.phase)
+        .animation(reduceMotion ? nil : .snappy(duration: 0.25), value: dictation.committedText + dictation.pendingText)
     }
 }
 
@@ -92,7 +93,7 @@ private struct PillContent {
             return nil
         case .listening:
             leading = AnyView(RecDot())
-            text = LiveText.make(committed: dictation.committedText, pending: dictation.pendingText, handsFree: dictation.handsFree)
+            text = LiveText.make(committed: dictation.committedText, pending: dictation.pendingText, handsFree: dictation.handsFree, size: 14.5)
         case .finishing:
             leading = AnyView(SpinnerRing(color: Color(hex: 0xFF9A5C)).frame(width: 15, height: 15))
             text = Text(dictation.committedText.isEmpty ? "оформление" : dictation.committedText + " " + dictation.pendingText)
@@ -107,13 +108,14 @@ private struct PillContent {
 }
 
 enum LiveText {
-    static func make(committed: String, pending: String, handsFree: Bool) -> Text {
+    /// Committed words bright, pending words dimmed, identifiers in the code font.
+    static func make(committed: String, pending: String, handsFree: Bool, size: CGFloat) -> Text {
         if committed.isEmpty && pending.isEmpty {
             return Text(handsFree ? "без рук" : "").foregroundStyle(.secondary)
         }
-        var result = Text(committed)
+        var result = Text(AttributedString.dictated(committed, size: size, chip: .clear))
         if !pending.isEmpty {
-            result = result + Text(committed.isEmpty ? pending : " " + pending).foregroundStyle(.secondary)
+            result = result + Text(AttributedString.dictated(committed.isEmpty ? pending : " " + pending, size: size, chip: .clear)).foregroundStyle(.secondary)
         }
         return result
     }
@@ -121,6 +123,7 @@ enum LiveText {
 
 struct RecDot: View {
     @State private var pulse = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         Circle()
@@ -129,6 +132,7 @@ struct RecDot: View {
             .shadow(color: Color(hex: 0xFF7A45).opacity(0.9), radius: 6)
             .background(Circle().fill(Color(hex: 0xFF7A45).opacity(0.22)).frame(width: 17, height: 17).scaleEffect(pulse ? 1.15 : 0.9))
             .onAppear {
+                guard !reduceMotion else { return }
                 withAnimation(.easeInOut(duration: 0.9).repeatForever()) { pulse = true }
             }
     }
@@ -170,6 +174,7 @@ struct Waveform: View {
 
 struct IslandView: View {
     let dictation: DictationController
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     private var notch: NotchMetrics { .shared }
 
     private var expanded: Bool {
@@ -224,7 +229,7 @@ struct IslandView: View {
         .frame(width: width, height: height)
         .opacity(visible ? 1 : 0)
         .scaleEffect(visible ? 1 : 0.9, anchor: .top)
-        .animation(.bouncy(duration: 0.45), value: expanded)
+        .animation(reduceMotion ? .easeInOut(duration: 0.2) : .bouncy(duration: 0.45), value: expanded)
     }
 
     @ViewBuilder private var leadingIndicator: some View {
@@ -260,7 +265,7 @@ struct IslandView: View {
     private var islandText: Text {
         switch dictation.phase {
         case .listening:
-            LiveText.make(committed: dictation.committedText, pending: dictation.pendingText, handsFree: dictation.handsFree)
+            LiveText.make(committed: dictation.committedText, pending: dictation.pendingText, handsFree: dictation.handsFree, size: 15)
         case .finishing:
             Text(dictation.committedText + " " + dictation.pendingText).foregroundStyle(.white.opacity(0.75))
         case .notice(let message):
