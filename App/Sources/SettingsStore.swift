@@ -9,7 +9,7 @@ final class SettingsStore {
     private static let key = "settings.v1"
     private let defaults: UserDefaults
     /// Demo and preview launches (`--demo-overlay`, `--show-onboarding`, …) never overwrite real settings.
-    private let persists = !ProcessInfo.processInfo.arguments.contains { $0.hasPrefix("--demo") || $0.hasPrefix("--show") }
+    private let persists = !AppModel.isPreviewLaunch
 
     var value: AppSettings {
         didSet {

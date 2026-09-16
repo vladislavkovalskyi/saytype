@@ -22,7 +22,7 @@ final class AppModel {
     func start() {
         refreshPermissions()
         overlay = OverlayController(dictation: dictation, settings: settings)
-        dictation.activate()
+        dictation.activate(listening: !Self.isPreviewLaunch)
         monitoredKey = settings.value.recordKey
         // macOS has no callback for Accessibility and Input Monitoring changes.
         permissionTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
@@ -54,7 +54,12 @@ final class AppModel {
         }
     }
 
+    /// `--demo-*` and `--show-*` launches only draw the UI. They never take the record key,
+    /// so a preview next to the real app cannot record or paste a second time.
+    static let isPreviewLaunch = ProcessInfo.processInfo.arguments.contains { $0.hasPrefix("--demo") || $0.hasPrefix("--show") }
+
     private func tick() {
+        guard !Self.isPreviewLaunch else { return }
         let hadInputMonitoring = state(of: .inputMonitoring) == .granted
         refreshPermissions()
         let hasInputMonitoring = state(of: .inputMonitoring) == .granted

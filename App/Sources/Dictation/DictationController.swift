@@ -66,8 +66,8 @@ final class DictationController {
 
     // MARK: Lifecycle
 
-    func activate() {
-        startKeyMonitor()
+    func activate(listening: Bool = true) {
+        if listening { startKeyMonitor() }
         loadModelIfPresent()
         Task { history = await historyStore.all() }
     }
