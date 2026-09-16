@@ -7,10 +7,15 @@ public enum TextFormatter {
     public static let paragraphPause: Double = 1.5
 
     public static func format(_ transcript: Transcript, settings: AppSettings) -> String {
-        let paragraphs = settings.punctuation
-            ? Paragraphs.split(transcript, pause: paragraphPause)
-            : [transcript.text]
+        let style = settings.punctuationStyle
+        let paragraphs = style == .none
+            ? [transcript.text]
+            : Paragraphs.split(transcript, pause: paragraphPause)
         let rewriter = settings.latinTerms ? DictionaryRewriter(entries: settings.dictionary, builtIn: settings.builtInDictionary) : nil
+
+        let keptTerms = settings.letterCase == .lowercase
+            ? settings.dictionary.map(\.written) + (settings.builtInDictionary ? BuiltInDictionary.terms.map(\.written) : [])
+            : []
 
         var result: [String] = []
         for paragraph in paragraphs {
@@ -19,13 +24,17 @@ public enum TextFormatter {
             text = Cleanup.removeFillers(text, mode: settings.fillerMode)
             if !settings.wordFilters.isEmpty { text = WordFilter.remove(settings.wordFilters, from: text) }
             if settings.censorProfanity { text = WordFilter.censorProfanity(text) }
-            if !settings.punctuation { text = Punctuation.strip(text) }
-            if settings.smartStructure { text = Lists.format(text) }
+            switch style {
+            case .full: if settings.smartStructure { text = Lists.format(text) }
+            case .commas: text = Punctuation.strip(text, keeping: [","])
+            case .none: text = Punctuation.strip(text)
+            }
+            if settings.letterCase == .lowercase { text = Letters.lowercase(text, keeping: keptTerms) }
             text = text.trimmingCharacters(in: .whitespacesAndNewlines)
             if !text.isEmpty { result.append(text) }
         }
         var text = result.joined(separator: "\n\n")
-        if settings.dropTrailingPeriodInShortPhrases, result.count == 1 {
+        if settings.dropTrailingPeriodInShortPhrases, style == .full, result.count == 1 {
             text = Cleanup.dropTrailingPeriod(text)
         }
         return text
@@ -86,12 +95,43 @@ public enum Lists {
 
 public enum Punctuation {
     /// Removes sentence punctuation but keeps terms like Next.js and feature/auth intact.
-    public static func strip(_ text: String) -> String {
-        Words.split(text).map { word in
+    /// Marks in `keeping` stay, e.g. commas for chat style.
+    public static func strip(_ text: String, keeping: Set<Character> = []) -> String {
+        Words.split(text).compactMap { word in
             var w = Substring(word)
-            while let last = w.last, ",.;:!?…".contains(last) { w = w.dropLast() }
-            return String(w)
+            var kept = ""
+            while let last = w.last, ",.;:!?…".contains(last) {
+                if keeping.contains(last), kept.isEmpty { kept = String(last) }
+                w = w.dropLast()
+            }
+            return w.isEmpty ? nil : String(w) + kept
         }
         .joined(separator: " ")
+    }
+}
+
+public enum Letters {
+    /// "Привет, Я в React" → "привет, я в React". Acronyms and mixed-case words (API, useEffect,
+    /// GitHub) keep their case, and so do Latin words from `terms`. Line breaks stay.
+    public static func lowercase(_ text: String, keeping terms: [String] = []) -> String {
+        let kept = Set(terms.flatMap { $0.split(separator: " ").map(String.init) }.filter { word in
+            word.contains { $0.isASCII && $0.isLetter }
+        })
+        return text.split(separator: "\n", omittingEmptySubsequences: false).map { line in
+            line.split(separator: " ", omittingEmptySubsequences: false).map { raw in
+                let word = String(raw)
+                let letters = word.filter(\.isLetter)
+                guard let first = letters.first, first.isUppercase, letters.dropFirst().allSatisfy(\.isLowercase),
+                      !kept.contains(core(word)),
+                      let index = word.firstIndex(of: first) else { return word }
+                return word.replacingCharacters(in: index...index, with: String(first).lowercased())
+            }
+            .joined(separator: " ")
+        }
+        .joined(separator: "\n")
+    }
+
+    private static func core(_ word: String) -> String {
+        word.trimmingCharacters(in: .punctuationCharacters.union(.symbols))
     }
 }

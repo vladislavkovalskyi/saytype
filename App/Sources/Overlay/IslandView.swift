@@ -379,6 +379,11 @@ private struct LanguageSwitch: View {
         HStack(spacing: 0) {
             option(.russian, "RU")
             option(.english, "EN")
+            // A language picked in settings, e.g. PL, sits next to the two tuned ones.
+            let current = settings.value.language
+            if current != .russian, current != .english, current != .auto {
+                option(current, current.rawValue.uppercased())
+            }
             option(.auto, "Auto")
         }
         .padding(2)
@@ -387,11 +392,20 @@ private struct LanguageSwitch: View {
     }
 
     private func option(_ language: AppSettings.SpeechLanguage, _ title: LocalizedStringKey) -> some View {
+        option(language, Text(title))
+    }
+
+    /// A language code such as PL, shown as is.
+    private func option(_ language: AppSettings.SpeechLanguage, _ code: String) -> some View {
+        option(language, Text(verbatim: code))
+    }
+
+    private func option(_ language: AppSettings.SpeechLanguage, _ title: Text) -> some View {
         let selected = settings.value.language == language
         return Button {
             settings.value.language = language
         } label: {
-            Text(title)
+            title
                 .font(.onest(11, .semibold))
                 .foregroundStyle(selected ? Color(hex: 0x111111) : .white.opacity(0.62))
                 .padding(.horizontal, 8)

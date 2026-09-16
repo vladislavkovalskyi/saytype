@@ -97,7 +97,7 @@ final class SmartStructureService {
 
     /// Structured text, or `text` unchanged when the model is off, slow or unsure.
     func apply(to text: String, settings: AppSettings) async -> String {
-        guard settings.smartStructure, settings.punctuation, state == .ready,
+        guard settings.smartStructure, settings.punctuationStyle == .full, state == .ready,
               SmartStructure.shouldStructure(text, minWords: settings.smartStructureMinWords)
         else { return text }
 

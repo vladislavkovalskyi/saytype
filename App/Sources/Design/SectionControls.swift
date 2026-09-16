@@ -259,6 +259,9 @@ struct MenuOption {
     let title: String
     let isOn: Bool
     let action: @MainActor () -> Void
+    var isSeparator = false
+
+    static let separator = MenuOption(title: "", isOn: false, action: {}, isSeparator: true)
 }
 
 /// A control that opens a native menu under itself.
@@ -312,7 +315,7 @@ final class MenuAnchor {
         let menu = NSMenu()
         menu.autoenablesItems = false
         for item in items {
-            menu.addItem(ActionMenuItem(title: item.title, isOn: item.isOn, action: item.action))
+            menu.addItem(item.isSeparator ? .separator() : ActionMenuItem(title: item.title, isOn: item.isOn, action: item.action))
         }
         menu.popUp(positioning: nil, at: NSPoint(x: 0, y: view.bounds.height + 6), in: view)
     }

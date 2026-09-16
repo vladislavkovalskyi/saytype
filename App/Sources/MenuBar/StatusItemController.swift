@@ -88,7 +88,15 @@ final class StatusItemController: NSObject, NSMenuDelegate {
 
         let language = NSMenuItem(title: String(localized: "Language"), action: nil, keyEquivalent: "")
         let languages = NSMenu()
-        for (value, title) in [(AppSettings.SpeechLanguage.russian, "Русский"), (.english, "English"), (.auto, String(localized: "Automatic"))] {
+        for (index, value) in AppSettings.SpeechLanguage.all().enumerated() {
+            let title = switch value {
+            case .russian: "Русский"
+            case .english: "English"
+            case .auto: String(localized: "Automatic")
+            default: value.localizedName()
+            }
+            // Russian, English and Automatic, then the rest.
+            if index == 3 { languages.addItem(.separator()) }
             languages.addItem(ClosureMenuItem(title: title, isOn: settings.value.language == value) { settings.value.language = value })
         }
         language.submenu = languages
@@ -101,6 +109,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         overlay.submenu = overlays
         menu.addItem(overlay)
 
+        menu.addItem(ClosureMenuItem(title: String(localized: "Chat Style"), isOn: settings.value.isChatStyle) { settings.value.isChatStyle.toggle() })
         let smart = model.smartStructureBinding
         menu.addItem(ClosureMenuItem(title: String(localized: "Smart Structure"), isOn: smart.wrappedValue) { smart.wrappedValue.toggle() })
         menu.addItem(.separator())

@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 @testable import VMCore
 
@@ -48,7 +49,7 @@ import Testing
 
     @Test func punctuationOffStripsMarksButKeepsTerms() {
         var settings = AppSettings()
-        settings.punctuation = false
+        settings.punctuationStyle = .none
         settings.smartStructure = false
         let transcript = Transcript(text: "Обнови Next.js, потом feature/auth.")
         #expect(TextFormatter.format(transcript, settings: settings) == "Обнови Next.js потом feature/auth")
@@ -63,5 +64,36 @@ import Testing
         for word in ["Vercel", "React.", "поправь", "API", "15.2", "U.S"] {
             #expect(!Words.isCodeLike(word), "\(word)")
         }
+    }
+}
+
+@Suite struct ChatStyleTests {
+    @Test func chatStyleKeepsCommasAndLowercases() {
+        var settings = AppSettings()
+        settings.isChatStyle = true
+        let transcript = Transcript(text: "Привет! Я закончил useEffect в React, завтра покажу API. Ок?")
+        #expect(TextFormatter.format(transcript, settings: settings) == "привет я закончил useEffect в React, завтра покажу API ок")
+    }
+
+    @Test func lowercaseWithFullPunctuation() {
+        var settings = AppSettings()
+        settings.letterCase = .lowercase
+        let transcript = Transcript(text: "Сборка упала. Посмотри GitHub Actions.")
+        #expect(TextFormatter.format(transcript, settings: settings) == "сборка упала. посмотри GitHub Actions.")
+    }
+
+    @Test func lowercaseKeepsLineBreaks() {
+        #expect(Letters.lowercase("План:\n1. Купить Хлеб.\n2. Позвонить") == "план:\n1. купить хлеб.\n2. позвонить")
+    }
+
+    @Test func stripKeepsTermsWithDots() {
+        #expect(Punctuation.strip("Обнови Next.js, 3.5. Готово!", keeping: [","]) == "Обнови Next.js, 3.5 Готово")
+    }
+
+    @Test func legacyPunctuationSwitchMigrates() throws {
+        let off = try JSONDecoder().decode(AppSettings.self, from: Data(#"{"punctuation":false}"#.utf8))
+        #expect(off.punctuationStyle == .none)
+        let on = try JSONDecoder().decode(AppSettings.self, from: Data(#"{"punctuation":true}"#.utf8))
+        #expect(on.punctuationStyle == .full)
     }
 }

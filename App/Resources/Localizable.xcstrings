@@ -581,6 +581,26 @@
         }
       }
     },
+    "Add word" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добавить слово"
+          }
+        }
+      }
+    },
+    "Add your own words to remove them everywhere." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добавьте свои слова, и они пропадут из текста."
+          }
+        }
+      }
+    },
     "after download" : {
       "comment" : "Model preparation",
       "localizations" : {
@@ -649,6 +669,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "и говори в любом приложении"
+          }
+        }
+      }
+    },
+    "API and useEffect keep their case" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "API и useEffect не меняются"
           }
         }
       }
@@ -764,6 +794,16 @@
         }
       }
     },
+    "capital letter at the start of a sentence" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "заглавная в начале предложения"
+          }
+        }
+      }
+    },
     "Card" : {
       "localizations" : {
         "ru" : {
@@ -780,6 +820,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Разница"
+          }
+        }
+      }
+    },
+    "Chat style" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Как в чате"
+          }
+        }
+      }
+    },
+    "Chat Style" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Как в чате"
           }
         }
       }
@@ -811,6 +871,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Закрыть"
+          }
+        }
+      }
+    },
+    "Commas" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Запятые"
           }
         }
       }
@@ -1157,6 +1227,16 @@
         }
       }
     },
+    "first letter stays" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "остаётся первая буква"
+          }
+        }
+      }
+    },
     "fix %@ %@" : {
       "comment" : "Sample live text in the overlay preview; the arguments are a code identifier and the dimmed rest",
       "localizations" : {
@@ -1204,12 +1284,32 @@
         }
       }
     },
+    "formatting tuned for Russian and English" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "оформление настроено под русский и английский"
+          }
+        }
+      }
+    },
     "from history" : {
       "localizations" : {
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "из истории"
+          }
+        }
+      }
+    },
+    "Full" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Полная"
           }
         }
       }
@@ -1566,6 +1666,16 @@
         }
       }
     },
+    "Letter case" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Регистр"
+          }
+        }
+      }
+    },
     "Light" : {
       "localizations" : {
         "ru" : {
@@ -1617,12 +1727,32 @@
         }
       }
     },
+    "lowercase, commas only" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "строчные буквы, только запятые"
+          }
+        }
+      }
+    },
     "manual" : {
       "localizations" : {
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "вручную"
+          }
+        }
+      }
+    },
+    "Mask swear words" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Скрывать мат"
           }
         }
       }
@@ -1779,6 +1909,16 @@
         }
       }
     },
+    "no marks, one paragraph" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "без знаков, одним абзацем"
+          }
+        }
+      }
+    },
     "No microphone" : {
       "localizations" : {
         "ru" : {
@@ -1799,6 +1939,16 @@
         }
       }
     },
+    "no periods or question marks" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "без точек и вопросительных знаков"
+          }
+        }
+      }
+    },
     "No results" : {
       "localizations" : {
         "ru" : {
@@ -1815,6 +1965,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Терминов нет"
+          }
+        }
+      }
+    },
+    "None" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Без знаков"
           }
         }
       }
@@ -2104,12 +2264,12 @@
         }
       }
     },
-    "Punctuation and paragraphs" : {
+    "Punctuation" : {
       "localizations" : {
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Пунктуация и абзацы"
+            "value" : "Пунктуация"
           }
         }
       }
@@ -2667,6 +2827,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "да"
+          }
+        }
+      }
+    },
+    "Your words are removed in every mode." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ваши слова удаляются в любом режиме."
           }
         }
       }

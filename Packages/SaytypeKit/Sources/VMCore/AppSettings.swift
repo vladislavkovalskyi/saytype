@@ -28,6 +28,22 @@ public struct AppSettings: Codable, Equatable, Sendable {
         case clipboard
     }
 
+    public enum PunctuationStyle: String, Codable, CaseIterable, Sendable {
+        /// Sentences, paragraphs after pauses and lists.
+        case full
+        /// Commas only, the way people text: "го завтра, я поздно".
+        case commas
+        /// No punctuation at all.
+        case none
+    }
+
+    public enum LetterCase: String, Codable, CaseIterable, Sendable {
+        /// Capital letters where Whisper puts them.
+        case asSpoken
+        /// Everything lowercase except terms like useEffect, API or GitHub.
+        case lowercase
+    }
+
     public enum FillerMode: String, Codable, CaseIterable, Sendable {
         /// Keep every word.
         case keep
@@ -51,7 +67,8 @@ public struct AppSettings: Codable, Equatable, Sendable {
     public var autoEnterApps: [String] = ["com.apple.Terminal", "com.googlecode.iterm2"]
 
     public var language = SpeechLanguage.systemDefault
-    public var punctuation = true
+    public var punctuationStyle = PunctuationStyle.full
+    public var letterCase = LetterCase.asSpoken
     public var smartStructure = true
     public var smartStructureMinWords = 40
     public var fillerMode = FillerMode.hesitations
@@ -88,7 +105,11 @@ public struct AppSettings: Codable, Equatable, Sendable {
         outputMode = try c.decodeIfPresent(OutputMode.self, forKey: .outputMode) ?? defaults.outputMode
         autoEnterApps = try c.decodeIfPresent([String].self, forKey: .autoEnterApps) ?? defaults.autoEnterApps
         language = try c.decodeIfPresent(SpeechLanguage.self, forKey: .language) ?? defaults.language
-        punctuation = try c.decodeIfPresent(Bool.self, forKey: .punctuation) ?? defaults.punctuation
+        // Before 0.1.3 punctuation was a single on/off switch.
+        let legacy = try decoder.container(keyedBy: LegacyKeys.self)
+        let legacyStyle = try legacy.decodeIfPresent(Bool.self, forKey: .punctuation).map { $0 ? PunctuationStyle.full : .none }
+        punctuationStyle = try c.decodeIfPresent(PunctuationStyle.self, forKey: .punctuationStyle) ?? legacyStyle ?? defaults.punctuationStyle
+        letterCase = try c.decodeIfPresent(LetterCase.self, forKey: .letterCase) ?? defaults.letterCase
         smartStructure = try c.decodeIfPresent(Bool.self, forKey: .smartStructure) ?? defaults.smartStructure
         smartStructureMinWords = try c.decodeIfPresent(Int.self, forKey: .smartStructureMinWords) ?? defaults.smartStructureMinWords
         fillerMode = try c.decodeIfPresent(FillerMode.self, forKey: .fillerMode) ?? defaults.fillerMode
@@ -102,5 +123,18 @@ public struct AppSettings: Codable, Equatable, Sendable {
         whisperModel = try c.decodeIfPresent(String.self, forKey: .whisperModel) ?? defaults.whisperModel
         systemEngineFallback = try c.decodeIfPresent(Bool.self, forKey: .systemEngineFallback) ?? defaults.systemEngineFallback
         historyRetentionDays = try c.decodeIfPresent(Int.self, forKey: .historyRetentionDays) ?? defaults.historyRetentionDays
+    }
+
+    private enum LegacyKeys: String, CodingKey {
+        case punctuation
+    }
+
+    /// Lowercase with commas only: how people text in messengers.
+    public var isChatStyle: Bool {
+        get { letterCase == .lowercase && punctuationStyle == .commas }
+        set {
+            letterCase = newValue ? .lowercase : .asSpoken
+            punctuationStyle = newValue ? .commas : .full
+        }
     }
 }
