@@ -15,7 +15,7 @@ public struct PipelineResult: Equatable, Sendable {
 /// The deterministic part of a dictation: voice commands, developer rules and the text
 /// formatter, in the mode's style. Runs in milliseconds; language model steps come after.
 public enum DictationPipeline {
-    public static func format(_ transcript: Transcript, settings: AppSettings, mode: DictationMode) -> PipelineResult {
+    public static func format(_ transcript: Transcript, settings: AppSettings, mode: DictationMode, projectTerms: [String] = []) -> PipelineResult {
         let style = settings.applying(mode)
         let pieces = settings.voiceCommands ? VoiceCommands.parse(transcript.text) : [.text(transcript.text)]
 
@@ -23,7 +23,7 @@ public enum DictationPipeline {
         if pieces.count == 1, case .text(let raw) = pieces[0] {
             let source = mode.developer ? DeveloperFormatter.apply(raw) : raw
             // Paragraphs fall back to plain text when the words no longer match the timings.
-            return PipelineResult(text: TextFormatter.format(Transcript(text: source, words: transcript.words), settings: style))
+            return PipelineResult(text: TextFormatter.format(Transcript(text: source, words: transcript.words), settings: style, projectTerms: projectTerms))
         }
 
         var output = ""
@@ -32,7 +32,7 @@ public enum DictationPipeline {
             switch piece {
             case .text(let raw):
                 let source = mode.developer ? DeveloperFormatter.apply(raw) : raw
-                let text = TextFormatter.format(Transcript(text: source), settings: style)
+                let text = TextFormatter.format(Transcript(text: source), settings: style, projectTerms: projectTerms)
                 guard !text.isEmpty else { continue }
                 if let last = output.last, !last.isNewline { output += " " }
                 output += text
