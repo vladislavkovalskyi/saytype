@@ -1,0 +1,46 @@
+<style>
+.opt { position: absolute; top: 150px; width: 370px; height: 290px; padding: 10px; }
+.opt.sel { box-shadow: inset 0 0 0 1px rgba(255,255,255,.3), 0 0 0 2.5px #fff, 0 22px 50px -18px rgba(20, 10, 50, .5); }
+.scr { position: relative; height: 212px; border-radius: 14px; overflow: hidden; }
+.scr .w { position: absolute; border-radius: 9px; background: rgba(20, 20, 30, .55); box-shadow: inset 0 0 0 1px rgba(255,255,255,.1); }
+.optl { display: flex; align-items: center; gap: 10px; padding: 16px 10px 0; }
+.radio { width: 20px; height: 20px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.6); flex: none; }
+.radio.on { box-shadow: inset 0 0 0 6px #fff; }
+.mini { font-size: 11.5px; line-height: 1.35; }
+.mini .code { font-size: .92em; }
+</style>
+<div class="stage">
+  <div class="win obw w-violet">
+    [[obar 2]]
+    <h1 class="title abs" style="left: 0; right: 0; top: 64px; text-align: center; font-size: 36px;">Где показывать запись</h1>
+    <p class="sub abs" style="left: 0; right: 0; top: 110px; text-align: center;">Поменять можно в настройках.</p>
+
+    <div class="opt frost sel" style="left: 100px;">
+      <div class="scr wall">
+        <div class="w" style="left: 30px; top: 60px; width: 180px; height: 130px;"></div>
+        <div class="w" style="left: 150px; top: 80px; width: 180px; height: 120px;"></div>
+        <div class="island" style="width: 250px; height: 68px; --r: 20px; --e: 10px; padding: 0 16px;">
+          <div style="height: 20px; display: flex; align-items: center; justify-content: space-between;"><span style="width: 6px; height: 6px; border-radius: 50%; background: #ff7a45; box-shadow: 0 0 8px #ff7a45;"></span><span class="code" style="font-size: 9px; opacity: .6;">0:04</span></div>
+          <div style="display: flex; align-items: center; gap: 10px; margin-top: 8px;"><div class="bars" style="gap: 2px; color: #ffb37a; flex: none;">[[bars 6 6 2 16]]</div><p class="mini">поправь <span class="code">useEffect</span> <span class="dim">в Header</span></p></div>
+        </div>
+      </div>
+      <div class="optl"><span class="radio on"></span><span style="font-size: 16px; font-weight: 600;">Остров</span><span class="muted" style="margin-left: auto;">у выреза камеры</span></div>
+    </div>
+
+    <div class="opt frost" style="left: 490px;">
+      <div class="scr wall">
+        <div class="w" style="left: 30px; top: 22px; width: 180px; height: 130px;"></div>
+        <div class="w" style="left: 150px; top: 40px; width: 180px; height: 120px;"></div>
+        <div class="pill" style="position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); height: 32px; gap: 8px; padding: 0 12px 0 5px; border-radius: 16px; white-space: nowrap;">
+          <span class="recdot" style="width: 22px; height: 22px;"></span>
+          <div class="bars" style="gap: 2px; flex: none;">[[bars 6 4 2 12]]</div>
+          <p class="mini">поправь <span class="code">useEffect</span> <span class="dim">в Header</span></p>
+        </div>
+      </div>
+      <div class="optl"><span class="radio"></span><span style="font-size: 16px; font-weight: 600;">Пилюля</span><span class="muted" style="margin-left: auto;">внизу экрана</span></div>
+    </div>
+
+    <div class="abs" style="left: 0; right: 0; top: 462px; display: flex; justify-content: center;"><div class="seg"><span class="on">Тёмное стекло</span><span>Светлое стекло</span></div></div>
+    <div class="cta">Дальше</div>
+  </div>
+</div>

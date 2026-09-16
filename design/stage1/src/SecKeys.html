@@ -1,0 +1,56 @@
+<style>
+.po { position: relative; flex: 1; border-radius: 16px; padding: 8px; background: rgba(255,255,255,.1); box-shadow: inset 0 0 0 1px rgba(255,255,255,.16); }
+.po.sel { background: rgba(255,255,255,.2); box-shadow: 0 0 0 2px #fff; }
+.po .scr { position: relative; height: 104px; border-radius: 10px; overflow: hidden; }
+.po .w { position: absolute; border-radius: 6px; background: rgba(20, 20, 30, .5); }
+.pol { display: flex; align-items: center; gap: 8px; padding: 10px 4px 2px; font-size: 14px; font-weight: 600; }
+.radio { width: 18px; height: 18px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.6); flex: none; }
+.radio.on { box-shadow: inset 0 0 0 5.5px #fff; }
+.mode { flex: 1; border-radius: 16px; padding: 14px 16px; background: rgba(255,255,255,.1); box-shadow: inset 0 0 0 1px rgba(255,255,255,.16); display: flex; align-items: center; gap: 12px; }
+.mode.sel { background: rgba(255,255,255,.22); box-shadow: 0 0 0 2px #fff; }
+.mode .mi { width: 38px; height: 38px; border-radius: 11px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,.18); flex: none; }
+.appchip { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 12px 0 8px; border-radius: 15px; background: rgba(255,255,255,.14); box-shadow: inset 0 0 0 1px rgba(255,255,255,.2); font-size: 13px; font-weight: 500; }
+.appchip.on { background: #fff; color: #1d1a20; box-shadow: none; }
+</style>
+<div class="stage">
+  <div class="win mw w-blue">
+    [[mbar Клавиша_и_плашка]]
+    [[rail keys]]
+    <img class="headart" src="keycap.webp" alt="" style="right: -30px; top: -40px; width: 300px;">
+    <div class="head"><h1 class="h2">Клавиша и плашка</h1><p class="muted" style="margin-top: 6px; font-size: 14px;">Как начинать запись и где она видна</p></div>
+
+    <div class="frost rows abs" style="left: 96px; top: 150px; width: 520px;">
+      <div class="row"><div class="l"><div class="n">Клавиша записи</div><div class="d">держать, чтобы говорить</div></div><span class="kbd">fn</span><span style="opacity: .7;">[[i chevronDown 16]]</span></div>
+      <div class="row"><div class="l"><div class="n">Двойное нажатие</div><div class="d">запись без рук</div></div><div class="toggle on"></div></div>
+      <div class="row"><div class="l"><div class="n">Отмена</div></div><span class="kbd">esc</span></div>
+      <div class="row"><div class="l"><div class="n">Звук начала и конца</div></div><div class="toggle on"></div></div>
+    </div>
+
+    <div class="frost abs" style="left: 632px; top: 150px; width: 532px; height: 250px; padding: 16px;">
+      <div style="display: flex; gap: 12px;">
+        <div class="po sel">
+          <div class="scr wall"><div class="w" style="left: 16px; top: 34px; width: 110px; height: 70px;"></div><div class="island" style="width: 140px; height: 34px; --r: 12px; --e: 6px; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 7px;"><div class="bars" style="gap: 2px; color: #ffb37a;">[[bars 10 5 2 10]]</div></div></div>
+          <div class="pol"><span class="radio on"></span>Остров</div>
+        </div>
+        <div class="po">
+          <div class="scr wall"><div class="w" style="left: 16px; top: 12px; width: 110px; height: 70px;"></div><div class="pill" style="position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); height: 24px; padding: 0 10px 0 4px; gap: 6px;"><span class="recdot" style="width: 16px; height: 16px;"></span><div class="bars" style="gap: 2px;">[[bars 10 7 2 10]]</div></div></div>
+          <div class="pol"><span class="radio"></span>Пилюля</div>
+        </div>
+      </div>
+      <div style="margin-top: 14px; display: flex; align-items: center; justify-content: space-between;"><span class="label">Стекло</span><div class="seg"><span class="on">Тёмное</span><span>Светлое</span></div></div>
+    </div>
+
+    <div class="frost abs" style="left: 96px; top: 416px; width: 1068px; height: 308px; padding: 18px 20px;">
+      <div class="label">После записи</div>
+      <div style="margin-top: 12px; display: flex; gap: 12px;">
+        <div class="mode sel"><div class="mi">[[i ret 20]]</div><div><div style="font-size: 15px; font-weight: 600;">Вставить</div><div class="muted">в активное поле</div></div></div>
+        <div class="mode"><div class="mi">[[i card 20]]</div><div><div style="font-size: 15px; font-weight: 600;">Карточка</div><div class="muted">остаётся в плашке</div></div></div>
+        <div class="mode"><div class="mi">[[i clipboard 20]]</div><div><div style="font-size: 15px; font-weight: 600;">Буфер обмена</div><div class="muted">без вставки</div></div></div>
+      </div>
+      <div class="rows" style="margin: 14px -20px 0;">
+        <div class="row"><div class="l"><div class="n">Вставить последнее ещё раз</div></div><span class="kbd">⌃</span><span class="kbd">⌥</span><span class="kbd">V</span></div>
+        <div class="row"><div class="l"><div class="n">Enter после вставки</div><div class="d">команда сразу уходит агенту</div></div><span class="appchip on">[[i check 14 2.4]]Терминал</span><span class="appchip on">[[i check 14 2.4]]iTerm2</span><span class="appchip">[[i plus 14 2]]Cursor</span></div>
+      </div>
+    </div>
+  </div>
+</div>

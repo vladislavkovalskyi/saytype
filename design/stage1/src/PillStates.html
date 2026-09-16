@@ -1,0 +1,84 @@
+<style>
+.sheet { width: 1440px; min-height: 1060px; background: #17161b; padding: 40px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 36px; }
+.tile { position: relative; height: 230px; border-radius: 18px; overflow: hidden; }
+.anchor { position: absolute; left: 50%; bottom: 26px; transform: translateX(-50%); z-index: 4; white-space: nowrap; }
+.fw { position: absolute; border-radius: 10px; background: rgba(22, 22, 28, .75); box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
+.fw.lt { background: rgba(255,255,255,.85); }
+.tt2 { margin-top: 14px; font-size: 15px; font-weight: 600; color: #fff; }
+.td2 { margin-top: 4px; font-size: 13px; line-height: 1.45; color: rgba(255,255,255,.6); max-width: 400px; }
+.sweep { position: relative; }
+.sweep::after { content: ""; position: absolute; inset: -4px -10px; border-radius: 8px; background: linear-gradient(100deg, transparent 20%, rgba(255,255,255,.28) 42%, rgba(255, 190, 130, .3) 50%, transparent 66%); mix-blend-mode: screen; }
+.ring { width: 16px; height: 16px; border-radius: 50%; background: conic-gradient(#ff9a5c 0 70%, rgba(255,255,255,.18) 70% 100%); -webkit-mask: radial-gradient(circle, transparent 5px, #000 5.5px); mask: radial-gradient(circle, transparent 5px, #000 5.5px); }
+.slot { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,.1); flex: none; }
+</style>
+<div class="sheet">
+
+  <div>
+    <div class="tile wall"><div class="fw" style="left: 40px; top: 26px; width: 320px; height: 130px;"></div>
+      <div class="anchor"><div class="pill"><span class="recdot"></span><div class="bars" style="gap: 3px; opacity: .7;">[[flat 18]]</div><span class="code" style="opacity: .6;">0:01</span></div></div>
+    </div>
+    <div class="tt2">Тишина</div><div class="td2">Fn зажата, сигнала нет. Полоски ровные.</div>
+  </div>
+
+  <div>
+    <div class="tile wall-light"><div class="fw lt" style="left: 30px; top: 20px; width: 360px; height: 150px;"></div>
+      <div class="anchor"><div class="pill"><span class="recdot"></span><div class="bars" style="gap: 3px; flex: none;">[[bars 7 2 3 18]]</div><p class="live">поправь <span class="code">useEffect</span> в <span class="code">Header</span> <span class="dim">он дёргается</span></p></div></div>
+    </div>
+    <div class="tt2">Живой текст</div><div class="td2">Яркие слова закреплены, бледные ещё могут измениться.</div>
+  </div>
+
+  <div>
+    <div class="tile wall-deep"><div class="fw" style="left: 50px; top: 30px; width: 300px; height: 130px;"></div>
+      <div class="anchor"><div class="pill"><span class="recdot"></span><span class="chip" style="height: 22px; padding: 0 9px; font-size: 12px; background: rgba(255, 140, 80, .22); color: #ffc19a;">без рук</span><div class="bars" style="gap: 3px;">[[bars 12 8 3 18]]</div><span class="code" style="opacity: .6;">0:14</span></div></div>
+    </div>
+    <div class="tt2">Без рук</div><div class="td2">Двойное нажатие fn. Стоп: fn. Отмена: Esc.</div>
+  </div>
+
+  <div>
+    <div class="tile wall"><div class="fw" style="left: 60px; top: 20px; width: 320px; height: 130px;"></div>
+      <div class="anchor"><div class="pill"><span class="slot"><span class="ring"></span></span><p class="live sweep">Поправь <span class="code">useEffect</span> в <span class="code">Header</span>, он дёргается.</p></div></div>
+    </div>
+    <div class="tt2">Оформление</div><div class="td2">Пунктуация и абзацы. Не больше 1,5 с.</div>
+  </div>
+
+  <div>
+    <div class="tile wall-deep"><div class="fw" style="left: 40px; top: 26px; width: 350px; height: 140px;"></div>
+      <div class="anchor"><div class="pill"><span class="slot" style="background: rgba(120, 230, 160, .2); color: #8ef0b0;">[[i check 15 2.6]]</span><span style="font-size: 14px; font-weight: 500;">Вставлено в Терминал</span><span class="code" style="opacity: .55;">⌃⌥V</span></div></div>
+    </div>
+    <div class="tt2">Вставлено</div><div class="td2">Исчезает через секунду. Буфер обмена восстановлен.</div>
+  </div>
+
+  <div>
+    <div class="tile wall"><div class="fw" style="left: 250px; top: 18px; width: 160px; height: 110px;"></div>
+      <div class="pill tall" style="position: absolute; left: 24px; top: 40px; width: 350px; display: block; padding: 12px 14px; border-radius: 18px; transform: rotate(-2deg); z-index: 4; white-space: normal;">
+        <div style="display: flex; align-items: center; gap: 8px; opacity: .6;">[[i grip 15]]<span class="code" style="font-size: 11px;">11:42</span><span style="margin-left: auto;">[[i x 14]]</span></div>
+        <div style="margin-top: 6px; font-size: 13.5px; line-height: 1.5;"><p style="font-weight: 600;">Сегодня доделываю авторизацию:</p><p style="opacity: .85;">1. Поправить <span class="code">useEffect</span> в <span class="code">Header</span>.</p><p style="opacity: .85;">2. Задеплоить <span class="code">feature/auth</span> на Vercel.</p></div>
+        <div style="margin-top: 9px; display: flex; gap: 6px;"><span class="btn-w" style="height: 26px; font-size: 12px; padding: 0 10px;">[[i copy 12 2.2]]Копировать</span><span class="chip" style="height: 26px; font-size: 12px; background: rgba(255,255,255,.12);">Как сказал</span></div>
+      </div>
+      <div style="position: absolute; left: 42px; top: 58px; z-index: 6;">[[i cursorArrow 22]]</div>
+    </div>
+    <div class="tt2">Карточка</div><div class="td2">Режим «Карточка». Текст можно перетащить в любое окно.</div>
+  </div>
+
+  <div>
+    <div class="tile wall-light"><div class="fw lt" style="left: 90px; top: 24px; width: 250px; height: 130px;"><div style="position: absolute; left: 24px; right: 24px; top: 44px; height: 30px; border-radius: 7px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.15); display: flex; align-items: center; padding: 0 10px; color: rgba(0,0,0,.6); letter-spacing: 3px;">••••••</div></div>
+      <div class="anchor"><div class="pill"><span class="slot">[[i lock 15]]</span><span style="font-size: 14px; font-weight: 500;">Поле пароля</span><span style="font-size: 13px; opacity: .6;">запись недоступна</span></div></div>
+    </div>
+    <div class="tt2">Защищённый ввод</div><div class="td2">macOS блокирует клавиши в полях паролей и Secure Keyboard Entry.</div>
+  </div>
+
+  <div>
+    <div class="tile wall-deep"><div class="fw" style="left: 44px; top: 22px; width: 340px; height: 130px;"></div>
+      <div class="anchor"><div class="pill tall"><span class="recdot"></span><div><p class="live">задеплой ветку на Vercel</p><div style="display: flex; align-items: center; gap: 6px; font-size: 12px; opacity: .65;"><span class="ring" style="width: 11px; height: 11px; -webkit-mask: radial-gradient(circle, transparent 3px, #000 3.5px); mask: radial-gradient(circle, transparent 3px, #000 3.5px);"></span>Whisper готовится · системный движок</div></div></div></div>
+    </div>
+    <div class="tt2">Модель готовится</div><div class="td2">После обновления macOS. Пока работает системная диктовка.</div>
+  </div>
+
+  <div>
+    <div class="tile wall-light"><div class="fw lt" style="left: 40px; top: 18px; width: 340px; height: 140px;"></div>
+      <div class="anchor"><div class="pill light"><span class="recdot" style="background: rgba(0,0,0,.06);"></span><div class="bars" style="gap: 3px; flex: none;">[[bars 7 2 3 18]]</div><p class="live">поправь <span class="code">useEffect</span> в <span class="code">Header</span> <span class="dim">он дёргается</span></p></div></div>
+    </div>
+    <div class="tt2">Светлое стекло</div><div class="td2">Для светлых обоев. Включается в настройках.</div>
+  </div>
+
+</div>

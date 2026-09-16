@@ -1,0 +1,53 @@
+<style>
+.stat { padding: 16px 20px; }
+.stat b { display: block; font-size: 28px; font-weight: 700; letter-spacing: -.02em; line-height: 1; }
+.stat span { display: block; margin-top: 6px; font-size: 13px; color: rgba(255,255,255,.78); }
+.item { display: flex; gap: 12px; padding: 12px 18px; box-shadow: inset 0 -1px 0 rgba(255,255,255,.12); }
+.item.on { background: rgba(255,255,255,.2); box-shadow: inset 3px 0 0 #fff; }
+.item p { font-size: 14px; line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.item .m { margin-top: 5px; display: flex; align-items: center; gap: 8px; font-size: 12px; color: rgba(255,255,255,.7); }
+.fp { display: inline-flex; align-items: center; gap: 1.5px; color: rgba(255,255,255,.85); }
+.fp i { width: 2px; }
+.del { text-decoration: line-through; color: rgba(255,255,255,.5); }
+.ins { background: rgba(255,255,255,.3); color: #fff; border-radius: 4px; padding: 0 2px; font-weight: 700; box-shadow: inset 0 -2px 0 #fff; }
+.diff .code { background: rgba(255,255,255,.2); padding: 1px 6px; border-radius: 6px; }
+</style>
+<div class="stage">
+  <div class="win mw w-violet">
+    [[mbar История]]
+    [[rail history]]
+    <img class="headart" src="stack.webp" alt="" style="right: -10px; top: -40px; width: 280px;">
+    <div class="head"><h1 class="h2">История</h1><p class="muted" style="margin-top: 6px; font-size: 14px;">Хранится на этом Mac 30 дней</p></div>
+
+    <div class="abs" style="left: 96px; top: 140px; width: 780px; display: flex; gap: 12px; z-index: 5;">
+      <div class="frost stat" style="flex: 1;"><b>1 240</b><span>слов сегодня</span></div>
+      <div class="frost stat" style="flex: 1;"><b>146</b><span>слов в минуту</span></div>
+      <div class="frost stat" style="flex: 1;"><b>8 930</b><span>слов за неделю</span></div>
+    </div>
+
+    <div class="frost clip abs" style="left: 96px; top: 244px; width: 450px; height: 480px;">
+      <div class="label" style="padding: 14px 18px 6px;">Сегодня</div>
+      <div class="item"><div><p>Вынеси загрузку пользователя в хук useUser и добавь массив зависимостей.</p><div class="m"><span class="fp bars">[[bars 5 11 2 11]]</span>Терминал · 11:42 · 5 с</div></div></div>
+      <div class="item on"><div><p>Так, во-первых, поправь useEffect в Header, он дёргается при каждом рендере. Во-вторых, задеплой ветку feature/auth на Vercel.</p><div class="m"><span class="fp bars">[[bars 12 1 2 11]]</span>Терминал · 11:40 · 12 с</div></div></div>
+      <div class="item"><div><p>Созвон перенесли на четыре, ссылку скину позже.</p><div class="m"><span class="fp bars">[[bars 3 3 2 11]]</span>Telegram · 10:31 · 3 с</div></div></div>
+      <div class="item"><div><p>Добавь в Supabase таблицу users с полями id, email и created_at.</p><div class="m"><span class="fp bars">[[bars 6 4 2 11]]</span>Cursor · 09:47 · 6 с</div></div></div>
+      <div class="item" style="box-shadow: none;"><div><p>localhost:3000/settings</p><div class="m"><span class="fp bars">[[bars 2 5 2 11]]</span>Safari · 09:12 · 2 с</div></div></div>
+    </div>
+
+    <div class="frost abs diff" style="left: 562px; top: 244px; width: 602px; height: 480px; padding: 20px 24px;">
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <div><div style="font-size: 16px; font-weight: 600;">Терминал · 11:40</div><div class="muted" style="margin-top: 2px;">12 с · 23 слова · оформлено за 0,9 с</div></div>
+        <div class="seg"><span>Итог</span><span>Как сказал</span><span class="on">Разница</span></div>
+      </div>
+      <div style="margin-top: 26px; font-size: 17px; line-height: 1.9;">
+        <p><span class="del">эээ</span> <span class="ins">Т</span>ак<span class="ins">,</span> во<span class="ins">-</span>первых<span class="ins">,</span> поправь <span class="code">useEffect</span> в <span class="code">Header</span><span class="ins">,</span> он дёргается при каждом рендере<span class="ins">.</span></p>
+        <p style="margin-top: 10px;"><span class="ins">В</span>о<span class="ins">-</span>вторых<span class="ins">,</span> задеплой ветку <span class="code">feature/auth</span> на Vercel<span class="ins">,</span> ну и скинь превью в Telegram<span class="ins">.</span></p>
+      </div>
+      <div class="abs" style="left: 24px; right: 24px; bottom: 20px; display: flex; align-items: center; gap: 8px;">
+        <span class="btn-w">[[i copy 14 2]]Копировать</span>
+        <span class="chip frost">[[i grip 14]]Перетащить</span>
+        <span class="chip frost">Вставить ещё раз <span class="kbd" style="height: 20px; font-size: 11px;">⌃⌥V</span></span>
+      </div>
+    </div>
+  </div>
+</div>

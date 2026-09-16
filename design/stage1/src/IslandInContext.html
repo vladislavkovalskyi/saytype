@@ -1,0 +1,49 @@
+<style>
+.chat { position: absolute; left: 260px; top: 180px; width: 920px; height: 640px; border-radius: 20px; overflow: hidden; display: flex; background: rgba(28, 28, 32, .95); box-shadow: 0 0 0 .5px rgba(0,0,0,.6), inset 0 0 0 1px rgba(255,255,255,.08), 0 40px 90px -20px rgba(0,0,0,.55); font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif; }
+.side { width: 280px; border-right: 1px solid rgba(255,255,255,.07); padding: 54px 10px 10px; display: flex; flex-direction: column; gap: 2px; }
+.crow { display: flex; gap: 10px; padding: 9px 10px; border-radius: 11px; align-items: center; }
+.crow.on { background: rgba(255,255,255,.09); }
+.av { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; flex: none; }
+.rn { font-size: 13.5px; font-weight: 600; }
+.rp { font-size: 12.5px; color: rgba(255,255,255,.45); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+.conv { flex: 1; display: flex; flex-direction: column; }
+.chead { height: 58px; display: flex; align-items: center; gap: 10px; padding: 0 20px; border-bottom: 1px solid rgba(255,255,255,.07); }
+.msgs { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; gap: 8px; padding: 20px; }
+.bub { max-width: 68%; padding: 9px 13px; border-radius: 17px; font-size: 14px; line-height: 1.45; }
+.bin { background: rgba(255,255,255,.09); align-self: flex-start; }
+.bout { background: #2f7cf0; align-self: flex-end; }
+.compose { margin: 0 16px 16px; height: 46px; border-radius: 23px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.16), 0 0 0 3px rgba(80, 150, 255, .35); display: flex; align-items: center; gap: 3px; padding: 0 18px; font-size: 14px; color: rgba(255,255,255,.4); }
+</style>
+<div class="desk wall-deep" style="width: 1440px; height: 900px;">
+  <div class="menubar">
+    <div class="l"><b>Сообщения</b><span>Файл</span><span>Правка</span><span>Вид</span></div>
+    <div class="r"><span style="display: flex; opacity: .95;">[[i wave 16 2.2]]</span><span>Ср 16 сент. 11:42</span></div>
+  </div>
+
+  <div class="island" style="width: 620px; height: 140px; --r: 36px; --e: 16px; padding: 0 30px;">
+    <div style="height: 32px; display: flex; align-items: center; justify-content: space-between;"><span style="width: 8px; height: 8px; border-radius: 50%; background: #ff7a45; box-shadow: 0 0 10px #ff7a45;"></span><span class="code" style="font-size: 12px; opacity: .55;">0:09</span></div>
+    <div style="display: flex; gap: 18px; align-items: center; margin-top: 18px;">
+      <div class="bars" style="gap: 3px; color: #ffae78; flex: none;">[[bars 10 9 4 28]]</div>
+      <p class="live" style="font-size: 16px;">так, во-первых, поправь <span class="code">useEffect</span> в <span class="code">Header</span>, а во-вторых <span class="dim">задеплой на Vercel</span></p>
+    </div>
+  </div>
+
+  <div class="chat">
+    <div class="side">
+      <div class="lights" style="top: 18px; left: 18px;"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div>
+      <div class="crow on"><div class="av" style="background: #2f7cf0;">Ш</div><div style="min-width: 0;"><div class="rn">Команда shop</div><div class="rp">Супер, и не забудь про превью</div></div></div>
+      <div class="crow"><div class="av" style="background: #e0603a;">А</div><div style="min-width: 0;"><div class="rn">Аня</div><div class="rp">Скинула макеты в папку</div></div></div>
+      <div class="crow"><div class="av" style="background: #2ea866;">Д</div><div style="min-width: 0;"><div class="rn">Дизайн</div><div class="rp">Завтра созвон в 11</div></div></div>
+      <div class="crow"><div class="av" style="background: #8a52e0;">М</div><div style="min-width: 0;"><div class="rn">Макс</div><div class="rp">Посмотри PR, когда будет минутка</div></div></div>
+    </div>
+    <div class="conv">
+      <div class="chead"><div class="av" style="width: 32px; height: 32px; font-size: 12px; background: #2f7cf0;">Ш</div><div><div class="rn">Команда shop</div><div class="rp" style="margin: 0;">5 участников</div></div></div>
+      <div class="msgs">
+        <div class="bub bin">Кто смотрит баг с хедером? Сборка красная с утра</div>
+        <div class="bub bout">Я. Там эффект без зависимостей, сейчас поправлю</div>
+        <div class="bub bin">Супер, и не забудь про превью</div>
+      </div>
+      <div class="compose"><span style="width: 2px; height: 18px; background: #5aa0ff;"></span>Сообщение</div>
+    </div>
+  </div>
+</div>

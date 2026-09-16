@@ -1,0 +1,46 @@
+<style>
+.ex { display: grid; grid-template-columns: minmax(0, 1fr) 48px minmax(0, 1fr); align-items: center; gap: 10px; }
+.raw { font: 400 13.5px/1.65 "JetBrains Mono", ui-monospace, Menlo, monospace; color: rgba(255,255,255,.92); margin-top: 8px; }
+.raw s { text-decoration-color: rgba(255,255,255,.8); color: rgba(255,255,255,.5); }
+.fmt { font-size: 17px; line-height: 1.5; margin-top: 8px; }
+.fmt .code { background: rgba(255,255,255,.22); padding: 1px 6px; border-radius: 6px; }
+.arr { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #fff; color: var(--acc); box-shadow: 0 6px 16px rgba(0,0,0,.15); }
+.word { display: inline-flex; align-items: center; height: 28px; padding: 0 11px; border-radius: 14px; background: rgba(255,255,255,.16); font-size: 13px; }
+.word.cut { text-decoration: line-through; opacity: .6; }
+</style>
+<div class="stage">
+  <div class="win mw w-teal">
+    [[mbar Текст]]
+    [[rail text]]
+    <img class="headart" src="textcard.webp" alt="" style="right: -20px; top: -36px; width: 290px;">
+    <div class="head"><h1 class="h2">Текст</h1><p class="muted" style="margin-top: 6px; font-size: 14px;">Как сказанное становится текстом</p></div>
+
+    <div class="frost hot abs" style="left: 96px; top: 150px; width: 1068px; height: 150px; padding: 20px 24px;">
+      <div class="ex">
+        <div><div class="label">Как сказал</div><p class="raw"><s>эээ</s> так поправь юз эффект в хедере он дёргается при каждом рендере</p></div>
+        <div class="arr">[[i arrowRight 20 2.2]]</div>
+        <div><div class="label">Результат</div><p class="fmt">Так, поправь <span class="code">useEffect</span> в <span class="code">Header</span>, он дёргается при каждом рендере.</p></div>
+      </div>
+    </div>
+
+    <div class="frost rows abs" style="left: 96px; top: 316px; width: 526px;">
+      <div class="row"><div class="l"><div class="n">Пунктуация и абзацы</div><div class="d">новый абзац после паузы 1,5 с</div></div><div class="toggle on"></div></div>
+      <div class="row"><div class="l"><div class="n">Умная структура</div><div class="d">списки в длинных фразах · Qwen 2B</div></div><div class="toggle on"></div></div>
+      <div class="row"><div class="l"><div class="n">Включать с</div></div><span class="chip frost">40 слов[[i chevronDown 14]]</span></div>
+    </div>
+
+    <div class="frost abs" style="left: 638px; top: 316px; width: 526px; height: 190px; padding: 18px 20px;">
+      <div style="display: flex; align-items: center; justify-content: space-between;"><div class="n" style="font-size: 14.5px; font-weight: 500;">Слова-паразиты</div><div class="seg"><span>Оставлять</span><span class="on">Мычание</span><span>Все</span></div></div>
+      <div style="margin-top: 22px; display: flex; flex-wrap: wrap; gap: 8px;">
+        <span class="word cut">эээ</span><span class="word cut">ммм</span><span class="word cut">ааа</span><span class="word">ну</span><span class="word">типа</span><span class="word">короче</span><span class="word">как бы</span>
+      </div>
+      <div class="muted" style="margin-top: 16px;">Остальные слова не меняются.</div>
+    </div>
+
+    <div class="frost rows abs" style="left: 96px; top: 522px; width: 1068px;">
+      <div class="row"><div class="l"><div class="n">Язык речи</div></div><div class="seg"><span class="on">Русский</span><span>English</span><span>Авто</span></div></div>
+      <div class="row"><div class="l"><div class="n">Термины латиницей</div><div class="d"><span class="code">useEffect</span>, Vercel, Supabase остаются как в коде</div></div><div class="toggle on"></div></div>
+      <div class="row"><div class="l"><div class="n">Удалять точку в конце короткой фразы</div><div class="d">для команд агенту и поиска</div></div><div class="toggle"></div></div>
+    </div>
+  </div>
+</div>

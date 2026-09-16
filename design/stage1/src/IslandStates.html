@@ -1,0 +1,45 @@
+<style>
+.sheet { width: 1440px; min-height: 760px; background: #17161b; padding: 40px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 36px; }
+.tile { position: relative; height: 210px; border-radius: 18px; overflow: hidden; }
+.mb { position: absolute; top: 0; left: 0; right: 0; height: 30px; display: flex; align-items: center; justify-content: space-between; padding: 0 14px; font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif; font-size: 12px; color: #fff; z-index: 2; }
+.cmp { height: 30px; display: flex; align-items: center; justify-content: space-between; padding: 0 14px; }
+.tt2 { margin-top: 14px; font-size: 15px; font-weight: 600; color: #fff; }
+.td2 { margin-top: 4px; font-size: 13px; line-height: 1.45; color: rgba(255,255,255,.6); }
+.sweep { position: relative; }
+.sweep::after { content: ""; position: absolute; inset: -4px -10px; border-radius: 8px; background: linear-gradient(100deg, transparent 20%, rgba(255,255,255,.28) 42%, rgba(255, 190, 130, .3) 50%, transparent 66%); mix-blend-mode: screen; }
+.ring { width: 14px; height: 14px; border-radius: 50%; background: conic-gradient(#ff9a5c 0 70%, rgba(255,255,255,.18) 70% 100%); -webkit-mask: radial-gradient(circle, transparent 4px, #000 4.5px); mask: radial-gradient(circle, transparent 4px, #000 4.5px); }
+</style>
+<div class="sheet">
+  <div>
+    <div class="tile wall-deep"><div class="mb"><b>Терминал</b><span style="display: flex; align-items: center; gap: 10px;">[[i wave 14 2.2]]11:42</span></div><div class="island" style="width: 160px; height: 30px; --r: 10px; --e: 6px;"></div></div>
+    <div class="tt2">Покой</div><div class="td2">Вырез без изменений.</div>
+  </div>
+  <div>
+    <div class="tile wall-deep"><div class="mb"><b>Терминал</b><span>11:42</span></div><div class="island" style="width: 250px; height: 30px; --r: 14px; --e: 8px;"><div class="cmp"><div class="bars" style="gap: 2px; color: #ffae78;">[[bars 7 3 3 16]]</div><span class="code" style="font-size: 11px; opacity: .6;">0:03</span></div></div></div>
+    <div class="tt2">Запись</div><div class="td2">Волна слева, время справа. Раскрывается с первым словом.</div>
+  </div>
+  <div>
+    <div class="tile wall-deep"><div class="island" style="width: 400px; height: 120px; --r: 30px; --e: 14px; padding: 0 20px;">
+      <div style="height: 30px; display: flex; align-items: center; justify-content: space-between;"><span style="width: 7px; height: 7px; border-radius: 50%; background: #ff7a45; box-shadow: 0 0 8px #ff7a45;"></span><span class="code" style="font-size: 11px; opacity: .55;">0:06</span></div>
+      <div style="display: flex; gap: 14px; align-items: center; margin-top: 12px;"><div class="bars" style="gap: 2px; color: #ffae78; flex: none;">[[bars 8 4 3 24]]</div><p class="live" style="font-size: 14px;">поправь <span class="code">useEffect</span> в <span class="code">Header</span>, он дёргается <span class="dim">при каждом рендере</span></p></div>
+    </div></div>
+    <div class="tt2">Живой текст</div><div class="td2">До трёх строк.</div>
+  </div>
+  <div>
+    <div class="tile wall-deep"><div class="island" style="width: 400px; height: 120px; --r: 30px; --e: 14px; padding: 0 20px;">
+      <div style="height: 30px; display: flex; align-items: center; justify-content: space-between;"><span class="ring"></span><span style="font-size: 11px; opacity: .55;">оформление</span></div>
+      <p class="live sweep" style="font-size: 14px; margin-top: 14px;">Поправь <span class="code">useEffect</span> в <span class="code">Header</span>, он дёргается при каждом рендере.</p>
+    </div></div>
+    <div class="tt2">Оформление</div><div class="td2">Блик идёт по тексту, пока расставляются знаки.</div>
+  </div>
+  <div>
+    <div class="tile wall-deep"><div class="mb"><b>Терминал</b><span>11:42</span></div><div class="island" style="width: 250px; height: 30px; --r: 14px; --e: 8px;"><div class="cmp"><span style="color: #8ef0b0;">[[i check 14 2.6]]</span><span style="font-size: 11px; opacity: .7;">вставлено</span></div></div></div>
+    <div class="tt2">Вставлено</div><div class="td2">Сжимается до выреза и исчезает.</div>
+  </div>
+  <div>
+    <div class="tile wall"><div class="mb" style="background: rgba(0,0,0,.12);"><b>Терминал</b><span>Ср 11:42</span></div><div class="island" style="top: 30px; width: 320px; height: 72px; --r: 24px; --e: 12px; padding: 0 18px;">
+      <div style="display: flex; gap: 12px; align-items: center; height: 72px;"><div class="bars" style="gap: 2px; color: #ffae78; flex: none;">[[bars 6 7 3 20]]</div><p class="live" style="font-size: 13.5px;">задеплой ветку <span class="dim">на Vercel</span></p></div>
+    </div></div>
+    <div class="tt2">Монитор без выреза</div><div class="td2">Под строкой меню, на экране с курсором.</div>
+  </div>
+</div>

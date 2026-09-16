@@ -1,0 +1,50 @@
+<style>
+.pop { position: absolute; top: 40px; right: 14px; width: 380px; border-radius: 22px; padding: 14px; color: #fff; z-index: 45;
+  background: linear-gradient(180deg, rgba(44, 40, 48, .74), rgba(24, 22, 28, .84));
+  -webkit-backdrop-filter: blur(34px) saturate(170%); backdrop-filter: blur(34px) saturate(170%);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.12), inset 0 1px 0 rgba(255,255,255,.22), 0 24px 60px -16px rgba(0,0,0,.6); }
+.last { border-radius: 16px; padding: 14px; background: linear-gradient(155deg, #f29543 0%, #e0602f 45%, #c13a38 100%); box-shadow: inset 0 0 0 1px rgba(255,255,255,.25), inset 0 1px 0 rgba(255,255,255,.4); position: relative; overflow: hidden; }
+.last .code { background: rgba(255,255,255,.22); padding: 1px 6px; border-radius: 6px; }
+.lb { height: 28px; padding: 0 11px; border-radius: 14px; display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 500; background: rgba(255,255,255,.2); white-space: nowrap; }
+.lb.w { background: #fff; color: #b3402e; font-weight: 600; }
+.sec { font-size: 12px; font-weight: 600; color: rgba(255,255,255,.5); padding: 14px 6px 6px; }
+.hr { display: flex; align-items: center; gap: 10px; padding: 8px 6px; font-size: 13.5px; }
+.hr .t { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: rgba(255,255,255,.9); }
+.hr .m { font-size: 12px; color: rgba(255,255,255,.45); white-space: nowrap; }
+.fp { display: inline-flex; align-items: center; gap: 1.5px; color: #ffa56a; flex: none; }
+.fp i { width: 2px; }
+.sep { height: 1px; background: rgba(255,255,255,.1); margin: 8px 6px; }
+.mr { display: flex; align-items: center; gap: 10px; padding: 8px 6px; font-size: 14px; color: rgba(255,255,255,.92); }
+.mr .icon { opacity: .7; }
+.mr .sc { margin-left: auto; font-size: 12.5px; color: rgba(255,255,255,.4); }
+</style>
+<div class="desk wall" style="width: 460px; height: 700px;">
+  <div class="menubar" style="justify-content: flex-end;">
+    <div class="r"><span style="opacity: .85;">[[i speaker 15]]</span><span style="width: 32px; height: 24px; border-radius: 7px; background: rgba(255,255,255,.3); display: flex; align-items: center; justify-content: center;">[[i wave 16 2.2]]</span><span>Ср 11:42</span></div>
+  </div>
+
+  <div class="pop">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 0 4px 12px;">
+      <img src="appicon-sm.webp" alt="" style="width: 34px; height: 34px;">
+      <div style="flex: 1;"><div style="font-size: 15px; font-weight: 600;">voicemode</div><div style="font-size: 12px; color: rgba(255,255,255,.55);">Whisper turbo · офлайн</div></div>
+      <span class="chip" style="height: 26px; padding: 0 10px; font-size: 12px; background: rgba(120, 230, 160, .16); color: #9ef0bd;"><span style="width: 6px; height: 6px; border-radius: 50%; background: #7ee8a8;"></span>Готов</span>
+    </div>
+
+    <div class="last">
+      <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12px; opacity: .85;"><span>Терминал · 11:42</span>[[i grip 14]]</div>
+      <p style="margin-top: 8px; font-size: 14.5px; line-height: 1.5;">Вынеси загрузку пользователя в хук <span class="code">useUser</span> и добавь массив зависимостей.</p>
+      <div style="margin-top: 12px; display: flex; gap: 6px;"><span class="lb w">[[i copy 13 2.2]]Копировать</span><span class="lb">Как сказал</span><span class="lb" style="margin-left: auto;">Ещё раз ⌃⌥V</span></div>
+    </div>
+
+    <div class="sec">Сегодня · 1 240 слов</div>
+    <div class="hr"><span class="t">Так, во-первых, поправь useEffect в Header</span><span class="fp bars">[[bars 12 1 2 12]]</span><span class="m">11:40</span></div>
+    <div class="hr"><span class="t">Задеплой feature/auth на Vercel и скинь превью</span><span class="fp bars">[[bars 4 2 2 12]]</span><span class="m">10:58</span></div>
+    <div class="hr"><span class="t">Созвон перенесли на четыре, ссылку скину позже</span><span class="fp bars">[[bars 3 3 2 12]]</span><span class="m">10:31</span></div>
+    <div class="hr"><span class="t">Добавь в Supabase таблицу users с полями id, email</span><span class="fp bars">[[bars 6 4 2 12]]</span><span class="m">09:47</span></div>
+    <div class="hr"><span class="t">localhost:3000/settings</span><span class="fp bars">[[bars 2 5 2 12]]</span><span class="m">09:12</span></div>
+
+    <div class="sep"></div>
+    <div class="mr">[[i sliders 16]]Открыть voicemode<span class="sc">⌘,</span></div>
+    <div class="mr">[[i power 16]]Выйти<span class="sc">⌘Q</span></div>
+  </div>
+</div>

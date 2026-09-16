@@ -1,0 +1,31 @@
+<style>
+.res ol { padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.res li { display: flex; gap: 10px; }
+.res li b { font-weight: 600; opacity: .6; min-width: 16px; }
+.res .code { background: rgba(255,255,255,.2); padding: 1px 6px; border-radius: 6px; }
+</style>
+<div class="stage">
+  <div class="win obw w-teal">
+    [[obar 7]]
+    <div class="abs" style="left: 56px; top: 118px; width: 330px;">
+      <h1 class="title">Попробуй</h1>
+      <p class="sub" style="margin-top: 12px;">Зажми <span class="kbd" style="height: 24px; vertical-align: 2px;">fn</span> и продиктуй пару фраз.</p>
+    </div>
+    <div class="halo" style="left: 10px; top: 250px; width: 420px; height: 330px;"></div>
+    <img class="hero" src="textcard.webp" alt="" style="left: 40px; top: 230px; width: 330px;">
+
+    <div class="frost res abs" style="left: 420px; top: 96px; width: 490px; height: 400px; padding: 20px 24px;">
+      <div style="display: flex; align-items: center; justify-content: space-between;"><div class="seg"><span class="on">Оформлено</span><span>Как сказал</span></div><span class="muted">12 с · 0,9 с</span></div>
+      <div style="margin-top: 22px; font-size: 17px; line-height: 1.55;">
+        <p style="font-weight: 600;">Так, сегодня доделываю авторизацию:</p>
+        <ol>
+          <li><b>1.</b><span>Поправить <span class="code">useEffect</span> в <span class="code">Header</span>, он дёргается при каждом рендере.</span></li>
+          <li><b>2.</b><span>Задеплоить ветку <span class="code">feature/auth</span> на Vercel.</span></li>
+          <li><b>3.</b><span>Скинуть превью в Telegram.</span></li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="cta">Дальше</div>
+  </div>
+</div>

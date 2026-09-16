@@ -130,18 +130,18 @@ def material(name, tint, rough=0.12, absorb=None, density=0.35, emission=None, s
     return m
 
 
-def jelly(name, color, glow=0.0, rough=0.16, transmission=0.55):
+def jelly(name, color, glow=0.0, rough=0.16, transmission=0.55, coat=1.0):
     m = bpy.data.materials.new(name)
     m.use_nodes = True
     bsdf = m.node_tree.nodes.get("Principled BSDF")
     set_input(bsdf, "Base Color", (*color, 1))
     set_input(bsdf, "Roughness", rough)
     set_input(bsdf, "IOR", 1.45)
-    set_input(bsdf, ["Subsurface Weight", "Subsurface"], 1.0)
+    set_input(bsdf, ["Subsurface Weight", "Subsurface"], 1.0 if transmission > 0 else 0.25)
     set_input(bsdf, "Subsurface Radius", (1.0, 1.0, 1.0))
     set_input(bsdf, "Subsurface Scale", 0.25)
     set_input(bsdf, ["Transmission Weight", "Transmission"], transmission)
-    set_input(bsdf, ["Coat Weight", "Clearcoat"], 1.0)
+    set_input(bsdf, ["Coat Weight", "Clearcoat"], coat)
     set_input(bsdf, ["Coat Roughness", "Clearcoat Roughness"], 0.03)
     set_input(bsdf, ["Specular IOR Level", "Specular"], 0.7)
     if glow:
@@ -416,8 +416,8 @@ def obj_chip():
 
 
 def obj_appicon():
-    body = jelly("icon", (1.0, 0.3, 0.06), glow=0.0, rough=0.14, transmission=0.12)
-    glow = emissive("bars", (1.0, 0.97, 0.92), 3.5)
+    body = jelly("icon", (1.0, 0.36, 0.08), glow=0.0, rough=0.3, transmission=0.0, coat=0.35)
+    glow = jelly("bars", (1.0, 0.97, 0.94), glow=1.2, rough=0.1, transmission=0.0)
     parts = [box("icon", (2.6, 2.6, 0.9), bevel=0.62, segments=14, mat=body)]
     for i, h in enumerate([0.35, 0.7, 1.15, 0.8, 1.45, 0.95, 0.55, 0.3]):
         x = -0.98 + i * 0.28
@@ -425,13 +425,61 @@ def obj_appicon():
         rodobj.rotation_euler = (math.pi / 2, 0, 0)
         parts.append(rodobj)
     root = parent_all(parts, "appicon")
-    root.rotation_euler = (math.radians(44), 0, math.radians(-20))
+    root.rotation_euler = (math.radians(30), 0, math.radians(-16))
     studio((1.0, 0.6, 0.35))
     camera(9.2, lens=70, height=0.5)
     return (1000, 1000)
 
 
+def obj_mic():
+    head_m = jelly("head", (1.0, 0.28, 0.36), glow=0.02, transmission=0.3)
+    metal = jelly("yoke", (1.0, 0.93, 0.95), rough=0.12, transmission=0.15)
+    parts = []
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=96, ring_count=48, radius=0.78, location=(0, 0, 0.55))
+    top = bpy.context.active_object
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=96, ring_count=48, radius=0.78, location=(0, 0, -0.35))
+    bottom = bpy.context.active_object
+    bpy.ops.mesh.primitive_cylinder_add(vertices=96, radius=0.78, depth=0.9, location=(0, 0, 0.1))
+    mid = bpy.context.active_object
+    for o in (top, bottom, mid):
+        for poly in o.data.polygons:
+            poly.use_smooth = True
+        o.data.materials.append(head_m)
+        parts.append(o)
+    grille = emissive("grille", (1.0, 0.92, 0.94), 2.5)
+    for z in (0.62, 0.36, 0.1, -0.16):
+        bpy.ops.mesh.primitive_torus_add(major_radius=0.785, minor_radius=0.025, major_segments=96, minor_segments=12, location=(0, 0, z))
+        ring = bpy.context.active_object
+        ring.data.materials.append(grille)
+        parts.append(ring)
+    bpy.ops.mesh.primitive_torus_add(major_radius=1.15, minor_radius=0.11, major_segments=96, minor_segments=24, location=(0, 0, -0.1), rotation=(math.pi / 2, 0, 0))
+    yoke = bpy.context.active_object
+    cut = box("cut", (3, 3, 1.4), loc=(0, 0, 0.6), bevel=0.0, segments=1)
+    b = yoke.modifiers.new("cut", "BOOLEAN")
+    b.object = cut
+    b.operation = "DIFFERENCE"
+    bpy.context.view_layer.objects.active = yoke
+    bpy.ops.object.modifier_apply(modifier="cut")
+    bpy.data.objects.remove(cut)
+    for poly in yoke.data.polygons:
+        poly.use_smooth = True
+    yoke.data.materials.append(metal)
+    parts.append(yoke)
+    parts.append(rod("stem", 0.11, 0.9, loc=(0, 0, -1.65), mat=metal))
+    bpy.ops.mesh.primitive_cylinder_add(vertices=96, radius=0.85, depth=0.2, location=(0, 0, -2.12))
+    base = bpy.context.active_object
+    smooth(base, 0.08, 6)
+    base.data.materials.append(metal)
+    parts.append(base)
+    root = parent_all(parts, "mic")
+    root.rotation_euler = (math.radians(8), math.radians(10), math.radians(-18))
+    studio((1.0, 0.45, 0.5))
+    camera(12.5, lens=70, height=0.22, target=(0, 0, -0.6))
+    return (1000, 1000)
+
+
 OBJECTS = {
+    "mic": obj_mic,
     "appicon": obj_appicon,
     "capsule": obj_capsule,
     "capsule_milk": obj_capsule_milk,

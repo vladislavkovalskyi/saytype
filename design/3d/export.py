@@ -46,7 +46,9 @@ def save(im, path, width):
 
 for png in sorted(src.glob("*.png")):
     name = png.stem
-    im = bloom(Image.open(png).convert("RGBA"))
+    im = Image.open(png).convert("RGBA")
+    if name not in ("appicon",):
+        im = bloom(im)
     im = trim(im)
     if name.startswith("capsule"):
         save(im, dst / f"{name}.webp", 1120)

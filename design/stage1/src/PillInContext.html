@@ -1,0 +1,49 @@
+<style>
+.term { position: absolute; left: 250px; top: 100px; width: 940px; height: 590px; border-radius: 16px; overflow: hidden; background: rgba(22, 22, 26, .94); box-shadow: 0 0 0 .5px rgba(0,0,0,.6), inset 0 0 0 1px rgba(255,255,255,.08), 0 40px 90px -20px rgba(0,0,0,.55); font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif; }
+.term .tb { height: 40px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: rgba(255,255,255,.55); position: relative; }
+.term pre { margin: 0; padding: 12px 28px; font: 13.5px/1.75 ui-monospace, "SF Mono", Menlo, monospace; color: rgba(255,255,255,.82); white-space: pre-wrap; }
+.t-dim { color: rgba(255,255,255,.4); } .t-amb { color: #ffb070; } .t-cy { color: #7fd8ff; } .t-gr { color: #7fe0a0; }
+.inputbox { position: absolute; left: 22px; right: 22px; bottom: 20px; height: 52px; border-radius: 12px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.16); display: flex; align-items: center; gap: 12px; padding: 0 18px; font: 14px ui-monospace, "SF Mono", Menlo, monospace; }
+.caret { width: 9px; height: 19px; background: rgba(255,255,255,.85); }
+.dock { position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); height: 72px; padding: 10px 12px; border-radius: 24px; display: flex; gap: 10px; z-index: 30; background: rgba(255,255,255,.2); -webkit-backdrop-filter: blur(30px); backdrop-filter: blur(30px); box-shadow: inset 0 0 0 1px rgba(255,255,255,.3); }
+.dock img, .dock i { width: 52px; height: 52px; border-radius: 13px; display: block; }
+</style>
+<div class="desk wall" style="width: 1440px; height: 900px;">
+  <div class="menubar">
+    <div class="l"><b>Терминал</b><span>Файл</span><span>Правка</span><span>Вид</span><span>Окно</span></div>
+    <div class="r"><span style="display: flex; opacity: .95;">[[i wave 16 2.2]]</span><span>Ср 16 сент. 11:42</span></div>
+  </div>
+
+  <div class="term">
+    <div class="tb"><div class="lights" style="top: 14px; left: 16px;"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div>shop — agent</div>
+<pre><span class="t-dim">~/projects/</span><span class="t-cy">shop</span> <span class="t-dim">on</span> <span class="t-gr">main</span>
+
+<span class="t-amb">›</span> почему падает сборка?
+
+<span class="t-gr">●</span> Сборка падает на шаге <span class="t-cy">typecheck</span>. В <span class="t-cy">src/components/Header.tsx</span>
+  эффект без массива зависимостей вызывает <span class="t-cy">setUser</span> на каждом
+  рендере, и компонент уходит в бесконечный цикл обновлений.
+
+  <span class="t-dim">Read  src/components/Header.tsx  (84 lines)</span>
+  <span class="t-dim">Ran   npm run typecheck  ·  1 error</span>
+
+  Могу добавить зависимости или вынести загрузку в отдельный хук.</pre>
+    <div class="inputbox"><span class="t-amb">›</span><span class="caret"></span></div>
+  </div>
+
+  <div class="pill" style="position: absolute; left: 50%; bottom: 104px; transform: translateX(-50%); z-index: 35; white-space: nowrap;">
+    <span class="recdot"></span>
+    <div class="bars" style="gap: 3px; flex: none;">[[bars 9 5 3 18]]</div>
+    <p class="live">вынеси загрузку пользователя в хук <span class="code">useUser</span> <span class="dim">и добавь зависимости</span></p>
+  </div>
+
+  <div class="dock">
+    <img src="appicon-sm.webp" alt="" style="object-fit: contain;">
+    <i style="background: linear-gradient(160deg, #3a3a40, #1c1c20);"></i>
+    <i style="background: linear-gradient(160deg, #5aa8ff, #2f62e0);"></i>
+    <i style="background: linear-gradient(160deg, #6fe0a0, #22a060);"></i>
+    <i style="background: linear-gradient(160deg, #ffd27a, #f08a2c);"></i>
+    <i style="background: linear-gradient(160deg, #f2f0ec, #cfcac2);"></i>
+    <i style="background: linear-gradient(160deg, #ff8a8a, #d83a52);"></i>
+  </div>
+</div>
