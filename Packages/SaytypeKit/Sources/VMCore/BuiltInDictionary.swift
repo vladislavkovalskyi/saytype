@@ -54,28 +54,32 @@ public enum BuiltInDictionary {
         return term.dropFirst().contains(where: \.isUppercase)
     }
 
+    /// First word of every heard form: most dictated words start none and are skipped at once.
+    static let firstWords: Set<Substring> = Set(lookup.keys.map { $0.prefix { $0 != " " } })
+
     /// Replaces heard forms with written terms: "поправь юз эффект в реакте" →
     /// "поправь useEffect в React". Punctuation around a match is kept.
     public static func apply(to text: String) -> String {
         let words = Words.split(text)
         guard !words.isEmpty else { return text }
+        // Each word is normalised once; a span's key joins these.
+        let keys = words.map(normalize)
+        let startsClean = words.map { $0.first.map { $0.isLetter || $0.isNumber } ?? false }
+        let endsClean = words.map { $0.last.map { $0.isLetter || $0.isNumber } ?? false }
         var output: [String] = []
+        output.reserveCapacity(words.count)
         var i = 0
         while i < words.count {
             var matched = false
-            for span in stride(from: min(longestHeard, words.count - i), through: 1, by: -1) {
-                let slice = Array(words[i..<i + span])
-                // "докер, композ" is two separate words, not one term.
-                let innerClean = slice.dropLast().allSatisfy { $0.last?.isLetter == true || $0.last?.isNumber == true }
-                    && slice.dropFirst().allSatisfy { $0.first?.isLetter == true || $0.first?.isNumber == true }
-                guard innerClean else { continue }
-                let leading = String(slice[0].prefix { !$0.isLetter && !$0.isNumber })
-                let trailing = String(slice[span - 1].reversed().prefix { !$0.isLetter && !$0.isNumber }.reversed())
-                let key = slice.map(core).joined(separator: " ")
-                    .lowercased()
-                    .replacingOccurrences(of: "ё", with: "е")
-                    .replacingOccurrences(of: "-", with: " ")
-                if let written = lookup[key] {
+            if !keys[i].isEmpty, firstWords.contains(keys[i].prefix { $0 != " " }) {
+                for span in stride(from: min(longestHeard, words.count - i), through: 1, by: -1) {
+                    // "докер, композ" is two separate words, not one term.
+                    let last = i + span - 1
+                    guard (i..<last).allSatisfy({ endsClean[$0] }), (i + 1..<last + 1).allSatisfy({ startsClean[$0] }) else { continue }
+                    let key = span == 1 ? keys[i] : keys[i...last].joined(separator: " ")
+                    guard let written = lookup[key] else { continue }
+                    let leading = words[i].prefix { !$0.isLetter && !$0.isNumber }
+                    let trailing = String(words[last].reversed().prefix { !$0.isLetter && !$0.isNumber }.reversed())
                     output.append(leading + written + trailing)
                     i += span
                     matched = true
@@ -88,6 +92,13 @@ public enum BuiltInDictionary {
             }
         }
         return output.joined(separator: " ")
+    }
+
+    private static func normalize(_ word: String) -> String {
+        core(word)
+            .lowercased()
+            .replacingOccurrences(of: "ё", with: "е")
+            .replacingOccurrences(of: "-", with: " ")
     }
 
     private static func core(_ word: String) -> String {
