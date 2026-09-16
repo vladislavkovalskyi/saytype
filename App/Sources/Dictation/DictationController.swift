@@ -104,6 +104,7 @@ final class DictationController {
 
     init(settings: SettingsStore) {
         self.settings = settings
+        rewriter.attach(settings)
     }
 
     // MARK: Lifecycle
@@ -257,7 +258,7 @@ final class DictationController {
         phase = .listening
         finishingStage = .transcribing
         smart.warmUp(settings: settings.value.applying(activeMode))
-        if activeMode.usesLanguageModel { rewriter.warmUp(settings.value) }
+        rewriter.warmUp(settings.value, mode: activeMode)
         if settings.value.sounds { Sounds.start() }
         runLiveLoop()
     }
@@ -327,7 +328,8 @@ final class DictationController {
         let mode = activeMode
         let terms = DictionaryRewriter.promptTerms(entries: value.dictionary)
         // Whisper translates only when no language model will: the model keeps terms intact.
-        let whisperTranslates = mode.translateToEnglish && !rewriter.isReady(value)
+        // Turbo cannot translate at all; its modes stay in the spoken language without a model.
+        let whisperTranslates = mode.translateToEnglish && !rewriter.isReady(value) && WhisperKitEngine.supportsTranslation(value.whisperModel)
         let hints = TranscriptionHints(
             language: value.language.whisperCode,
             prompt: PromptBuilder.prompt(glossary: terms),

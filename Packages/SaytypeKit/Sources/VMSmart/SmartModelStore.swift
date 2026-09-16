@@ -1,11 +1,14 @@
 import Foundation
 
-/// Downloads the structure model from Hugging Face once and finds it on disk afterwards.
+/// Downloads a language model from Hugging Face once and finds it on disk afterwards.
 /// Files land in `Models/llm/<repo>`; a partial download never counts as installed.
 public struct SmartModelStore: Sendable {
     /// Qwen3 1.7B in 4 bits: the best labelling accuracy per megabyte in our tests
     /// (0.8B rewrote words, 2B made more structure mistakes and weighs 1.7 GB).
     public static let defaultRepo = "mlx-community/Qwen3-1.7B-4bit"
+    /// Qwen3 4B Instruct 2507 in 4 bits, for rewrites and translations: a build without the
+    /// thinking phase, so every generated token is answer. 2.28 GB.
+    public static let rewriteRepo = "mlx-community/Qwen3-4B-Instruct-2507-4bit"
     static let requiredFiles = ["config.json", "tokenizer.json", "tokenizer_config.json", "model.safetensors"]
     static let skippedFiles: Set<String> = ["README.md", ".gitattributes"]
 
@@ -26,6 +29,7 @@ public struct SmartModelStore: Sendable {
         base.appending(path: repo, directoryHint: .isDirectory)
     }
 
+    /// The weights arrive last, so their presence means every other file is there too.
     public var isDownloaded: Bool {
         Self.requiredFiles.allSatisfy { FileManager.default.fileExists(atPath: folder.appending(path: $0).path) }
     }
@@ -40,7 +44,7 @@ public struct SmartModelStore: Sendable {
     public func download(progress: @escaping @Sendable (Double) -> Void) async throws {
         let files = try await listFiles()
             .filter { !Self.skippedFiles.contains($0.path) }
-            .sorted { ($0.path == "model.safetensors" ? 1 : 0) < ($1.path == "model.safetensors" ? 1 : 0) }
+            .sorted { ($0.path.hasSuffix(".safetensors") ? 1 : 0) < ($1.path.hasSuffix(".safetensors") ? 1 : 0) }
         let total = max(1, files.reduce(0) { $0 + $1.size })
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
 

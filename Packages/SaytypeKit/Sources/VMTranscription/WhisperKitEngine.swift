@@ -17,6 +17,13 @@ public actor WhisperKitEngine: TranscriptionEngine {
 
     public var isLoaded: Bool { pipe != nil }
 
+    /// Whether Whisper's own English translation works with this variant. large-v3-turbo
+    /// (the v20240930 builds) was fine-tuned on transcription only: asked to translate Russian
+    /// speech it returned Russian text for 8 of 8 phrases. large-v3 was trained to translate.
+    public static func supportsTranslation(_ variant: String) -> Bool {
+        !variant.contains("turbo") && !variant.contains("v20240930")
+    }
+
     public func prepare() async throws {
         guard pipe == nil else { return }
         let config = WhisperKitConfig(
