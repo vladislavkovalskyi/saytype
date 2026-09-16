@@ -15,16 +15,17 @@ cask "voicemode" do
   # Sparkle updates the app in place; `brew upgrade --greedy` upgrades it too.
   auto_updates true
   depends_on arch: :arm64
-  depends_on macos: ">= :tahoe"
+  depends_on macos: :tahoe
 
   app "voicemode.app"
 
   # Releases are not notarized yet, so Gatekeeper would refuse the first launch.
   # Clearing the quarantine flag opens the app as if it came from a trusted source.
   # Remove this block once releases are notarized.
-  postflight do
-    system_command "/usr/bin/xattr",
-                   args: ["-dr", "com.apple.quarantine", "#{appdir}/voicemode.app"]
+  postflight_steps do
+    run "/usr/bin/xattr",
+        args:           ["-dr", "com.apple.quarantine", "{{appdir}}/voicemode.app"],
+        writable_paths: ["{{appdir}}/voicemode.app"]
   end
 
   zap trash: [
