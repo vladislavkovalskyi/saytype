@@ -84,6 +84,12 @@ struct MicrophoneStep: View {
         }
         .stepCanvas()
         .task {
+            if AppModel.isPreviewLaunch {
+                // No permission prompt and no real device name in screenshots.
+                deviceName = "MacBook Pro Microphone"
+                meter.startDemo()
+                return
+            }
             deviceName = Self.defaultDeviceName()
             var state = Permissions.state(of: .microphone)
             if state == .notDetermined {
@@ -156,6 +162,21 @@ final class MicMeter {
         task = Task { [weak self] in
             for await chunk in stream {
                 self?.push(chunk.level)
+            }
+        }
+    }
+
+    /// Speech-like levels without touching the microphone, for previews.
+    func startDemo() {
+        guard task == nil else { return }
+        task = Task { [weak self] in
+            var t = 0.0
+            while !Task.isCancelled {
+                t += 0.07
+                let syllables = abs(sin(t * 5.3)) * 0.55 + abs(sin(t * 1.7)) * 0.35
+                let level = Float(min(1, 0.22 + syllables * (0.75 + 0.25 * sin(t * 0.9))))
+                self?.push(level)
+                try? await Task.sleep(for: .milliseconds(70))
             }
         }
     }

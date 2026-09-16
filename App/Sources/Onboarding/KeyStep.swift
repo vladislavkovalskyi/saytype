@@ -49,7 +49,7 @@ struct KeyStep: View {
                             .font(.system(size: 16, weight: .regular))
                         VStack(alignment: .leading, spacing: 1) {
                             Text(warning).font(.onest(14, .semibold))
-                            Muted("Keyboard › Press Globe key to")
+                            Muted("Keyboard › “Press 🌐 key to”")
                         }
                         Spacer(minLength: 0)
                         WhiteButton(title: "Turn Off") {

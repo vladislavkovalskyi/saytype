@@ -39,7 +39,10 @@ final class AppModel {
             },
             smartStructure: smartStructureBinding
         )
-        overlay = OverlayController(model: overlayModel)
+        // Window previews don't need an island competing with the real app at the notch.
+        if !Self.isPreviewLaunch || ProcessInfo.processInfo.arguments.contains("--demo-overlay") {
+            overlay = OverlayController(model: overlayModel)
+        }
         if !Self.isPreviewLaunch {
             updater = Updater()
             statusItem = StatusItemController(model: self)
@@ -70,7 +73,7 @@ final class AppModel {
 
     /// `--demo-*` and `--show-*` launches only draw the UI. They never take the record key,
     /// so a preview next to the real app cannot record or paste a second time.
-    static let isPreviewLaunch = ProcessInfo.processInfo.arguments.contains { $0.hasPrefix("--demo") || $0.hasPrefix("--show") || $0.hasPrefix("--snapshot") }
+    nonisolated static let isPreviewLaunch = ProcessInfo.processInfo.arguments.contains { $0.hasPrefix("--demo") || $0.hasPrefix("--show") || $0.hasPrefix("--snapshot") }
 
     private func tick() {
         guard !Self.isPreviewLaunch else { return }
@@ -87,7 +90,8 @@ final class AppModel {
     func refreshPermissions() {
         var next: [Permission: PermissionState] = [:]
         for permission in Permission.allCases {
-            next[permission] = Permissions.state(of: permission)
+            // Previews show a set-up app and never reveal this Mac's real permission state.
+            next[permission] = Self.isPreviewLaunch ? .granted : Permissions.state(of: permission)
         }
         if next != permissions {
             permissions = next

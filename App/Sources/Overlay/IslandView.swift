@@ -432,12 +432,13 @@ private struct MicrophoneChip: View {
 
     var body: some View {
         let device = AudioDevices.resolve(uid: model.settings.value.microphoneUID)
+        let name = AppModel.isPreviewLaunch ? "MacBook Pro Microphone" : device?.name
         Button {
             showMenu()
         } label: {
             HStack(spacing: 5) {
                 Image(systemName: "mic.fill").font(.system(size: 9.5, weight: .semibold))
-                Text(device?.name ?? String(localized: "No microphone"))
+                Text(name ?? String(localized: "No microphone"))
                     .frame(maxWidth: 92, alignment: .leading)
                     .truncationMode(.tail)
             }

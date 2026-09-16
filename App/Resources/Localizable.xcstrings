@@ -1526,12 +1526,12 @@
         }
       }
     },
-    "Keyboard › Press Globe key to" : {
+    "Keyboard › “Press 🌐 key to”" : {
       "localizations" : {
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Клавиатура › Нажатие клавиши Globe"
+            "value" : "Клавиатура › «Нажатие клавиши 🌐»"
           }
         }
       }
@@ -2261,6 +2261,16 @@
     },
     "RU" : {
       "shouldTranslate" : false
+    },
+    "Run Setup Again…" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пройти настройку заново…"
+          }
+        }
+      }
     },
     "Russian, English terms" : {
       "comment" : "Speech language of the model",

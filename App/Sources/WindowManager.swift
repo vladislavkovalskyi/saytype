@@ -35,6 +35,11 @@ final class WindowManager {
 
     private func present(_ window: NSWindow?) {
         guard let window else { return }
+        if AppModel.isPreviewLaunch {
+            // Screenshots shouldn't take keyboard focus from whatever the user is doing.
+            window.orderFrontRegardless()
+            return
+        }
         NSApp.activate()
         window.makeKeyAndOrderFront(nil)
     }
@@ -60,6 +65,11 @@ final class WindowManager {
         // The content rect excludes the title bar; the design sizes include it.
         window.setFrame(CGRect(origin: .zero, size: size), display: false)
         window.center()
+        // Previews are for screenshots: put them on the sharpest screen.
+        if AppModel.isPreviewLaunch, let screen = NSScreen.screens.max(by: { $0.backingScaleFactor < $1.backingScaleFactor }) {
+            let visible = screen.visibleFrame
+            window.setFrameOrigin(CGPoint(x: visible.midX - size.width / 2, y: visible.midY - size.height / 2))
+        }
         return window
     }
 }

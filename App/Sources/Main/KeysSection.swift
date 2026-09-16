@@ -284,7 +284,19 @@ private struct AutoEnterApps: View {
 
     var body: some View {
         let apps = model.settings.value.autoEnterApps
-        let suggestions = Self.suggested.filter { !apps.contains($0) && InstalledApps.url(for: $0) != nil }.prefix(2)
+        let installed = AppModel.isPreviewLaunch
+            ? ["com.todesktop.230313mzl4w4u92", "com.mitchellh.ghostty"]
+            : Self.suggested.filter { InstalledApps.url(for: $0) != nil }
+        let suggestions = Array(installed.filter { !apps.contains($0) }.prefix(2))
+        // Longer translations leave less room: drop suggestion chips rather than overflow.
+        ViewThatFits(in: .horizontal) {
+            row(apps: apps, suggestions: suggestions)
+            row(apps: apps, suggestions: Array(suggestions.prefix(1)))
+            row(apps: apps, suggestions: [])
+        }
+    }
+
+    private func row(apps: [String], suggestions: [String]) -> some View {
         HStack(spacing: 8) {
             ForEach(apps, id: \.self) { bundleID in
                 Button {
@@ -302,7 +314,7 @@ private struct AutoEnterApps: View {
                 }
                 .buttonStyle(.plain)
             }
-            ForEach(Array(suggestions), id: \.self) { bundleID in
+            ForEach(suggestions, id: \.self) { bundleID in
                 Button {
                     add(bundleID)
                 } label: {
@@ -364,7 +376,14 @@ enum InstalledApps {
     }
 
     /// Localised app name, e.g. "Terminal"; the bundle id when the app is not installed.
+    /// Names used in previews, so screenshots don't depend on what this Mac has installed.
+    private static let previewNames = [
+        "com.apple.Terminal": "Terminal", "com.googlecode.iterm2": "iTerm",
+        "com.todesktop.230313mzl4w4u92": "Cursor", "com.mitchellh.ghostty": "Ghostty",
+    ]
+
     static func name(for bundleID: String) -> String {
+        if AppModel.isPreviewLaunch, let name = previewNames[bundleID] { return name }
         guard let url = url(for: bundleID) else {
             return bundleID.split(separator: ".").last.map(String.init) ?? bundleID
         }

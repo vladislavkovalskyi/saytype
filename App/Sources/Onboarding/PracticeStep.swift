@@ -92,7 +92,13 @@ struct PracticeStep: View {
         .animation(.snappy(duration: 0.2), value: record?.id)
         .onAppear {
             if !opened {
-                baseline = model.dictation.history.first?.id
+                if AppModel.isPreviewLaunch {
+                    // Screenshots show the step after a dictation, with sample text.
+                    baseline = nil
+                    text = model.dictation.history.first?.text ?? ""
+                } else {
+                    baseline = model.dictation.history.first?.id
+                }
                 opened = true
             }
             editorFocused = true

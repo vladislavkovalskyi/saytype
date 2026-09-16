@@ -110,6 +110,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
             check.isEnabled = updater.canCheckForUpdates
             menu.addItem(check)
         }
+        menu.addItem(ClosureMenuItem(title: String(localized: "Run Setup Again…")) { [model] in model.windows.showOnboarding() })
         let open = ClosureMenuItem(title: String(localized: "Open saytype…"), keyEquivalent: ",") { [model] in model.windows.showMain() }
         open.keyEquivalentModifierMask = [.command]
         menu.addItem(open)
