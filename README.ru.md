@@ -32,18 +32,19 @@
 
 ## Установка
 
-1. [Скачай saytype.dmg](https://github.com/vladislavkovalskyi/saytype/releases/latest/download/saytype.dmg) и перетащи saytype в «Программы».
-2. Открой. Первый запуск проведёт через выбор клавиши, микрофон и разрешения и скачает Whisper (632 МБ).
-
-Через Homebrew:
+Проще всего через Homebrew:
 
 ```sh
 brew install --cask vladislavkovalskyi/tap/saytype
 ```
 
+Или [скачай saytype.dmg](https://github.com/vladislavkovalskyi/saytype/releases/latest/download/saytype.dmg) и перетащи saytype в «Программы».
+
+Открой. Первый запуск проведёт через выбор клавиши, микрофон и разрешения и скачает Whisper (632 МБ).
+
 > [!NOTE]
-> Если macOS пишет, что не может проверить saytype, открой **Системные настройки → Конфиденциальность и безопасность** и нажми **Всё равно открыть**, или выполни
-> `xattr -dr com.apple.quarantine /Applications/saytype.app`.
+> saytype бесплатный и не нотаризован Apple: нотаризация стоит $99 в год. После установки из DMG macOS может не открыть приложение с первого раза: открой **Системные настройки → Конфиденциальность и безопасность** и нажми **Всё равно открыть**, или выполни
+> `xattr -dr com.apple.quarantine /Applications/saytype.app`. Homebrew делает это сам.
 
 ## Как пользоваться
 

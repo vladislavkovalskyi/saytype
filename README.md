@@ -32,18 +32,19 @@ Built for people who talk to coding agents all day: Claude Code, Cursor, Codex, 
 
 ## Install
 
-1. [Download saytype.dmg](https://github.com/vladislavkovalskyi/saytype/releases/latest/download/saytype.dmg) and drag saytype to Applications.
-2. Open it. Setup walks you through the record key, microphone and permissions, and downloads Whisper (632 MB).
-
-Homebrew:
+With Homebrew, the easiest way:
 
 ```sh
 brew install --cask vladislavkovalskyi/tap/saytype
 ```
 
+Or [download saytype.dmg](https://github.com/vladislavkovalskyi/saytype/releases/latest/download/saytype.dmg) and drag saytype to Applications.
+
+Open it. Setup walks you through the record key, microphone and permissions, and downloads Whisper (632 MB).
+
 > [!NOTE]
-> If macOS says saytype can't be verified, open **System Settings → Privacy & Security** and click **Open Anyway**, or run
-> `xattr -dr com.apple.quarantine /Applications/saytype.app`.
+> saytype is free and isn't notarized by Apple, which costs $99 a year. After installing from the DMG, macOS may refuse the first launch: open **System Settings → Privacy & Security** and click **Open Anyway**, or run
+> `xattr -dr com.apple.quarantine /Applications/saytype.app`. Homebrew does this for you.
 
 ## How it works
 
