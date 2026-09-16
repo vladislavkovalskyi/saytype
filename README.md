@@ -26,6 +26,8 @@
 - **You see the words while you speak.** Live text grows out of the notch as you talk, not after you stop.
 - **Two languages in one sentence.** Say «поправь useEffect в Header» and get `useEffect` spelled like code, not transliterated.
 - **Text arrives formatted.** Punctuation, paragraphs from pauses, numbered lists when you enumerate. A small local model adds structure to long dictations without touching your words.
+- **Or the way you text.** Chat style writes in lowercase with commas only. Word filters drop the words you never want to see.
+- **650+ dev terms out of the box.** Claude Code, ChatGPT, Next.js, Supabase, Figma, LGTM and more, spelled right with no setup.
 - **Offline and private.** Recognition and formatting run on the Neural Engine and GPU. The network is used only to download models.
 
 Built for people who talk to coding agents all day: Claude Code, Cursor, Codex, terminals, browsers, chat.
@@ -119,6 +121,30 @@ Setup takes eight short steps. Whisper downloads once (632 MB), then Core ML pre
 | <kbd>V</kbd> on the card | paste it into the field you're typing in |
 | <kbd>esc</kbd> on the card | close the card |
 
+## Languages
+
+Whisper recognizes 99 languages. Pick yours in **Text → Speech language**, in the menu bar or on the island.
+
+| Language | Status |
+|---|---|
+| Russian, English | tested daily; filler words, lists and code terms are tuned for them |
+| Polish, Spanish, German, Ukrainian and 90+ more | Whisper recognizes them and they should work; formatting is basic |
+| Auto | Whisper detects the language of each dictation |
+
+Speak Russian with English terms? Choose Russian: the built-in dictionary turns «юз эффект» into `useEffect`. Tried another language? Tell how it went in [Issues](https://github.com/vladislavkovalskyi/saytype/issues).
+
+## Style and filters
+
+| | As spoken | You get |
+|---|---|---|
+| Default | привет я закончил юз эффект в реакте завтра покажу апи ок | Привет. Я закончил useEffect в React, завтра покажу API. Ок? |
+| Chat style | the same | привет я закончил useEffect в React, завтра покажу API ок |
+
+- **Chat style.** One switch for lowercase letters and commas only, the way people text. `API`, `useEffect` and `GitHub` keep their case.
+- **Punctuation.** Full with paragraphs and lists, commas only, or none. Letter case: as in a sentence or all lowercase.
+- **Word filters.** Add words and phrases to drop from every dictation. Swear words can be masked to the first letter: б****.
+- **Built-in dictionary.** 650+ terms from AI, frontend, backend, design, DevOps and dev slang: Claude Code, ChatGPT, Next.js, Supabase, Figma, LGTM. Turn it off or add your own words in **Dictionary**.
+
 ## Settings
 
 <table>
@@ -128,14 +154,14 @@ Setup takes eight short steps. Whisper downloads once (632 MB), then Core ML pre
   </tr>
   <tr>
     <td><b>Key and overlay.</b> Record key, sounds, island or pill, paste or card, Return after paste for terminals.</td>
-    <td><b>Text.</b> Before and after, punctuation, smart structure, filler words, speech language.</td>
+    <td><b>Text.</b> Before and after, chat style, punctuation, filler words and your own filters, smart structure, speech language.</td>
   </tr>
   <tr>
     <td><img src="docs/media/en/section-dictionary.webp" alt="Dictionary"></td>
     <td><img src="docs/media/en/section-history.webp" alt="History"></td>
   </tr>
   <tr>
-    <td><b>Dictionary.</b> Teach it how you say a term and how it's spelled: «юз эффект» → <code>useEffect</code>.</td>
+    <td><b>Dictionary.</b> 650+ built-in terms, plus your own: how you say a term and how it's spelled, «юз эффект» → <code>useEffect</code>.</td>
     <td><b>History.</b> Search, final text, what you said and the difference. Copy, drag or paste again.</td>
   </tr>
   <tr>
@@ -215,6 +241,8 @@ Without Homebrew: quit saytype, move it from Applications to the Trash and run t
 **fn opens the emoji picker.** Set System Settings → Keyboard → “Press 🌐 key to” → “Do Nothing”, or choose right ⌥ as the record key.
 
 **The first launch takes minutes.** Core ML compiles Whisper for your chip once, about 2–3 minutes. Later launches take seconds.
+
+**Does it work in my language?** Most likely. Whisper knows 99 languages; saytype is tested in Russian and English. Pick your language in Text → Speech language rather than Auto: short phrases are easier to recognize when the language is known.
 
 **The island doesn't open on hover.** The hover panel needs a MacBook screen with a notch. On other displays the island appears while you dictate, and the menu bar icon has most of the same controls.
 
