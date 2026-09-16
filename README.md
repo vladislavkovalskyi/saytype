@@ -27,6 +27,8 @@
 - **Two languages in one sentence.** Say «поправь useEffect в Header» and get `useEffect` spelled like code, not transliterated.
 - **Text arrives formatted.** Punctuation, paragraphs from pauses, numbered lists when you enumerate. A small local model adds structure to long dictations without touching your words.
 - **Or the way you text.** Chat style writes in lowercase with commas only. Word filters drop the words you never want to see.
+- **A mode for every app.** Chat style in Telegram, spoken code and backticks in Claude Code and Cursor, a commit message by hand.
+- **Local AI rewrites.** Turn rambling into a clean agent prompt, a commit or English text with Qwen3 4B, Ollama or LM Studio.
 - **650+ dev terms out of the box.** Claude Code, ChatGPT, Next.js, Supabase, Figma, LGTM and more, spelled right with no setup.
 - **Offline and private.** Recognition and formatting run on the Neural Engine and GPU. The network is used only to download models.
 
@@ -106,7 +108,7 @@ Setup takes eight short steps. Whisper downloads once (632 MB), then Core ML pre
   </tr>
   <tr>
     <td><b>Prefer the bottom?</b> The pill sits above the Dock and glows with your voice.</td>
-    <td><b>Home.</b> Model state, today's words, pace and recent dictations.</td>
+    <td><b>Home.</b> Model state, today's words, pace, time saved and recent dictations.</td>
   </tr>
 </table>
 
@@ -117,9 +119,13 @@ Setup takes eight short steps. Whisper downloads once (632 MB), then Core ML pre
 | <kbd>esc</kbd> | cancel |
 | <kbd>⌃</kbd><kbd>⌥</kbd><kbd>V</kbd> | paste the last dictation again |
 | <kbd>⌃</kbd><kbd>⌥</kbd><kbd>C</kbd> | copy the last dictation |
+| <kbd>⌃</kbd><kbd>⌥</kbd><kbd>M</kbd> | switch mode: by app, then each mode |
+| <kbd>esc</kbd> while rewriting | insert without the language model |
 | <kbd>⌘</kbd><kbd>C</kbd> on the card | copy the text (output mode “Card”) |
 | <kbd>V</kbd> on the card | paste it into the field you're typing in |
 | <kbd>esc</kbd> on the card | close the card |
+
+Change the global shortcuts in **Key and overlay**.
 
 ## Languages
 
@@ -145,6 +151,60 @@ Speak Russian with English terms? Choose Russian: the built-in dictionary turns 
 - **Word filters.** Add words and phrases to drop from every dictation. Swear words can be masked to the first letter: б****.
 - **Built-in dictionary.** 650+ terms from AI, frontend, backend, design, DevOps and dev slang: Claude Code, ChatGPT, Next.js, Supabase, Figma, LGTM. Turn it off or add your own words in **Dictionary**.
 
+## Modes
+
+saytype picks a mode by the app you dictate into. Each mode has its own punctuation, letter case, code rules, language model and output. Switch by hand with <kbd>⌃</kbd><kbd>⌥</kbd><kbd>M</kbd>, in the menu bar or on the island.
+
+| Mode | Turns on in | What changes |
+|---|---|---|
+| Standard | every other app | the rules from **Text** |
+| Message | Telegram, WhatsApp, Messages, Discord, Viber | chat style: lowercase, commas only |
+| Agent prompt | Terminal, iTerm, Ghostty, Warp, Cursor, VS Code, Zed, Claude, ChatGPT | spoken code and `backticks` |
+| Commit | picked by hand | a Conventional Commit message in English |
+| Email | Mail, Spark, Outlook | full punctuation, no filler words |
+
+Add your own mode with an instruction, e.g. “turn this into a bug report with steps to reproduce”.
+
+## Spoken code
+
+In Agent prompt and Commit modes, and in any mode where you turn it on:
+
+| Say | Get |
+|---|---|
+| кэмел кейс юзер дата | `userData` |
+| константа макс ретрай каунт | `MAX_RETRY_COUNT` |
+| src слэш компонентс слэш хедер точка tsx | `src/components/header.tsx` |
+| response точка status строго равно 200 | `response.status === 200` |
+| vlad собака gmail точка com | `vlad@gmail.com` |
+
+«Поправь кэмел кейс юзер дата в src слэш app точка tsx» arrives as “Поправь `userData` в `src/app.tsx`.” Ordinary speech stays as it is: «моя собака», «точка зрения».
+
+Add a code folder in **Dictionary → Projects**: saytype reads function, component and file names from it and teaches them to Whisper, so `useUserData` is spelled the way your code spells it.
+
+## Language model
+
+Optional rewrites run on your Mac with Qwen3 4B (2.3 GB, downloaded by saytype), or with your own [Ollama](https://ollama.com) or [LM Studio](https://lmstudio.ai).
+
+- **Agent prompt:** a stream of thought becomes goal, context and steps.
+- **Commit:** a Conventional Commit message in English.
+- **Cleaner:** repeats and self-corrections go away: «не X, а Y» → Y.
+- **Your instruction:** anything you write.
+- **Translate to English** from any language, with terms kept.
+
+saytype checks every rewrite: if a file name, identifier, number or link from your dictation is missing, it inserts your text as dictated. On an M3 Pro Qwen3 4B takes about 1 s for a short phrase and 3–8 s for 150 words; press <kbd>esc</kbd> to insert without waiting.
+
+## Voice commands
+
+| Say | What happens |
+|---|---|
+| новая строка · new line | line break |
+| новый абзац · new paragraph | paragraph break |
+| удали последнее предложение · delete last sentence | removes the sentence before it |
+| открой кавычки … закрой кавычки · open quote … close quote | «…» |
+| отправь · send it, at the very end | presses Return after the paste |
+
+Commands work only as separate phrases, so «добавь новую строку в таблицу» and «отправь письмо Васе» stay text.
+
 ## Settings
 
 <table>
@@ -153,32 +213,32 @@ Speak Russian with English terms? Choose Russian: the built-in dictionary turns 
     <td width="50%"><img src="docs/media/en/section-text.webp" alt="Text"></td>
   </tr>
   <tr>
-    <td><b>Key and overlay.</b> Record key, sounds, island or pill, paste or card, Return after paste for terminals.</td>
+    <td><b>Key and overlay.</b> Record key, auto-stop after silence, island or pill, paste or card, Return after paste, your own shortcuts.</td>
     <td><b>Text.</b> Before and after, chat style, punctuation, filler words and your own filters, smart structure, speech language.</td>
   </tr>
   <tr>
+    <td><img src="docs/media/en/section-modes.webp" alt="Modes"></td>
     <td><img src="docs/media/en/section-dictionary.webp" alt="Dictionary"></td>
+  </tr>
+  <tr>
+    <td><b>Modes.</b> Apps, style, spoken code, rewrite, translation and output for each mode.</td>
+    <td><b>Dictionary.</b> 650+ built-in terms, your own, and identifiers from your code folders: «юз эффект» → <code>useEffect</code>.</td>
+  </tr>
+  <tr>
     <td><img src="docs/media/en/section-history.webp" alt="History"></td>
-  </tr>
-  <tr>
-    <td><b>Dictionary.</b> 650+ built-in terms, plus your own: how you say a term and how it's spelled, «юз эффект» → <code>useEffect</code>.</td>
-    <td><b>History.</b> Search, final text, what you said and the difference. Copy, drag or paste again.</td>
-  </tr>
-  <tr>
     <td><img src="docs/media/en/section-model.webp" alt="Model"></td>
+  </tr>
+  <tr>
+    <td><b>History.</b> Search, final text, what you said and the difference. Click a word to fix its spelling in the dictionary.</td>
+    <td><b>Model.</b> Whisper turbo or large-v3, smart structure, language model: Qwen3 4B, Ollama or LM Studio.</td>
+  </tr>
+  <tr>
     <td><img src="docs/media/en/section-permissions.webp" alt="Permissions"></td>
-  </tr>
-  <tr>
-    <td><b>Model.</b> Whisper turbo or large-v3, smart structure, memory use, model files.</td>
-    <td><b>Permissions.</b> State of each permission with a shortcut to System Settings.</td>
-  </tr>
-  <tr>
     <td><img src="docs/media/en/section-about.webp" alt="About"></td>
-    <td></td>
   </tr>
   <tr>
+    <td><b>Permissions.</b> State of each permission with a shortcut to System Settings.</td>
     <td><b>About.</b> Version and updates, author, source code, issues and the open source parts saytype is built on.</td>
-    <td></td>
   </tr>
 </table>
 
@@ -188,6 +248,7 @@ Speak Russian with English terms? Choose Russian: the built-in dictionary turns 
 |---|---|---|
 | Whisper large-v3-turbo via [WhisperKit](https://github.com/argmaxinc/WhisperKit) | 632 MB | speech to text on the Neural Engine, live and final passes |
 | Qwen3 1.7B 4-bit via [MLX](https://github.com/ml-explore/mlx-swift-lm) | 944 MB, optional | labels sentences as paragraphs or list items; the text is rebuilt from labels, so words never change |
+| Qwen3 4B Instruct 2507, 4-bit via MLX | 2.3 GB, optional | rewrites and translation in modes that use a language model; Ollama or LM Studio work instead |
 
 Models live in `~/Library/Application Support/dev.kovalskyi.saytype/Models` and download from Hugging Face on first use.
 
@@ -249,6 +310,8 @@ Without Homebrew: quit saytype, move it from Applications to the Trash and run t
 **fn opens the emoji picker.** Set System Settings → Keyboard → “Press 🌐 key to” → “Do Nothing”, or choose right ⌥ as the record key.
 
 **The first launch takes minutes.** Core ML compiles Whisper for your chip once, about 2–3 minutes. Later launches take seconds.
+
+**Translation doesn't work.** Whisper turbo can't translate, so translation needs a language model: turn on Qwen3 4B, Ollama or LM Studio in **Model**.
 
 **Does it work in my language?** Most likely. Whisper knows 99 languages; saytype is tested in Russian and English. Pick your language in Text → Speech language rather than Auto: short phrases are easier to recognize when the language is known.
 

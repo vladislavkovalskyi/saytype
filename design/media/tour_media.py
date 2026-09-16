@@ -20,8 +20,8 @@ SHOTS, OUT = Path(sys.argv[1]), Path(sys.argv[2])
 ROOT = Path(__file__).resolve().parents[2]
 
 SETUP = ["onb1", "onb2", "onb3", "onb4", "onb5", "onb6", "onb7", "onb8"]
-SECTIONS = ["home", "keys", "text", "dictionary", "history", "model", "permissions", "about"]
-TOUR = ["onb1", "onb2", "onb3", "onb4", "onb5", "onb6", "onb8", "home", "keys", "text", "dictionary", "history", "model", "about"]
+SECTIONS = ["home", "keys", "text", "modes", "dictionary", "history", "model", "permissions", "about"]
+TOUR = ["onb1", "onb2", "onb3", "onb4", "onb5", "onb6", "onb8", "home", "keys", "text", "modes", "dictionary", "history", "model", "about"]
 
 FPS = 12
 HOLD = 26        # frames per slide, ~2.2 s
