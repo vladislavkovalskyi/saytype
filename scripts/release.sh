@@ -102,7 +102,7 @@ bold "Signing"
 find_identity() {
     security find-identity -v -p codesigning 2>/dev/null \
         | sed -n 's/^[[:space:]]*[0-9][0-9]*) \([0-9A-F]\{40\}\) "\(.*\)"$/\1	\2/p' \
-        | awk -F'\t' -v prefix="$1" 'index($2, prefix) == 1 || $1 == prefix { print; exit }'
+        | awk -F'\t' -v prefix="$1" '(index($2, prefix) == 1 || $1 == prefix) && !found { print; found = 1 }'
 }
 
 if [[ -n "${SIGN_IDENTITY:-}" ]]; then
@@ -256,7 +256,12 @@ APP="$EXPORT_DIR/$APP_NAME.app"
 TIMESTAMP_ARGS=()
 [[ $DEVELOPER_ID -eq 1 ]] && TIMESTAMP_ARGS=(--timestamp)
 
-signed_by_identity() { codesign -dvv "$1" 2>&1 | grep -qxF "Authority=$IDENTITY_NAME"; }
+# Captures the output first: grep -q exiting early would kill codesign with SIGPIPE under pipefail.
+signed_by_identity() {
+    local details
+    details="$(codesign -dvv "$1" 2>&1)" || return 1
+    grep -qxF "Authority=$IDENTITY_NAME" <<<"$details"
+}
 
 # Sparkle ships its helpers ad-hoc signed, and Xcode re-signs only the framework when it embeds
 # it. Re-sign the helpers as Sparkle's documentation describes, then the framework and the app.
@@ -318,7 +323,7 @@ if [[ "$(plist_get SUPublicEDKey)" == "REPLACE_WITH_SPARKLE_PUBLIC_KEY" ]]; then
     warn "SUPublicEDKey is still the placeholder; Sparkle stays off in this build"
 fi
 
-if spctl --status 2>/dev/null | grep -q disabled; then
+if [[ "$(spctl --status 2>/dev/null || true)" == *disabled* ]]; then
     info "Gatekeeper assessments are disabled on this Mac, so spctl accepts anything here"
 fi
 if SPCTL_OUT="$(spctl -a -vv -t exec "$APP" 2>&1)"; then
