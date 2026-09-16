@@ -37,3 +37,4 @@ Bench/synthetic/
 
 # Claude Code local state and agent worktrees
 .claude/
+*.profraw

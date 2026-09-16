@@ -54,6 +54,8 @@ final class DictationController {
     @ObservationIgnored private var targetAppName: String?
     @ObservationIgnored private let store = ModelStore()
     @ObservationIgnored private let historyStore = HistoryStore()
+    /// Optional local LLM that adds lists and paragraphs to long dictations.
+    let smart = SmartStructureService()
 
     /// Live passes stop above this length; the final pass still covers everything.
     private let liveLimitSeconds = 30.0
@@ -193,6 +195,7 @@ final class DictationController {
             return
         }
         phase = .listening
+        smart.warmUp(settings: settings.value)
         if settings.value.sounds { Sounds.start() }
         runLiveLoop()
     }
@@ -264,7 +267,8 @@ final class DictationController {
             show(.notice("Не удалось распознать"), for: 2.5)
             return
         }
-        let text = TextPipeline(settings: value).format(transcript)
+        let formatted = TextPipeline(settings: value).format(transcript)
+        let text = await smart.apply(to: formatted, settings: value)
         guard !text.isEmpty else {
             show(.notice("Ничего не слышно"), for: 1.5)
             return

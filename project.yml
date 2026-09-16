@@ -42,6 +42,8 @@ targets:
         product: VMTranscription
       - package: VoicemodeKit
         product: VMSystem
+      - package: VoicemodeKit
+        product: VMSmart
     entitlements:
       path: App/Voicemode.entitlements
       properties:
