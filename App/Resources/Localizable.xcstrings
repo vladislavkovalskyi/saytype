@@ -33,54 +33,6 @@
         }
       }
     },
-    "%lld MB" : {
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld МБ"
-          }
-        }
-      }
-    },
-    "%lld MB · %@" : {
-      "comment" : "Model size, then a short summary such as faster, live text",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$lld MB · %2$@"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$lld МБ · %2$@"
-          }
-        }
-      }
-    },
-    "%lld MB · offline" : {
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld МБ · офлайн"
-          }
-        }
-      }
-    },
-    "%lld MB/s" : {
-      "comment" : "Download speed",
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld МБ/с"
-          }
-        }
-      }
-    },
     "%lld days" : {
       "localizations" : {
         "en" : {
@@ -129,6 +81,54 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "%lld MB" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld МБ"
+          }
+        }
+      }
+    },
+    "%lld MB · %@" : {
+      "comment" : "Model size, then a short summary such as faster, live text",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld MB · %2$@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld МБ · %2$@"
+          }
+        }
+      }
+    },
+    "%lld MB · offline" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld МБ · офлайн"
+          }
+        }
+      }
+    },
+    "%lld MB/s" : {
+      "comment" : "Download speed",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld МБ/с"
           }
         }
       }
@@ -581,6 +581,17 @@
         }
       }
     },
+    "after download" : {
+      "comment" : "Model preparation",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "после загрузки"
+          }
+        }
+      }
+    },
     "After recording" : {
       "localizations" : {
         "ru" : {
@@ -601,12 +612,43 @@
         }
       }
     },
+    "All History…" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вся история…"
+          }
+        }
+      }
+    },
     "Allowed" : {
       "localizations" : {
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Разрешено"
+          }
+        }
+      }
+    },
+    "and dictate a few phrases." : {
+      "comment" : "After the record key: Hold [fn] and dictate a few phrases. Keep it short, it sits on one line.",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "и продиктуй пару фраз."
+          }
+        }
+      }
+    },
+    "and speak in any app" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "и говори в любом приложении"
           }
         }
       }
@@ -631,6 +673,36 @@
         }
       }
     },
+    "at the bottom of the screen" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "внизу экрана"
+          }
+        }
+      }
+    },
+    "at the camera notch" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "у выреза камеры"
+          }
+        }
+      }
+    },
+    "audio never leaves the Mac" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "голос не покидает Mac"
+          }
+        }
+      }
+    },
     "Auto" : {
       "comment" : "Speech language detected automatically",
       "localizations" : {
@@ -638,6 +710,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Авто"
+          }
+        }
+      }
+    },
+    "Automatic" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Автоматически"
+          }
+        }
+      }
+    },
+    "awaiting approval in System Settings" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ждёт подтверждения в Системных настройках"
           }
         }
       }
@@ -713,6 +805,16 @@
         }
       }
     },
+    "commas, paragraphs, lists" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "запятые, абзацы, списки"
+          }
+        }
+      }
+    },
     "Copied" : {
       "localizations" : {
         "ru" : {
@@ -729,6 +831,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Копировать"
+          }
+        }
+      }
+    },
+    "Couldn't transcribe" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не удалось распознать"
           }
         }
       }
@@ -773,6 +885,17 @@
         }
       }
     },
+    "detected from speech" : {
+      "comment" : "Speech language of the model",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "определяется по речи"
+          }
+        }
+      }
+    },
     "Dictionary" : {
       "comment" : "Main window section",
       "localizations" : {
@@ -790,6 +913,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Готово"
+          }
+        }
+      }
+    },
+    "done for %@" : {
+      "comment" : "Model preparation; the argument is a chip name such as M3 Pro",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "готово под %@"
           }
         }
       }
@@ -824,12 +958,33 @@
         }
       }
     },
+    "download failed, turn it on again" : {
+      "comment" : "Smart structure model state under its switch",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "не скачалась, включите ещё раз"
+          }
+        }
+      }
+    },
     "Download interrupted" : {
       "localizations" : {
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Загрузка прервалась"
+          }
+        }
+      }
+    },
+    "Download model" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Скачать модель"
           }
         }
       }
@@ -841,6 +996,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Загрузка"
+          }
+        }
+      }
+    },
+    "downloading" : {
+      "comment" : "Smart structure model state, followed by a percentage",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "загрузка"
           }
         }
       }
@@ -885,6 +1051,9 @@
         }
       }
     },
+    "EN" : {
+      "shouldTranslate" : false
+    },
     "English" : {
       "comment" : "Speech language of the model",
       "localizations" : {
@@ -906,6 +1075,17 @@
         }
       }
     },
+    "failed" : {
+      "comment" : "Model preparation",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "не удалась"
+          }
+        }
+      }
+    },
     "Failed to load" : {
       "comment" : "Model state badge",
       "localizations" : {
@@ -913,6 +1093,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Не загрузилась"
+          }
+        }
+      }
+    },
+    "faster, live text" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "быстрее, живой текст"
           }
         }
       }
@@ -957,12 +1147,59 @@
         }
       }
     },
+    "fix %@ %@" : {
+      "comment" : "Sample live text in the overlay preview; the arguments are a code identifier and the dimmed rest",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "fix %1$@ %2$@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "поправь %1$@ %2$@"
+          }
+        }
+      }
+    },
+    "fn in any app" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "fn в любом приложении"
+          }
+        }
+      }
+    },
+    "for agent commands and search" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "для команд агенту и поиска"
+          }
+        }
+      }
+    },
     "Formatted" : {
       "localizations" : {
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Оформлено"
+          }
+        }
+      }
+    },
+    "from history" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "из истории"
           }
         }
       }
@@ -1003,6 +1240,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Globe включает диктовку"
+          }
+        }
+      }
+    },
+    "Grant Permissions…" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выдать разрешения…"
+          }
+        }
+      }
+    },
+    "hands-free recording" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "запись без рук"
           }
         }
       }
@@ -1060,6 +1317,26 @@
         }
       }
     },
+    "hold to record" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "удерживать для записи"
+          }
+        }
+      }
+    },
+    "hold to speak" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "держать, чтобы говорить"
+          }
+        }
+      }
+    },
     "Hold: record. Release: paste. Double-press: hands-free." : {
       "localizations" : {
         "ru" : {
@@ -1081,6 +1358,28 @@
         }
       }
     },
+    "how it is written" : {
+      "comment" : "Placeholder for the spelling of a dictionary term",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "как пишется"
+          }
+        }
+      }
+    },
+    "how it sounds" : {
+      "comment" : "Placeholder for the heard form of a dictionary term",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "как звучит"
+          }
+        }
+      }
+    },
     "How recording starts and where it shows" : {
       "localizations" : {
         "ru" : {
@@ -1097,6 +1396,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Как сказанное становится текстом"
+          }
+        }
+      }
+    },
+    "in Header" : {
+      "comment" : "Dimmed end of the sample live text in the overlay preview: fix useEffect in Header",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "в Header"
+          }
+        }
+      }
+    },
+    "in progress for %@" : {
+      "comment" : "Model preparation; the argument is a chip name such as M3 Pro",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "идёт под %@"
           }
         }
       }
@@ -1122,6 +1443,16 @@
         }
       }
     },
+    "into the active field" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "в активное поле"
+          }
+        }
+      }
+    },
     "Island" : {
       "comment" : "Overlay style: a black shape under the camera notch",
       "localizations" : {
@@ -1129,6 +1460,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Остров"
+          }
+        }
+      }
+    },
+    "Island at the Notch" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Остров у выреза"
           }
         }
       }
@@ -1195,6 +1536,16 @@
         }
       }
     },
+    "Last Dictation" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Последняя диктовка"
+          }
+        }
+      }
+    },
     "Later" : {
       "localizations" : {
         "ru" : {
@@ -1225,12 +1576,43 @@
         }
       }
     },
+    "lists and paragraphs" : {
+      "comment" : "What the smart structure model does",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "списки и абзацы"
+          }
+        }
+      }
+    },
+    "Lists and paragraphs in long dictations" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Списки и абзацы в длинных диктовках"
+          }
+        }
+      }
+    },
     "Live text" : {
       "localizations" : {
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Живой текст"
+          }
+        }
+      }
+    },
+    "manual" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "вручную"
           }
         }
       }
@@ -1265,6 +1647,16 @@
         }
       }
     },
+    "Microphone unavailable" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Микрофон недоступен"
+          }
+        }
+      }
+    },
     "Model" : {
       "comment" : "Main window section",
       "localizations" : {
@@ -1272,6 +1664,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Модель"
+          }
+        }
+      }
+    },
+    "Model %lld%%" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Модель %lld%%"
+          }
+        }
+      }
+    },
+    "Model error" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ошибка модели"
           }
         }
       }
@@ -1306,6 +1718,26 @@
         }
       }
     },
+    "more accurate, slower" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "точнее, медленнее"
+          }
+        }
+      }
+    },
+    "new paragraph after a 1.5 s pause" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "новый абзац после паузы 1,5 с"
+          }
+        }
+      }
+    },
     "Next" : {
       "comment" : "Round button that moves onboarding forward",
       "localizations" : {
@@ -1323,6 +1755,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Нет доступа"
+          }
+        }
+      }
+    },
+    "No dictations yet" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Диктовок пока нет"
+          }
+        }
+      }
+    },
+    "No microphone" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет микрофона"
           }
         }
       }
@@ -1368,12 +1820,32 @@
         }
       }
     },
+    "Nothing heard" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ничего не слышно"
+          }
+        }
+      }
+    },
     "Nothing yet" : {
       "localizations" : {
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Пока пусто"
+          }
+        }
+      }
+    },
+    "of %lld GB on this Mac" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "из %lld ГБ на этом Mac"
           }
         }
       }
@@ -1388,22 +1860,22 @@
         }
       }
     },
+    "offline · %lld MB" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "офлайн · %lld МБ"
+          }
+        }
+      }
+    },
     "Open" : {
       "localizations" : {
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Открыть"
-          }
-        }
-      }
-    },
-    "Open Settings" : {
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Открыть настройки"
           }
         }
       }
@@ -1424,6 +1896,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Открывать при входе в систему"
+          }
+        }
+      }
+    },
+    "Open Settings" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Открыть настройки"
+          }
+        }
+      }
+    },
+    "Open voicemode…" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Открыть voicemode…"
           }
         }
       }
@@ -1478,6 +1970,16 @@
         }
       }
     },
+    "Password field" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Поле пароля"
+          }
+        }
+      }
+    },
     "Paste" : {
       "localizations" : {
         "ru" : {
@@ -1494,6 +1996,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Вставить ещё раз"
+          }
+        }
+      }
+    },
+    "Paste Again" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вставить ещё раз"
+          }
+        }
+      }
+    },
+    "pasting text into the active window" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "вставка текста в активное окно"
           }
         }
       }
@@ -1516,6 +2038,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Пилюля"
+          }
+        }
+      }
+    },
+    "Pill Above the Dock" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пилюля над Dock"
           }
         }
       }
@@ -1552,12 +2084,32 @@
         }
       }
     },
+    "Preparing model" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Готовим модель"
+          }
+        }
+      }
+    },
     "Punctuation and paragraphs" : {
       "localizations" : {
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Пунктуация и абзацы"
+          }
+        }
+      }
+    },
+    "Quit voicemode" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выйти из voicemode"
           }
         }
       }
@@ -1583,12 +2135,42 @@
         }
       }
     },
+    "Recent" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Недавние"
+          }
+        }
+      }
+    },
+    "Record" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Запись"
+          }
+        }
+      }
+    },
     "Record key" : {
       "localizations" : {
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Клавиша записи"
+          }
+        }
+      }
+    },
+    "recording speech" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "запись речи"
           }
         }
       }
@@ -1634,6 +2216,17 @@
         }
       }
     },
+    "right ⌘" : {
+      "comment" : "Record key name inside a sentence, e.g. Hold right ⌘",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "правый ⌘"
+          }
+        }
+      }
+    },
     "Right ⌥" : {
       "comment" : "Record key name on a chip or in a menu",
       "localizations" : {
@@ -1644,6 +2237,20 @@
           }
         }
       }
+    },
+    "right ⌥" : {
+      "comment" : "Record key name inside a sentence, e.g. Hold right ⌥",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "правый ⌥"
+          }
+        }
+      }
+    },
+    "RU" : {
+      "shouldTranslate" : false
     },
     "Russian, English terms" : {
       "comment" : "Speech language of the model",
@@ -1676,6 +2283,16 @@
         }
       }
     },
+    "Settings" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Настройки"
+          }
+        }
+      }
+    },
     "Show" : {
       "localizations" : {
         "ru" : {
@@ -1702,6 +2319,27 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Умная структура"
+          }
+        }
+      }
+    },
+    "Smart Structure" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Умная структура"
+          }
+        }
+      }
+    },
+    "so fix use effect in header it flickers on every render" : {
+      "comment" : "Raw sample dictation as the speech model hears it, before formatting",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "так поправь юз эффект в хедере он дёргается при каждом рендере"
           }
         }
       }
@@ -1758,6 +2396,16 @@
         }
       }
     },
+    "stays in the overlay" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "остаётся в плашке"
+          }
+        }
+      }
+    },
     "Step %lld of %lld" : {
       "localizations" : {
         "en" : {
@@ -1770,6 +2418,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Шаг %1$lld из %2$lld"
+          }
+        }
+      }
+    },
+    "Stop" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Стоп"
+          }
+        }
+      }
+    },
+    "Structure" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Структура"
+          }
+        }
+      }
+    },
+    "System default" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Как в системе"
           }
         }
       }
@@ -1805,12 +2483,33 @@
         }
       }
     },
+    "the command goes straight to the agent" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "команда сразу уходит агенту"
+          }
+        }
+      }
+    },
     "The model downloads once. After that everything works offline." : {
       "localizations" : {
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Модель скачивается один раз. Дальше всё работает офлайн."
+          }
+        }
+      }
+    },
+    "this Mac" : {
+      "comment" : "Stands in for the chip name: Preparing for this Mac",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "этот Mac"
           }
         }
       }
@@ -1845,12 +2544,33 @@
         }
       }
     },
+    "um" : {
+      "comment" : "Struck-out hesitation at the start of the raw sample dictation",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "эээ"
+          }
+        }
+      }
+    },
     "Use" : {
       "localizations" : {
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Использовать"
+          }
+        }
+      }
+    },
+    "useEffect, Vercel, Supabase stay as in code" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "useEffect, Vercel, Supabase остаются как в коде"
           }
         }
       }
@@ -1865,459 +2585,8 @@
         }
       }
     },
-    "Where to show recording" : {
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Где показывать запись"
-          }
-        }
-      }
-    },
-    "Written" : {
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Пишу"
-          }
-        }
-      }
-    },
-    "after download" : {
-      "comment" : "Model preparation",
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "после загрузки"
-          }
-        }
-      }
-    },
-    "and dictate a few phrases." : {
-      "comment" : "After the record key: Hold [fn] and dictate a few phrases. Keep it short, it sits on one line.",
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "и продиктуй пару фраз."
-          }
-        }
-      }
-    },
-    "and speak in any app" : {
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "и говори в любом приложении"
-          }
-        }
-      }
-    },
-    "at the bottom of the screen" : {
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "внизу экрана"
-          }
-        }
-      }
-    },
-    "at the camera notch" : {
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "у выреза камеры"
-          }
-        }
-      }
-    },
-    "audio never leaves the Mac" : {
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "голос не покидает Mac"
-          }
-        }
-      }
-    },
-    "awaiting approval in System Settings" : {
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ждёт подтверждения в Системных настройках"
-          }
-        }
-      }
-    },
-    "commas, paragraphs, lists" : {
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "запятые, абзацы, списки"
-          }
-        }
-      }
-    },
-    "detected from speech" : {
-      "comment" : "Speech language of the model",
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "определяется по речи"
-          }
-        }
-      }
-    },
-    "done for %@" : {
-      "comment" : "Model preparation; the argument is a chip name such as M3 Pro",
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "готово под %@"
-          }
-        }
-      }
-    },
-    "download failed, turn it on again" : {
-      "comment" : "Smart structure model state under its switch",
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "не скачалась, включите ещё раз"
-          }
-        }
-      }
-    },
-    "downloading" : {
-      "comment" : "Smart structure model state, followed by a percentage",
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "загрузка"
-          }
-        }
-      }
-    },
-    "failed" : {
-      "comment" : "Model preparation",
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "не удалась"
-          }
-        }
-      }
-    },
-    "faster, live text" : {
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "быстрее, живой текст"
-          }
-        }
-      }
-    },
-    "fix %@ %@" : {
-      "comment" : "Sample live text in the overlay preview; the arguments are a code identifier and the dimmed rest",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "fix %1$@ %2$@"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "поправь %1$@ %2$@"
-          }
-        }
-      }
-    },
-    "fn in any app" : {
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "fn в любом приложении"
-          }
-        }
-      }
-    },
-    "for agent commands and search" : {
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "для команд агенту и поиска"
-          }
-        }
-      }
-    },
-    "from history" : {
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "из истории"
-          }
-        }
-      }
-    },
-    "hands-free recording" : {
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "запись без рук"
-          }
-        }
-      }
-    },
-    "hold to speak" : {
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "держать, чтобы говорить"
-          }
-        }
-      }
-    },
-    "how it is written" : {
-      "comment" : "Placeholder for the spelling of a dictionary term",
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "как пишется"
-          }
-        }
-      }
-    },
-    "how it sounds" : {
-      "comment" : "Placeholder for the heard form of a dictionary term",
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "как звучит"
-          }
-        }
-      }
-    },
-    "in Header" : {
-      "comment" : "Dimmed end of the sample live text in the overlay preview: fix useEffect in Header",
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "в Header"
-          }
-        }
-      }
-    },
-    "in progress for %@" : {
-      "comment" : "Model preparation; the argument is a chip name such as M3 Pro",
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "идёт под %@"
-          }
-        }
-      }
-    },
-    "into the active field" : {
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "в активное поле"
-          }
-        }
-      }
-    },
-    "lists and paragraphs" : {
-      "comment" : "What the smart structure model does",
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "списки и абзацы"
-          }
-        }
-      }
-    },
-    "manual" : {
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "вручную"
-          }
-        }
-      }
-    },
-    "more accurate, slower" : {
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "точнее, медленнее"
-          }
-        }
-      }
-    },
-    "new paragraph after a 1.5 s pause" : {
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "новый абзац после паузы 1,5 с"
-          }
-        }
-      }
-    },
-    "of %lld GB on this Mac" : {
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "из %lld ГБ на этом Mac"
-          }
-        }
-      }
-    },
-    "offline · %lld MB" : {
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "офлайн · %lld МБ"
-          }
-        }
-      }
-    },
-    "pasting text into the active window" : {
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "вставка текста в активное окно"
-          }
-        }
-      }
-    },
-    "recording speech" : {
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "запись речи"
-          }
-        }
-      }
-    },
-    "right ⌘" : {
-      "comment" : "Record key name inside a sentence, e.g. Hold right ⌘",
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "правый ⌘"
-          }
-        }
-      }
-    },
-    "right ⌥" : {
-      "comment" : "Record key name inside a sentence, e.g. Hold right ⌥",
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "правый ⌥"
-          }
-        }
-      }
-    },
-    "so fix use effect in header it flickers on every render" : {
-      "comment" : "Raw sample dictation as the speech model hears it, before formatting",
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "так поправь юз эффект в хедере он дёргается при каждом рендере"
-          }
-        }
-      }
-    },
-    "stays in the overlay" : {
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "остаётся в плашке"
-          }
-        }
-      }
-    },
-    "the command goes straight to the agent" : {
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "команда сразу уходит агенту"
-          }
-        }
-      }
-    },
-    "this Mac" : {
-      "comment" : "Stands in for the chip name: Preparing for this Mac",
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "этот Mac"
-          }
-        }
-      }
-    },
-    "um" : {
-      "comment" : "Struck-out hesitation at the start of the raw sample dictation",
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "эээ"
-          }
-        }
-      }
-    },
-    "useEffect, Vercel, Supabase stay as in code" : {
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "useEffect, Vercel, Supabase остаются как в коде"
-          }
-        }
-      }
+    "voicemode" : {
+      "shouldTranslate" : false
     },
     "voicemode does not read the screen or use the network." : {
       "localizations" : {
@@ -2339,12 +2608,35 @@
         }
       }
     },
+    "Where to show recording" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Где показывать запись"
+          }
+        }
+      }
+    },
+    "Whisper turbo" : {
+      "shouldTranslate" : false
+    },
     "without pasting" : {
       "localizations" : {
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "без вставки"
+          }
+        }
+      }
+    },
+    "Written" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пишу"
           }
         }
       }

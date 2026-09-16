@@ -88,7 +88,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
 
         let language = NSMenuItem(title: String(localized: "Language"), action: nil, keyEquivalent: "")
         let languages = NSMenu()
-        for (value, title) in [(AppSettings.SpeechLanguage.russian, String(localized: "Russian")), (.english, String(localized: "English")), (.auto, String(localized: "Automatic"))] {
+        for (value, title) in [(AppSettings.SpeechLanguage.russian, "Русский"), (.english, "English"), (.auto, String(localized: "Automatic"))] {
             languages.addItem(ClosureMenuItem(title: title, isOn: settings.value.language == value) { settings.value.language = value })
         }
         language.submenu = languages
