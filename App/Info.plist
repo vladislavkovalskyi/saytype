@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>voicemode</string>
+	<string>saytype</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -13,7 +13,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>voicemode</string>
+	<string>saytype</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -25,13 +25,13 @@
 	<key>LSUIElement</key>
 	<true/>
 	<key>NSHumanReadableCopyright</key>
-	<string>© 2026 voicemode</string>
+	<string>© 2026 saytype</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>voicemode listens to the microphone while the record key is held. Audio is transcribed on this Mac and never leaves it.</string>
+	<string>saytype listens to the microphone while the record key is held. Audio is transcribed on this Mac and never leaves it.</string>
 	<key>SUEnableAutomaticChecks</key>
 	<true/>
 	<key>SUFeedURL</key>
-	<string>https://vladislavkovalskyi.github.io/voicemode/appcast.xml</string>
+	<string>https://vladislavkovalskyi.github.io/saytype/appcast.xml</string>
 	<key>SUPublicEDKey</key>
 	<string>REPLACE_WITH_SPARKLE_PUBLIC_KEY</string>
 </dict>

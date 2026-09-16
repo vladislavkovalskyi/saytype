@@ -3,7 +3,7 @@ import ApplicationServices
 import AVFoundation
 import CoreGraphics
 
-/// The three macOS privacy permissions voicemode needs.
+/// The three macOS privacy permissions saytype needs.
 public enum Permission: String, CaseIterable, Sendable {
     /// Hearing the user.
     case microphone

@@ -3,7 +3,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "VoicemodeKit",
+    name: "SaytypeKit",
     defaultLocalization: "ru",
     platforms: [.macOS("26.0")],
     products: [

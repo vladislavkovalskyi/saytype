@@ -33,7 +33,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
         case english = "en"
         case auto
 
-        /// The default for a new install: the system language when voicemode
+        /// The default for a new install: the system language when saytype
         /// knows it, otherwise detection from speech.
         public static var systemDefault: SpeechLanguage {
             matching(preferredLanguages: Locale.preferredLanguages)

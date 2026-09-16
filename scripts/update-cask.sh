@@ -4,11 +4,11 @@
 #   scripts/update-cask.sh [DMG] [--version X.Y.Z] [--cask PATH]
 #   scripts/update-cask.sh --from-release X.Y.Z [--cask PATH]
 #
-# DMG      default: the newest build/release/voicemode-*.dmg
-# --from-release downloads voicemode-X.Y.Z.dmg from the GitHub release, so the checksum
+# DMG      default: the newest build/release/saytype-*.dmg
+# --from-release downloads saytype-X.Y.Z.dmg from the GitHub release, so the checksum
 #          matches what users download when CI built the release
-# version  default: taken from the file name voicemode-X.Y.Z.dmg, or from the app inside
-# PATH     default: packaging/homebrew/voicemode.rb; pass Casks/voicemode.rb of a
+# version  default: taken from the file name saytype-X.Y.Z.dmg, or from the app inside
+# PATH     default: packaging/homebrew/saytype.rb; pass Casks/saytype.rb of a
 #          vladislavkovalskyi/homebrew-tap checkout to update the tap
 
 set -euo pipefail
@@ -18,7 +18,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DMG=""
 VERSION=""
 FROM_RELEASE=""
-CASK="$ROOT/packaging/homebrew/voicemode.rb"
+CASK="$ROOT/packaging/homebrew/saytype.rb"
 
 die() { printf 'error: %s\n' "$*" >&2; exit 1; }
 
@@ -36,27 +36,27 @@ done
 if [[ -n "$FROM_RELEASE" ]]; then
     [[ -z "$DMG" ]] || die "pass either a DMG or --from-release"
     VERSION="$FROM_RELEASE"
-    DMG="$(mktemp -d -t voicemode-cask)/voicemode-$VERSION.dmg"
-    url="https://github.com/vladislavkovalskyi/voicemode/releases/download/v$VERSION/voicemode-$VERSION.dmg"
+    DMG="$(mktemp -d -t saytype-cask)/saytype-$VERSION.dmg"
+    url="https://github.com/vladislavkovalskyi/saytype/releases/download/v$VERSION/saytype-$VERSION.dmg"
     printf 'download %s\n' "$url"
     curl -fL --progress-bar -o "$DMG" "$url" || die "download failed: $url"
 fi
 
 if [[ -z "$DMG" ]]; then
-    DMG="$(ls -t "$ROOT"/build/release/voicemode-*.dmg 2>/dev/null | head -1 || true)"
-    [[ -n "$DMG" ]] || die "no build/release/voicemode-*.dmg; run scripts/release.sh or pass a DMG"
+    DMG="$(ls -t "$ROOT"/build/release/saytype-*.dmg 2>/dev/null | head -1 || true)"
+    [[ -n "$DMG" ]] || die "no build/release/saytype-*.dmg; run scripts/release.sh or pass a DMG"
 fi
 [[ -f "$DMG" ]] || die "DMG not found: $DMG"
 [[ -f "$CASK" ]] || die "cask not found: $CASK"
 
 if [[ -z "$VERSION" ]]; then
     name="$(basename "$DMG")"
-    if [[ "$name" =~ ^voicemode-(.+)\.dmg$ ]]; then
+    if [[ "$name" =~ ^saytype-(.+)\.dmg$ ]]; then
         VERSION="${BASH_REMATCH[1]}"
     else
-        mount="$(mktemp -d -t voicemode-cask)"
+        mount="$(mktemp -d -t saytype-cask)"
         hdiutil attach -nobrowse -readonly -noautoopen -mountpoint "$mount" "$DMG" >/dev/null
-        VERSION="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$mount/voicemode.app/Contents/Info.plist" 2>/dev/null || true)"
+        VERSION="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$mount/saytype.app/Contents/Info.plist" 2>/dev/null || true)"
         hdiutil detach -quiet "$mount" || true
         rmdir "$mount" 2>/dev/null || true
     fi
@@ -74,4 +74,4 @@ grep -q "version \"$VERSION\"" "$CASK" || die "version line not found in $CASK"
 grep -q "sha256 \"$SHA256\"" "$CASK" || die "sha256 line not found in $CASK"
 
 printf 'cask     %s\nversion  %s\nsha256   %s\n' "$CASK" "$VERSION" "$SHA256"
-printf 'url      https://github.com/vladislavkovalskyi/voicemode/releases/download/v%s/voicemode-%s.dmg\n' "$VERSION" "$VERSION"
+printf 'url      https://github.com/vladislavkovalskyi/saytype/releases/download/v%s/saytype-%s.dmg\n' "$VERSION" "$VERSION"

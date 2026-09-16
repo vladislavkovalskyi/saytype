@@ -1,11 +1,11 @@
-cask "voicemode" do
+cask "saytype" do
   version "0.1.0"
   sha256 "0000000000000000000000000000000000000000000000000000000000000000"
 
-  url "https://github.com/vladislavkovalskyi/voicemode/releases/download/v#{version}/voicemode-#{version}.dmg"
-  name "voicemode"
+  url "https://github.com/vladislavkovalskyi/saytype/releases/download/v#{version}/saytype-#{version}.dmg"
+  name "saytype"
   desc "Local push-to-talk dictation"
-  homepage "https://github.com/vladislavkovalskyi/voicemode"
+  homepage "https://github.com/vladislavkovalskyi/saytype"
 
   livecheck do
     url :url
@@ -17,20 +17,20 @@ cask "voicemode" do
   depends_on arch: :arm64
   depends_on macos: :tahoe
 
-  app "voicemode.app"
+  app "saytype.app"
 
   # Releases are not notarized yet, so Gatekeeper would refuse the first launch.
   # Clearing the quarantine flag opens the app as if it came from a trusted source.
   # Remove this block once releases are notarized.
   postflight_steps do
     run "/usr/bin/xattr",
-        args:           ["-dr", "com.apple.quarantine", "{{appdir}}/voicemode.app"],
-        writable_paths: ["{{appdir}}/voicemode.app"]
+        args:           ["-dr", "com.apple.quarantine", "{{appdir}}/saytype.app"],
+        writable_paths: ["{{appdir}}/saytype.app"]
   end
 
   zap trash: [
-    "~/Library/Application Support/dev.kovalskyi.voicemode",
-    "~/Library/Caches/dev.kovalskyi.voicemode",
-    "~/Library/Preferences/dev.kovalskyi.voicemode.plist",
+    "~/Library/Application Support/dev.kovalskyi.saytype",
+    "~/Library/Caches/dev.kovalskyi.saytype",
+    "~/Library/Preferences/dev.kovalskyi.saytype.plist",
   ]
 end

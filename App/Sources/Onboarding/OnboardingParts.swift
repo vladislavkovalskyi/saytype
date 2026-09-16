@@ -28,7 +28,7 @@ struct StepTitle: View {
         self.size = size
     }
 
-    /// A name that stays the same in every language, e.g. "voicemode".
+    /// A name that stays the same in every language, e.g. "saytype".
     init(verbatim text: String, size: CGFloat = 40) {
         self.text = Text(verbatim: text)
         self.size = size

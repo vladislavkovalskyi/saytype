@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct VoicemodeApp: App {
+struct SaytypeApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
     var body: some Scene {

@@ -4,7 +4,7 @@ import Testing
 
 @Suite @MainActor struct PasteboardTests {
     @Test func snapshotRestoresEveryItemAndType() {
-        let board = NSPasteboard(name: .init("voicemode.tests.\(UUID().uuidString)"))
+        let board = NSPasteboard(name: .init("saytype.tests.\(UUID().uuidString)"))
         board.clearContents()
         let first = NSPasteboardItem()
         first.setString("первый", forType: .string)

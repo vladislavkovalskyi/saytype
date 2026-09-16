@@ -784,6 +784,16 @@
         }
       }
     },
+    "Check for Updates…" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проверить обновления…"
+          }
+        }
+      }
+    },
     "Clipboard" : {
       "localizations" : {
         "ru" : {
@@ -1900,22 +1910,22 @@
         }
       }
     },
+    "Open saytype…" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Открыть saytype…"
+          }
+        }
+      }
+    },
     "Open Settings" : {
       "localizations" : {
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Открыть настройки"
-          }
-        }
-      }
-    },
-    "Open voicemode…" : {
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Открыть voicemode…"
           }
         }
       }
@@ -2104,12 +2114,12 @@
         }
       }
     },
-    "Quit voicemode" : {
+    "Quit saytype" : {
       "localizations" : {
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Выйти из voicemode"
+            "value" : "Выйти из saytype"
           }
         }
       }
@@ -2269,6 +2279,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Скажи пару слов. Полоски двигаются, только когда есть звук."
+          }
+        }
+      }
+    },
+    "saytype" : {
+      "shouldTranslate" : false
+    },
+    "saytype does not read the screen or use the network." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "saytype не читает экран и не ходит в сеть."
+          }
+        }
+      }
+    },
+    "saytype is in the menu bar. Hold %@ in any app." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "saytype в строке меню. Зажми %@ в любом приложении."
           }
         }
       }
@@ -2581,29 +2614,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Голосовой ввод для macOS. Распознаёт речь на этом Mac, без интернета."
-          }
-        }
-      }
-    },
-    "voicemode" : {
-      "shouldTranslate" : false
-    },
-    "voicemode does not read the screen or use the network." : {
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "voicemode не читает экран и не ходит в сеть."
-          }
-        }
-      }
-    },
-    "voicemode is in the menu bar. Hold %@ in any app." : {
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "voicemode в строке меню. Зажми %@ в любом приложении."
           }
         }
       }

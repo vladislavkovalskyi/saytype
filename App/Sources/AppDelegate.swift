@@ -1,7 +1,7 @@
 import AppKit
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
-    /// Created on first use, after data from the voicemode era has moved to the new bundle id.
+    /// Created on first use, after data from the saytype era has moved to the new bundle id.
     @MainActor lazy var model: AppModel = {
         LegacyMigration.run()
         return AppModel()

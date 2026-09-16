@@ -22,7 +22,7 @@ final class Updater {
     @ObservationIgnored private let controller: SPUStandardUpdaterController
     @ObservationIgnored private var observation: NSKeyValueObservation?
 
-    private static let log = Logger(subsystem: "dev.kovalskyi.voicemode", category: "updates")
+    private static let log = Logger(subsystem: "dev.kovalskyi.saytype", category: "updates")
 
     init(bundle: Bundle = .main) {
         let hasKey = Self.hasValidPublicKey(in: bundle)

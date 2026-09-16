@@ -17,7 +17,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         menu.delegate = self
         menu.autoenablesItems = false
         item.menu = menu
-        item.button?.setAccessibilityTitle("voicemode")
+        item.button?.setAccessibilityTitle("saytype")
         observeIcon()
     }
 
@@ -37,7 +37,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         case .listening, .finishing: recording = true
         default: recording = false
         }
-        let image = NSImage(systemSymbolName: recording ? "waveform.circle.fill" : "waveform", accessibilityDescription: "voicemode")
+        let image = NSImage(systemSymbolName: recording ? "waveform.circle.fill" : "waveform", accessibilityDescription: "saytype")
         image?.isTemplate = true
         item.button?.image = image
     }
@@ -105,10 +105,15 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         menu.addItem(ClosureMenuItem(title: String(localized: "Smart Structure"), isOn: smart.wrappedValue) { smart.wrappedValue.toggle() })
         menu.addItem(.separator())
 
-        let open = ClosureMenuItem(title: String(localized: "Open voicemode…"), keyEquivalent: ",") { [model] in model.windows.showMain() }
+        if let updater = model.updater, updater.isEnabled {
+            let check = ClosureMenuItem(title: String(localized: "Check for Updates…")) { updater.checkForUpdates() }
+            check.isEnabled = updater.canCheckForUpdates
+            menu.addItem(check)
+        }
+        let open = ClosureMenuItem(title: String(localized: "Open saytype…"), keyEquivalent: ",") { [model] in model.windows.showMain() }
         open.keyEquivalentModifierMask = [.command]
         menu.addItem(open)
-        let quit = ClosureMenuItem(title: String(localized: "Quit voicemode"), keyEquivalent: "q") { NSApp.terminate(nil) }
+        let quit = ClosureMenuItem(title: String(localized: "Quit saytype"), keyEquivalent: "q") { NSApp.terminate(nil) }
         quit.keyEquivalentModifierMask = [.command]
         menu.addItem(quit)
     }
@@ -135,7 +140,7 @@ private struct MenuHeader: View {
             Image(nsImage: NSApp.applicationIconImage)
                 .resizable()
                 .frame(width: 20, height: 20)
-            Text("voicemode").font(.system(size: 13, weight: .semibold))
+            Text("saytype").font(.system(size: 13, weight: .semibold))
             Spacer(minLength: 8)
             Text(state).font(.system(size: 12)).foregroundStyle(.secondary)
         }

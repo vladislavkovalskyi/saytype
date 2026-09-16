@@ -16,7 +16,7 @@ struct DoneStep: View {
 
             VStack(alignment: .leading, spacing: 0) {
                 StepTitle("Done")
-                StepSubtitle("voicemode is in the menu bar. Hold \(settings.recordKey.inlineName) in any app.")
+                StepSubtitle("saytype is in the menu bar. Hold \(settings.recordKey.inlineName) in any app.")
                     .padding(.top, 12)
 
                 VStack(spacing: 0) {

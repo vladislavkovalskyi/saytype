@@ -25,7 +25,7 @@ import Testing
 
 @Suite struct HistoryTests {
     func tempStore() -> HistoryStore {
-        HistoryStore(url: FileManager.default.temporaryDirectory.appending(path: "voicemode-history-\(UUID().uuidString).json"))
+        HistoryStore(url: FileManager.default.temporaryDirectory.appending(path: "saytype-history-\(UUID().uuidString).json"))
     }
 
     @Test func persistsNewestFirstAndPrunesOldRecords() async {

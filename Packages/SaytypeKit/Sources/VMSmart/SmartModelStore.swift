@@ -19,7 +19,7 @@ public struct SmartModelStore: Sendable {
 
     public static var defaultBase: URL {
         let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-        return support.appending(path: "dev.kovalskyi.voicemode/Models/llm", directoryHint: .isDirectory)
+        return support.appending(path: "dev.kovalskyi.saytype/Models/llm", directoryHint: .isDirectory)
     }
 
     public var folder: URL {

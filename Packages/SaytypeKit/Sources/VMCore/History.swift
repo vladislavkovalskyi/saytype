@@ -38,7 +38,7 @@ public actor HistoryStore {
 
     public static var defaultURL: URL {
         let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-        return support.appending(path: "dev.kovalskyi.voicemode/history.json")
+        return support.appending(path: "dev.kovalskyi.saytype/history.json")
     }
 
     /// Newest first.

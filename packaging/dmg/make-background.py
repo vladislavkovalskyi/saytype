@@ -103,7 +103,7 @@ def overlay(scale):
     # Wordmark.
     font = ImageFont.truetype(str(FONT), 15 * s)
     font.set_variation_by_axes([500])
-    text = "voicemode"
+    text = "saytype"
     tracking = 0.02 * 15 * s
     widths = [font.getlength(ch) for ch in text]
     total = sum(widths) + tracking * (len(text) - 1)

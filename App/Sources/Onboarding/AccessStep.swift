@@ -16,7 +16,7 @@ struct AccessStep: View {
 
             VStack(alignment: .leading, spacing: 0) {
                 StepTitle("Two permissions")
-                StepSubtitle("voicemode does not read the screen or use the network.")
+                StepSubtitle("saytype does not read the screen or use the network.")
                     .padding(.top, 12)
 
                 VStack(spacing: 0) {

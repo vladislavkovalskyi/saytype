@@ -2,7 +2,7 @@ import AppKit
 import VMCore
 
 /// Plays the overlay through its states with sample text, for screenshots and
-/// checking the design without permissions: `voicemode --demo-overlay island`.
+/// checking the design without permissions: `saytype --demo-overlay island`.
 extension DictationController {
     func runDemo(style: AppSettings.OverlayStyle, settings: SettingsStore) {
         settings.value.overlayStyle = style
@@ -32,7 +32,7 @@ extension DictationController {
 }
 
 extension DictationController {
-    /// In-memory history for `voicemode --demo-menu`; nothing is written to disk.
+    /// In-memory history for `saytype --demo-menu`; nothing is written to disk.
     static func sampleHistory(now: Date = Date()) -> [DictationRecord] {
         let samples: [(String, String, String?, Double, Double)] = [
             ("Вынеси загрузку пользователя в хук useUser и добавь массив зависимостей.", "вынеси загрузку пользователя в хук юз юзер и добавь массив зависимостей", "Terminal", 6, 0),

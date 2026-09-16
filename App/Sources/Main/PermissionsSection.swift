@@ -108,7 +108,7 @@ private struct PermissionRow: View {
         let permission = permission
         let state = state
         Task { @MainActor in
-            // Asking first puts voicemode into the System Settings list.
+            // Asking first puts saytype into the System Settings list.
             if state == .notDetermined {
                 let result = await Permissions.request(permission)
                 if permission == .microphone, result == .granted { return }

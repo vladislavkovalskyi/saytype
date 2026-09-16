@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Step 1: what voicemode is.
+/// Step 1: what saytype is.
 struct WelcomeStep: View {
     @Environment(AppModel.self) private var model
 
@@ -12,7 +12,7 @@ struct WelcomeStep: View {
                 object: CGRect(x: 4, y: 191, width: 516, height: 230)
             )
             VStack(alignment: .leading, spacing: 0) {
-                StepTitle(verbatim: "voicemode")
+                StepTitle(verbatim: "saytype")
                 StepSubtitle("Voice input for macOS. Transcribes speech on this Mac, without internet.")
                     .padding(.top, 12)
                 VStack(alignment: .leading, spacing: 16) {

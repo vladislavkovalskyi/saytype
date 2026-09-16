@@ -115,17 +115,17 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           . build/release/release.env
-          notes="SHA-256 of \`voicemode-$VERSION.dmg\`: \`$SHA256\`"
+          notes="SHA-256 of \`saytype-$VERSION.dmg\`: \`$SHA256\`"
           if [ "$NOTARIZED" != "true" ]; then
             notes="$notes
 
-          Not notarized. On first launch open System Settings → Privacy & Security → Open Anyway, or run \`xattr -dr com.apple.quarantine /Applications/voicemode.app\`."
+          Not notarized. On first launch open System Settings → Privacy & Security → Open Anyway, or run \`xattr -dr com.apple.quarantine /Applications/saytype.app\`."
           fi
           gh release create "$GITHUB_REF_NAME" \
             "$DMG" \
             "$DMG_STABLE" \
             "$DMG.sha256" \
-            --title "voicemode $VERSION" \
+            --title "saytype $VERSION" \
             --notes "$notes" \
             --generate-notes \
             --verify-tag
@@ -154,7 +154,7 @@ jobs:
             echo "Appcast unchanged"
             exit 0
           fi
-          git -C "$pages" commit -m "chore(appcast): voicemode $VERSION"
+          git -C "$pages" commit -m "chore(appcast): saytype $VERSION"
           git -C "$pages" push origin gh-pages
 
       - name: Remove signing material

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Builds a voicemode release: archive, sign, DMG, notarize when possible, Sparkle appcast.
+# Builds a saytype release: archive, sign, DMG, notarize when possible, Sparkle appcast.
 #
 #   scripts/release.sh [--version X.Y.Z] [--build-dir DIR] [--output-dir DIR] [--no-notarize]
 #
@@ -13,7 +13,7 @@
 #   SIGN_IDENTITY             codesigning identity name or SHA-1; default: Developer ID
 #                             Application, then Apple Development
 #   DEVELOPMENT_TEAM          team ID; default: OU of the signing certificate
-#   NOTARY_KEYCHAIN_PROFILE   notarytool keychain profile (default: voicemode-notary)
+#   NOTARY_KEYCHAIN_PROFILE   notarytool keychain profile (default: saytype-notary)
 #   NOTARY_API_KEY_PATH       App Store Connect API key (.p8); used with the two below
 #   NOTARY_API_KEY_ID
 #   NOTARY_API_ISSUER_ID
@@ -28,10 +28,10 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-APP_NAME="voicemode"
-SCHEME="Voicemode"
-PROJECT="$ROOT/voicemode.xcodeproj"
-REPO_URL="https://github.com/vladislavkovalskyi/voicemode"
+APP_NAME="saytype"
+SCHEME="Saytype"
+PROJECT="$ROOT/saytype.xcodeproj"
+REPO_URL="https://github.com/vladislavkovalskyi/saytype"
 
 # DMG window, in points. Slots must match packaging/dmg/make-background.py. Finder counts the
 # 32 pt title bar of macOS 26 in the window height, so 432 leaves 400 pt for the background.
@@ -138,7 +138,7 @@ if [[ $DEVELOPER_ID -eq 1 && $NOTARIZE_WANTED -eq 1 ]]; then
         NOTARY_ARGS=(--key "$NOTARY_API_KEY_PATH" --key-id "$NOTARY_API_KEY_ID" --issuer "$NOTARY_API_ISSUER_ID")
         NOTARY_SOURCE="App Store Connect API key"
     else
-        PROFILE="${NOTARY_KEYCHAIN_PROFILE:-voicemode-notary}"
+        PROFILE="${NOTARY_KEYCHAIN_PROFILE:-saytype-notary}"
         if xcrun notarytool history --keychain-profile "$PROFILE" >/dev/null 2>&1; then
             NOTARY_ARGS=(--keychain-profile "$PROFILE")
             NOTARY_SOURCE="keychain profile $PROFILE"
@@ -160,7 +160,7 @@ if [[ "$MODE" == "b" ]]; then
     if [[ $DEVELOPER_ID -eq 1 && $NOTARIZE_WANTED -eq 0 ]]; then
         reason="--no-notarize was passed"
     elif [[ $DEVELOPER_ID -eq 1 ]]; then
-        reason="no notarization credentials (NOTARY_API_KEY_* or keychain profile ${NOTARY_KEYCHAIN_PROFILE:-voicemode-notary})"
+        reason="no notarization credentials (NOTARY_API_KEY_* or keychain profile ${NOTARY_KEYCHAIN_PROFILE:-saytype-notary})"
     else
         reason="no Developer ID Application certificate"
     fi

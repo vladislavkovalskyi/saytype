@@ -27,7 +27,7 @@ jobs:
         run: xcrun -f metal >/dev/null 2>&1 || xcodebuild -downloadComponent MetalToolchain
 
       - name: Package tests
-        working-directory: Packages/VoicemodeKit
+        working-directory: Packages/SaytypeKit
         run: |
           swift test --skip VMTranscriptionTests
           # SwiftPM drops the Sparkle pin that Xcode keeps in this file; restore it for the app build.
@@ -39,8 +39,8 @@ jobs:
       - name: Build app
         run: |
           xcodebuild build \
-            -project voicemode.xcodeproj \
-            -scheme Voicemode \
+            -project saytype.xcodeproj \
+            -scheme Saytype \
             -configuration Debug \
             -destination 'generic/platform=macOS' \
             -derivedDataPath build/ci \

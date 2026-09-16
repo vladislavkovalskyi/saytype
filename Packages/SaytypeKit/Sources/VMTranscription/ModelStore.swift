@@ -18,7 +18,7 @@ public struct ModelStore: Sendable {
 
     public static var defaultBase: URL {
         let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-        return support.appending(path: "dev.kovalskyi.voicemode/Models", directoryHint: .isDirectory)
+        return support.appending(path: "dev.kovalskyi.saytype/Models", directoryHint: .isDirectory)
     }
 
     /// WhisperKit stores most variants with an "openai_whisper-" prefix.

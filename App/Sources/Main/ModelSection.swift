@@ -3,7 +3,7 @@ import SwiftUI
 import VMCore
 import VMTranscription
 
-/// Names and sizes of the Whisper variants voicemode offers.
+/// Names and sizes of the Whisper variants saytype offers.
 struct WhisperModelInfo: Equatable {
     static let turbo = "large-v3-v20240930_turbo_632MB"
     static let large = "large-v3_947MB"

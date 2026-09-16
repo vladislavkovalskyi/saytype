@@ -1,4 +1,4 @@
-# Releasing voicemode
+# Releasing saytype
 
 `scripts/release.sh` builds a release end to end: XcodeGen project, Release archive, signing,
 DMG, notarization when possible, Sparkle appcast. The same script runs locally and in
@@ -17,9 +17,9 @@ Output in `build/release/`:
 
 | File | Purpose |
 |---|---|
-| `voicemode-<version>.dmg` | versioned asset, used by the appcast and the Homebrew cask |
-| `voicemode.dmg` | same bytes, stable name for `releases/latest/download/voicemode.dmg` |
-| `voicemode-<version>.dmg.sha256` | checksum |
+| `saytype-<version>.dmg` | versioned asset, used by the appcast and the Homebrew cask |
+| `saytype.dmg` | same bytes, stable name for `releases/latest/download/saytype.dmg` |
+| `saytype-<version>.dmg.sha256` | checksum |
 | `appcast.xml` | Sparkle feed, only when a Sparkle private key is available |
 | `release.env` | version, mode and paths for the CI steps that follow |
 
@@ -66,7 +66,7 @@ to one build carry over only to builds that satisfy it.
    - **Local:** store a keychain profile under the name the script looks for:
 
      ```sh
-     xcrun notarytool store-credentials voicemode-notary \
+     xcrun notarytool store-credentials saytype-notary \
        --key AuthKey_<KEY_ID>.p8 --key-id <KEY_ID> --issuer <ISSUER_ID>
      ```
 
@@ -87,7 +87,7 @@ The app keeps Sparkle stopped while `SUPublicEDKey` holds the placeholder
 
    ```sh
    xcodegen generate
-   xcodebuild -resolvePackageDependencies -project voicemode.xcodeproj -scheme Voicemode \
+   xcodebuild -resolvePackageDependencies -project saytype.xcodeproj -scheme Saytype \
      -derivedDataPath build/rel/DerivedData
    ```
 
@@ -128,7 +128,7 @@ Repository → Settings → Secrets and variables → Actions:
 `GITHUB_TOKEN` is provided by Actions. Without a certificate secret the release job stops at the
 signing step on purpose.
 
-**GitHub Pages** serves the feed at `https://vladislavkovalskyi.github.io/voicemode/appcast.xml`.
+**GitHub Pages** serves the feed at `https://vladislavkovalskyi.github.io/saytype/appcast.xml`.
 The first release that has a Sparkle key creates the `gh-pages` branch. After that release, go to
 Settings → Pages → Build and deployment and set Source to *Deploy from a branch*, branch
 `gh-pages`, folder `/ (root)`. Pages on a free plan needs a public repository.
@@ -136,8 +136,8 @@ Settings → Pages → Build and deployment and set Source to *Deploy from a bra
 ### Homebrew tap
 
 1. Create the public repository `vladislavkovalskyi/homebrew-tap`.
-2. Copy `packaging/homebrew/voicemode.rb` to `Casks/voicemode.rb` in it.
-3. Users install with `brew install --cask vladislavkovalskyi/tap/voicemode`.
+2. Copy `packaging/homebrew/saytype.rb` to `Casks/saytype.rb` in it.
+3. Users install with `brew install --cask vladislavkovalskyi/tap/saytype`.
 
 ## Cutting a release on CI
 
@@ -150,13 +150,13 @@ Settings → Pages → Build and deployment and set Source to *Deploy from a bra
    ```
 
 3. `release.yml` builds on `macos-26`, creates the GitHub Release with
-   `voicemode-0.2.0.dmg`, `voicemode.dmg`, the checksum and generated notes, then pushes
+   `saytype-0.2.0.dmg`, `saytype.dmg`, the checksum and generated notes, then pushes
    `appcast.xml` to `gh-pages`.
 4. Update the tap with the checksum of the uploaded DMG:
 
    ```sh
-   scripts/update-cask.sh --from-release 0.2.0 --cask ../homebrew-tap/Casks/voicemode.rb
-   cd ../homebrew-tap && git commit -am "voicemode 0.2.0" && git push
+   scripts/update-cask.sh --from-release 0.2.0 --cask ../homebrew-tap/Casks/saytype.rb
+   cd ../homebrew-tap && git commit -am "saytype 0.2.0" && git push
    ```
 
 The tag sets the version. The build number (`CFBundleVersion`) is the commit count of `HEAD`.
@@ -176,35 +176,35 @@ To publish a local build without CI:
 
 ```sh
 # Extend the live feed rather than start a new one
-curl -fsSL https://vladislavkovalskyi.github.io/voicemode/appcast.xml -o build/release/appcast.xml
+curl -fsSL https://vladislavkovalskyi.github.io/saytype/appcast.xml -o build/release/appcast.xml
 scripts/release.sh --version 0.2.0
 
 # Creates the release and its tag. If the tag starts release.yml, the workflow finds the
 # release and skips the build
-gh release create v0.2.0 build/release/voicemode-0.2.0.dmg build/release/voicemode.dmg \
-  build/release/voicemode-0.2.0.dmg.sha256 --title "voicemode 0.2.0" --generate-notes
+gh release create v0.2.0 build/release/saytype-0.2.0.dmg build/release/saytype.dmg \
+  build/release/saytype-0.2.0.dmg.sha256 --title "saytype 0.2.0" --generate-notes
 
 # Publish the feed
 git fetch origin gh-pages
-git worktree add ../voicemode-pages gh-pages
-cp build/release/appcast.xml ../voicemode-pages/
-git -C ../voicemode-pages add appcast.xml
-git -C ../voicemode-pages commit -m "chore(appcast): voicemode 0.2.0"
-git -C ../voicemode-pages push origin gh-pages
-git worktree remove ../voicemode-pages
+git worktree add ../saytype-pages gh-pages
+cp build/release/appcast.xml ../saytype-pages/
+git -C ../saytype-pages add appcast.xml
+git -C ../saytype-pages commit -m "chore(appcast): saytype 0.2.0"
+git -C ../saytype-pages push origin gh-pages
+git worktree remove ../saytype-pages
 
-scripts/update-cask.sh build/release/voicemode-0.2.0.dmg --cask ../homebrew-tap/Casks/voicemode.rb
+scripts/update-cask.sh build/release/saytype-0.2.0.dmg --cask ../homebrew-tap/Casks/saytype.rb
 ```
 
 ## Without notarization
 
 On the first launch of a downloaded build that is not notarized, macOS 15 and later show
-**"voicemode" Not Opened** with *Done* and *Move to Trash*. Control-click → Open no longer skips
+**"saytype" Not Opened** with *Done* and *Move to Trash*. Control-click → Open no longer skips
 this dialog. Users have two ways in:
 
 - System Settings → Privacy & Security, scroll to Security, click **Open Anyway** next to
-  "voicemode" was blocked, confirm with Touch ID or the password, then **Open**.
-- Terminal: `xattr -dr com.apple.quarantine /Applications/voicemode.app`
+  "saytype" was blocked, confirm with Touch ID or the password, then **Open**.
+- Terminal: `xattr -dr com.apple.quarantine /Applications/saytype.app`
 
 The Homebrew cask clears the quarantine flag in `postflight_steps`. Remove that block once
 releases are notarized. Sparkle clears the flag on the updates it installs, so only the first

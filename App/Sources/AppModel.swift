@@ -14,6 +14,8 @@ final class AppModel {
     @ObservationIgnored private var overlay: OverlayController?
     @ObservationIgnored private var statusItem: StatusItemController?
     @ObservationIgnored private var hotKeys: GlobalHotKeys?
+    /// Sparkle; stays off in preview launches and in builds without a signing key.
+    @ObservationIgnored private(set) var updater: Updater?
     private(set) var permissions: [Permission: PermissionState] = [:]
     /// Section shown in the main window.
     var mainSection = MainSection.home
@@ -39,6 +41,7 @@ final class AppModel {
         )
         overlay = OverlayController(model: overlayModel)
         if !Self.isPreviewLaunch {
+            updater = Updater()
             statusItem = StatusItemController(model: self)
             registerHotKeys()
         }
