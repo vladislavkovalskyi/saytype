@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="236" height="56" viewBox="0 0 236 56" role="img" aria-label="Download for macOS">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FF9A52"/>
+      <stop offset="0.55" stop-color="#F0603C"/>
+      <stop offset="1" stop-color="#C6363A"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff" stop-opacity=".38"/>
+      <stop offset=".5" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect width="236" height="56" rx="28" fill="url(#bg)"/>
+  <rect width="236" height="56" rx="28" fill="url(#shine)"/>
+  <rect x=".5" y=".5" width="235" height="55" rx="27.5" fill="none" stroke="#fff" stroke-opacity=".35"/>
+  <path fill="#fff" transform="translate(26 15) scale(1.45)" d="M11.6 9c0-2 1.7-3 1.8-3.1-1-1.4-2.5-1.6-3-1.6-1.3-.1-2.5.8-3.1.8-.7 0-1.7-.8-2.8-.8C3 4.3 1.6 5.2.9 6.5c-1.5 2.6-.4 6.4 1 8.5.7 1 1.5 2.1 2.6 2.1 1 0 1.4-.7 2.7-.7s1.6.7 2.7.7c1.1 0 1.8-1 2.5-2 .8-1.1 1.1-2.2 1.1-2.3 0 0-2-.8-2-3.1zM9.5 3C10 2.3 10.4 1.4 10.3.5c-.8 0-1.8.5-2.4 1.2-.5.6-1 1.5-.9 2.4.9.1 1.8-.4 2.5-1.1z"/>
+  <text x="62" y="25" fill="#fff" fill-opacity=".85" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="500">Download for</text>
+  <text x="62" y="43" fill="#fff" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="19" font-weight="700" letter-spacing="-.2">macOS · Free</text>
+</svg>

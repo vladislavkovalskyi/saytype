@@ -15,6 +15,7 @@ enum OverlaySnapshots {
             NotchMetrics.shared.update(for: notched)
         }
         dictation.demoHistory(DictationController.sampleHistory())
+        dictation.demoModelReady()
         dictation.demoLevels()
         let terminal = DictationController.TargetApp(name: "Terminal", bundleID: "com.apple.Terminal", icon: NSWorkspace.shared.icon(forFile: "/System/Applications/Utilities/Terminal.app"))
         let committed = "поправь useEffect в Header, он"
@@ -38,9 +39,10 @@ enum OverlaySnapshots {
                 dictation.demoSet(phase: phase, committed: committed, pending: pending)
                 model.setHoverForSnapshot(hover)
                 let size = style == .island ? OverlayController.islandPanelSize : OverlayController.pillPanelSize
+                let transparent = ProcessInfo.processInfo.arguments.contains("--transparent")
                 let root = OverlayRoot(model: model)
                     .frame(width: size.width, height: size.height)
-                    .background(LinearGradient(colors: [Color(hex: 0x3B5566), Color(hex: 0x5A2E3E)], startPoint: .top, endPoint: .bottom))
+                    .background(transparent ? AnyShapeStyle(Color.clear) : AnyShapeStyle(LinearGradient(colors: [Color(hex: 0x3B5566), Color(hex: 0x5A2E3E)], startPoint: .top, endPoint: .bottom)))
                 render(root, size: size, to: folder.appending(path: "\(style.rawValue)-\(name).png"))
             }
         }
@@ -50,6 +52,8 @@ enum OverlaySnapshots {
         let host = NSHostingView(rootView: view)
         host.frame = CGRect(origin: .zero, size: size)
         let window = NSWindow(contentRect: host.frame, styleMask: [.borderless], backing: .buffered, defer: false)
+        window.isOpaque = false
+        window.backgroundColor = .clear
         window.contentView = host
         // Let onAppear animations (the check mark, spinners) settle.
         RunLoop.main.run(until: Date().addingTimeInterval(0.7))

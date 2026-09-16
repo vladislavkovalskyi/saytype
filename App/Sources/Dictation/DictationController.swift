@@ -383,6 +383,10 @@ final class DictationController {
         if startedAt == nil { startedAt = Date() }
     }
 
+    func demoModelReady() {
+        modelState = .ready
+    }
+
     func demoHistory(_ records: [DictationRecord]) {
         history = records
     }

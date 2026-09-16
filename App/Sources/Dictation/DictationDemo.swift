@@ -35,7 +35,7 @@ extension DictationController {
     /// In-memory history for `voicemode --demo-menu`; nothing is written to disk.
     static func sampleHistory(now: Date = Date()) -> [DictationRecord] {
         let samples: [(String, String, String?, Double, Double)] = [
-            ("Вынеси загрузку пользователя в хук useUser и добавь массив зависимостей.", "вынеси загрузку пользователя в хук юз юзер и добавь массив зависимостей", "Терминал", 6, 0),
+            ("Вынеси загрузку пользователя в хук useUser и добавь массив зависимостей.", "вынеси загрузку пользователя в хук юз юзер и добавь массив зависимостей", "Terminal", 6, 0),
             ("1. Поправь useEffect в Header.\n2. Задеплой feature/auth на Vercel.", "во-первых поправь юз эффект в хедер во-вторых задеплой фичер аус на версель", "Cursor", 9, 120),
             ("Задеплой feature/auth на Vercel и скинь превью.", "задеплой фичер аус на версель и скинь превью", "Cursor", 4, 2_640),
             ("Созвон перенесли на четыре, ссылку скину позже.", "созвон перенесли на четыре ссылку скину позже", "Telegram", 3, 4_260),
