@@ -8,6 +8,8 @@
 .mrow { display: flex; align-items: center; gap: 10px; padding: 7px 8px; border-radius: 9px; font-size: 13.5px; color: rgba(246,243,238,.9); }
 .mrow .icon { opacity: .7; }
 .mrow .sc { margin-left: auto; font-size: 12.5px; color: rgba(246,243,238,.4); }
+.fp { display: flex; align-items: center; gap: 1.5px; color: oklch(0.8 0.12 65 / .75); flex: none; }
+.fp i { width: 2px; }
 .sep { height: 1px; background: rgba(255,255,255,.08); margin: 6px 8px; }
 .ib { height: 26px; padding: 0 9px; border-radius: 8px; display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: rgba(246,243,238,.78); background: rgba(255,255,255,.07); white-space: nowrap; }
 </style>
@@ -21,21 +23,21 @@
     <div style="display: flex; align-items: center; gap: 8px; padding: 2px 6px 10px;">
       <span style="color: oklch(0.83 0.14 65);">[[i wave 16 2.2]]</span>
       <span style="font-size: 14px; font-weight: 600;">voicemode</span>
-      <span class="chip" style="margin-left: auto; height: 24px; padding: 0 10px; font-size: 12px; background: rgba(255,255,255,.07); color: rgba(246,243,238,.78);"><span style="width: 6px; height: 6px; border-radius: 50%; background: oklch(0.8 0.13 150);"></span>Готов · держи Fn</span>
+      <span class="ml" style="margin-left: auto;">готов</span><span class="kbd">fn</span>
     </div>
 
     <div class="well" style="border-radius: 14px; padding: 11px 12px 10px;">
-      <div class="cap" style="display: flex; align-items: center; gap: 6px; font-size: 12px;"><span>Последняя · Терминал · только что</span><span style="margin-left: auto; color: rgba(246,243,238,.45);">[[i grip 14]]</span></div>
+      <div class="cap" style="display: flex; align-items: center; gap: 6px; font-size: 12px;"><span class="ml">Терминал · 11:42</span><span style="margin-left: auto; color: rgba(246,243,238,.45);">[[i grip 14]]</span></div>
       <p style="margin-top: 7px; font-size: 13.5px; line-height: 1.5;">Вынеси загрузку пользователя в отдельный хук <span class="code">useUser</span> и добавь массив зависимостей.</p>
       <div style="margin-top: 10px; display: flex; gap: 6px;"><span class="ib">[[i copy 13]]Копировать</span><span class="ib">Как сказал</span><span class="ib" style="margin-left: auto;">Ещё раз <span style="opacity: .5;">⌃⌥V</span></span></div>
     </div>
 
     <div class="sec">Сегодня</div>
-    <div class="hrow"><span class="t">Так, во-первых, поправь useEffect в Header — он дёргается при каждом рендере</span><span class="m">Терминал · 11:40</span></div>
-    <div class="hrow"><span class="t">Задеплой feature/auth на Vercel и скинь превью</span><span class="m">iTerm2 · 10:58</span></div>
-    <div class="hrow"><span class="t">Созвон перенесли на четыре, ссылку скину позже</span><span class="m">Telegram · 10:31</span></div>
-    <div class="hrow"><span class="t">Добавь в Supabase таблицу users с полями id, email и created_at</span><span class="m">Cursor · 09:47</span></div>
-    <div class="hrow"><span class="t">localhost:3000/settings</span><span class="m">Safari · 09:12</span></div>
+    <div class="hrow"><span class="t">Так, во-первых, поправь useEffect в Header — он дёргается при каждом рендере</span><span class="fp bars">[[bars 12 1 2 12]]</span><span class="m">11:40</span></div>
+    <div class="hrow"><span class="t">Задеплой feature/auth на Vercel и скинь превью</span><span class="fp bars">[[bars 4 2 2 12]]</span><span class="m">10:58</span></div>
+    <div class="hrow"><span class="t">Созвон перенесли на четыре, ссылку скину позже</span><span class="fp bars">[[bars 3 3 2 12]]</span><span class="m">10:31</span></div>
+    <div class="hrow"><span class="t">Добавь в Supabase таблицу users с полями id, email и created_at</span><span class="fp bars">[[bars 6 4 2 12]]</span><span class="m">09:47</span></div>
+    <div class="hrow"><span class="t">localhost:3000/settings</span><span class="fp bars">[[bars 2 5 2 12]]</span><span class="m">09:12</span></div>
     <div class="cap" style="padding: 8px 8px 2px; display: flex; align-items: center; gap: 6px; font-size: 12px;"><span>1 240 слов · 146 в минуту</span><span style="margin-left: auto; display: flex; align-items: center; gap: 5px;">[[i checkCircle 12]]Whisper turbo · офлайн</span></div>
 
     <div class="sep"></div>

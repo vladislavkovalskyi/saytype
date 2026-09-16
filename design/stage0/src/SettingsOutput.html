@@ -47,29 +47,27 @@
 
     <div class="content">
       <div class="ttl">Вывод</div>
-      <div class="cap" style="margin-top: 4px; font-size: 13px;">Что происходит с текстом, когда отпускаешь Fn.</div>
 
       <div class="gh">Режим</div>
       <div class="modes">
-        <div class="mode on"><div class="mi">[[i ret 20]]</div><div class="n">Вставить сразу</div><div class="d">В активное поле. Буфер обмена потом возвращается как был.</div></div>
-        <div class="mode"><div class="mi">[[i cardStack 20]]</div><div class="n">Оставить в плашке</div><div class="d">Карточкой: перетащить в нужное окно или скопировать.</div></div>
-        <div class="mode"><div class="mi">[[i clipboard 20]]</div><div class="n">Только в буфер</div><div class="d">Вставишь сам, когда и куда нужно.</div></div>
+        <div class="mode on"><div class="mi">[[i ret 20]]</div><div class="n">Вставить</div><div class="d">В активное поле. Буфер обмена восстанавливается.</div></div>
+        <div class="mode"><div class="mi">[[i cardStack 20]]</div><div class="n">Карточка</div><div class="d">Остаётся в плашке до перетаскивания.</div></div>
+        <div class="mode"><div class="mi">[[i clipboard 20]]</div><div class="n">Буфер обмена</div><div class="d">Без вставки.</div></div>
       </div>
 
       <div class="gh">Горячие клавиши</div>
       <div class="group">
-        <div class="srow"><div class="l"><div class="n">Вставить последнее ещё раз</div><div class="d">Если текст ушёл не в то окно.</div></div><span class="keys"><span class="kbd">⌃</span><span class="kbd">⌥</span><span class="kbd">V</span></span></div>
-        <div class="srow"><div class="l"><div class="n">Отменить запись</div><div class="d">Пока держишь Fn или в режиме без рук.</div></div><span class="keys"><span class="kbd">esc</span></span></div>
+        <div class="srow"><div class="l"><div class="n">Вставить последнее</div></div><span class="keys"><span class="kbd">⌃</span><span class="kbd">⌥</span><span class="kbd">V</span></span></div>
+        <div class="srow"><div class="l"><div class="n">Отменить запись</div></div><span class="keys"><span class="kbd">esc</span></span></div>
       </div>
 
-      <div class="gh">Авто-Enter после вставки</div>
+      <div class="gh">Enter после вставки</div>
       <div class="group">
         <div class="srow"><div class="apptile" style="background: #2c2c30;">[[i terminal 16]]</div><div class="l"><div class="n">Терминал</div></div><div class="toggle on"></div></div>
         <div class="srow"><div class="apptile" style="background: oklch(0.36 0.06 150);">[[i terminal 16]]</div><div class="l"><div class="n">iTerm2</div></div><div class="toggle on"></div></div>
         <div class="srow"><div class="apptile" style="background: oklch(0.32 0.04 260);">[[i text 16]]</div><div class="l"><div class="n">Cursor</div></div><div class="toggle"></div></div>
         <div class="srow" style="min-height: 44px;"><span class="add">[[i plus 14 2.2]]Добавить приложение</span></div>
       </div>
-      <div class="cap" style="margin: 10px 4px 0; font-size: 12px;">Сказал «запусти тесты» в терминале с агентом — команда сразу ушла. В поля паролей voicemode не вставляет ничего.</div>
     </div>
   </div>
 </div>

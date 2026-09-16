@@ -7,7 +7,7 @@
 //   [[bars count seed min max]] speech-like waveform bars
 //   [[flat count]]             silent waveform bars
 //   [[field hue]]              onboarding window background for a hue
-//   [[chrome step]]            traffic lights + 8-step progress
+//   [[chrome step]]            traffic lights, progress track, step number
 
 import { readFileSync, writeFileSync, readdirSync, mkdirSync } from 'node:fs';
 import { join, dirname, basename } from 'node:path';
@@ -102,7 +102,8 @@ function chrome(step) {
     `<i class="${i + 1 === n ? 'on' : i + 1 < n ? 'done' : ''}"></i>`).join('');
   return `<div class="grain"></div>
   <div class="lights"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div>
-  <div class="progress">${segs}</div>`;
+  <div class="track">${segs}</div>
+  <div class="stepno">0${n} / 08</div>`;
 }
 
 const MACROS = { i: icon, bars, flat, field, chrome };

@@ -1,49 +1,48 @@
 <style>
-.kb { position: absolute; left: 50%; top: 30px; width: 646px; height: 236px; transform: translateX(-50%) perspective(1000px) rotateX(26deg); transform-origin: 50% 100%; z-index: 3; }
-.key { font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, sans-serif; position: absolute; width: 104px; height: 100px; border-radius: 18px; background: linear-gradient(180deg, #3c3c43, #26262c); color: rgba(255,255,255,.72); font-size: 14px; box-shadow: inset 0 1px 0 rgba(255,255,255,.16), inset 0 -2px 0 rgba(0,0,0,.35), 0 7px 0 #121215, 0 14px 22px rgba(0,0,0,.45); }
-.key span { position: absolute; }
-.key .tl { top: 12px; left: 14px; }
-.key .tr { top: 12px; right: 14px; }
-.key .bl { bottom: 12px; left: 14px; }
-.key .br { bottom: 12px; right: 14px; }
-.key.far { opacity: .28; }
-.key.mid { opacity: .6; }
-.key.down { top: 139px; background: linear-gradient(180deg, oklch(0.64 0.12 232), oklch(0.48 0.12 236)); color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.32), 0 1px 0 #121215, 0 0 46px oklch(0.74 0.14 232 / .8), 0 0 0 1px oklch(0.84 0.1 232 / .6); }
+.well3 { position: absolute; left: 50px; top: 58px; width: 290px; height: 290px; border-radius: 54px; background: rgba(0,0,0,.32); box-shadow: inset 0 2px 14px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.05); z-index: 2; }
+.cap3d { position: absolute; left: 70px; top: 82px; width: 250px; height: 246px; border-radius: 42px; font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif; color: #fff; z-index: 3;
+  background: linear-gradient(180deg, oklch(0.68 0.12 232), oklch(0.48 0.12 238));
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.38), inset 0 -4px 0 rgba(0,0,0,.22), 0 3px 0 oklch(0.3 0.08 238), 0 0 100px oklch(0.72 0.15 232 / .7), 0 0 0 1px oklch(0.85 0.1 232 / .5); }
+.cap3d .fn { position: absolute; top: 28px; right: 34px; font-size: 42px; font-weight: 500; letter-spacing: -.01em; }
+.cap3d .gl { position: absolute; bottom: 30px; left: 32px; }
+.read { position: absolute; left: 392px; top: 54px; width: 444px; z-index: 3; }
+.big { font-family: "Unbounded", "Onest", sans-serif; font-size: 46px; font-weight: 600; letter-spacing: -.02em; line-height: 1; margin-top: 10px; }
+.meter { position: relative; height: 8px; border-radius: 4px; background: rgba(255,255,255,.12); margin-top: 22px; }
+.meter b { position: absolute; left: 0; top: 0; bottom: 0; width: 70%; border-radius: 4px; background: linear-gradient(90deg, oklch(0.78 0.1 232), #f7f3ec); }
+.meter i { position: absolute; left: 50%; top: -7px; bottom: -7px; width: 1.5px; background: rgba(255,255,255,.7); }
+.scale { display: flex; justify-content: space-between; margin-top: 10px; }
+.alts { display: flex; gap: 10px; margin-top: 12px; }
+.kc { height: 58px; padding: 0 14px; border-radius: 13px; display: flex; flex-direction: column; justify-content: center; gap: 3px; font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif; font-size: 14px; color: rgba(255,255,255,.82); background: linear-gradient(180deg, #34343b, #24242a); box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 4px 0 #111114, 0 8px 16px rgba(0,0,0,.35); }
+.kc small { font-size: 10.5px; color: rgba(255,255,255,.45); }
 </style>
 <div class="stage">
 <div class="win" style="[[field 232]]">
   [[chrome 3]]
-  <div class="layer" style="left: 50%; top: 110px; width: 520px; height: 260px; transform: translateX(-60%); background: radial-gradient(closest-side, oklch(0.7 0.14 232 / .45), transparent); z-index: 2;"></div>
-  <div class="kb">
-    <div class="key far" style="left: 0; top: 16px; width: 162px;"><span class="bl">⇧</span><span class="br">shift</span></div>
-    <div class="key far" style="left: 172px; top: 16px;"><span class="tl" style="font-size: 18px;">Z</span></div>
-    <div class="key far" style="left: 286px; top: 16px;"><span class="tl" style="font-size: 18px;">X</span></div>
-    <div class="key far" style="left: 400px; top: 16px;"><span class="tl" style="font-size: 18px;">C</span></div>
-    <div class="key far" style="left: 514px; top: 16px;"><span class="tl" style="font-size: 18px;">V</span></div>
+  <div class="well3"></div>
+  <div class="cap3d"><span class="fn">fn</span><span class="gl">[[i globe 34 1.5]]</span></div>
 
-    <div class="key down" style="left: 0;"><span class="tr">fn</span><span class="bl">[[i globe 19 1.6]]</span></div>
-    <div class="key mid" style="left: 114px; top: 132px;"><span class="tr">⌃</span><span class="br">control</span></div>
-    <div class="key mid" style="left: 228px; top: 132px;"><span class="tr">⌥</span><span class="br">option</span></div>
-    <div class="key mid" style="left: 342px; top: 132px; width: 130px;"><span class="tr">⌘</span><span class="br">command</span></div>
-    <div class="key far" style="left: 482px; top: 132px; width: 164px;"></div>
-  </div>
-  <div class="layer center" style="top: 290px; display: flex; justify-content: center;"><div class="chip glass" style="color: #fff;">[[i check 14 2.4]]Fn нажата — voicemode её слышит</div></div>
+  <div class="read">
+    <div class="ml">удержание</div>
+    <div class="big">0,42 с</div>
+    <div class="meter"><b></b><i></i></div>
+    <div class="scale"><span class="ml">нажатие</span><span class="ml">0,30 с</span><span class="ml">запись</span></div>
 
-  <h1 class="layer h1 center" style="top: 330px; width: 700px;">Зажми Fn</h1>
-  <p class="layer sub center" style="top: 386px; width: 580px;">Держишь — идёт запись. Отпустил — текст вставлен. Нажал дважды — запись без рук, пока не нажмёшь снова.</p>
-  <div class="layer center" style="top: 442px; display: flex; justify-content: center; align-items: center; gap: 8px;">
-    <span class="cap" style="margin-right: 4px; font-size: 13px;">Другая клавиша</span>
-    <span class="chip glass">Правый ⌥</span><span class="chip glass">Правый ⌘</span><span class="chip glass">Своё сочетание…</span>
-  </div>
-  <div class="layer glass" style="left: 50%; transform: translateX(-50%); top: 484px; height: 40px; border-radius: 20px; padding: 0 6px 0 14px; display: flex; align-items: center; gap: 10px; font-size: 13px; white-space: nowrap; color: rgba(246,243,238,.88);">
-    <span style="color: oklch(0.84 0.14 80);">[[i warn 16]]</span>
-    <span>Сейчас Fn открывает «Эмодзи и символы» — это будет мешать</span>
-    <span class="btn btn-sm btn-primary" style="height: 28px;">Исправить</span>
+    <div class="ml" style="margin-top: 26px;">другая клавиша</div>
+    <div class="alts">
+      <div class="kc">⌥<small>правый option</small></div>
+      <div class="kc">⌘<small>правый command</small></div>
+      <div class="kc">⌃⌥ Space<small>сочетание</small></div>
+    </div>
   </div>
 
-  <div class="footer">
-    <div class="left btn btn-ghost">[[i chevronLeft 16]]Назад</div>
-    <div class="btn btn-primary">Дальше</div>
+  <div class="layer glass" style="left: 392px; top: 324px; height: 42px; border-radius: 21px; padding: 0 5px 0 14px; display: flex; align-items: center; gap: 10px; font-size: 13.5px; white-space: nowrap; color: rgba(246,243,238,.9);">
+    <span style="color: oklch(0.85 0.14 80);">[[i warn 16]]</span>
+    <span>Globe открывает панель эмодзи</span>
+    <span class="btn btn-sm btn-primary" style="height: 32px;">Отключить</span>
   </div>
+
+  <h1 class="title">Клавиша</h1>
+  <p class="lede">Держать: запись. Отпустить: вставка. Двойное нажатие: запись без рук.</p>
+  <div class="actions"><span class="btn btn-ghost">Назад</span><span class="btn btn-primary">Дальше</span></div>
 </div>
 </div>

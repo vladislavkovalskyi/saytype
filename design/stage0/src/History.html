@@ -13,6 +13,8 @@
 .item .g { color: rgba(246,243,238,.28); padding-top: 2px; }
 .item .tx { font-size: 13.5px; line-height: 1.45; color: rgba(246,243,238,.9); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .item .mt { font-size: 11.5px; color: rgba(246,243,238,.42); margin-top: 4px; }
+.fp { display: inline-flex; align-items: center; gap: 1.5px; color: oklch(0.8 0.12 65 / .7); vertical-align: middle; margin-right: 8px; }
+.fp i { width: 2px; }
 .detail { position: absolute; left: 452px; right: 16px; top: 150px; bottom: 16px; border-radius: 18px; padding: 20px 24px; }
 .del { text-decoration: line-through; text-decoration-color: oklch(0.72 0.14 30); color: rgba(246,243,238,.38); }
 .ins { color: oklch(0.86 0.14 72); background: oklch(0.86 0.14 72 / .15); border-radius: 3px; padding: 0 1px; }
@@ -37,14 +39,14 @@
 
     <div class="list">
       <div class="day">Сегодня</div>
-      <div class="item"><span class="g">[[i grip 15]]</span><div style="min-width: 0;"><div class="tx">Вынеси загрузку пользователя в отдельный хук useUser и добавь массив зависимостей.</div><div class="mt">Терминал · 11:42 · 5 с</div></div></div>
-      <div class="item on"><span class="g">[[i grip 15]]</span><div style="min-width: 0;"><div class="tx">Так, во-первых, поправь useEffect в Header — он дёргается при каждом рендере. Во-вторых, задеплой ветку feature/auth на Vercel, ну и скинь превью в Telegram.</div><div class="mt">Терминал · 11:40 · 12 с</div></div></div>
-      <div class="item"><span class="g">[[i grip 15]]</span><div style="min-width: 0;"><div class="tx">Задеплой feature/auth на Vercel и скинь превью.</div><div class="mt">iTerm2 · 10:58 · 4 с</div></div></div>
-      <div class="item"><span class="g">[[i grip 15]]</span><div style="min-width: 0;"><div class="tx">Созвон перенесли на четыре, ссылку скину позже.</div><div class="mt">Telegram · 10:31 · 3 с</div></div></div>
-      <div class="item"><span class="g">[[i grip 15]]</span><div style="min-width: 0;"><div class="tx">Добавь в Supabase таблицу users с полями id, email и created_at.</div><div class="mt">Cursor · 09:47 · 6 с</div></div></div>
-      <div class="item"><span class="g">[[i grip 15]]</span><div style="min-width: 0;"><div class="tx">localhost:3000/settings</div><div class="mt">Safari · 09:12 · 2 с</div></div></div>
+      <div class="item"><span class="g">[[i grip 15]]</span><div style="min-width: 0;"><div class="tx">Вынеси загрузку пользователя в отдельный хук useUser и добавь массив зависимостей.</div><div class="mt"><span class="fp bars">[[bars 5 11 2 11]]</span>Терминал · 11:42 · 5 с</div></div></div>
+      <div class="item on"><span class="g">[[i grip 15]]</span><div style="min-width: 0;"><div class="tx">Так, во-первых, поправь useEffect в Header — он дёргается при каждом рендере. Во-вторых, задеплой ветку feature/auth на Vercel, ну и скинь превью в Telegram.</div><div class="mt"><span class="fp bars">[[bars 12 1 2 11]]</span>Терминал · 11:40 · 12 с</div></div></div>
+      <div class="item"><span class="g">[[i grip 15]]</span><div style="min-width: 0;"><div class="tx">Задеплой feature/auth на Vercel и скинь превью.</div><div class="mt"><span class="fp bars">[[bars 4 2 2 11]]</span>iTerm2 · 10:58 · 4 с</div></div></div>
+      <div class="item"><span class="g">[[i grip 15]]</span><div style="min-width: 0;"><div class="tx">Созвон перенесли на четыре, ссылку скину позже.</div><div class="mt"><span class="fp bars">[[bars 3 3 2 11]]</span>Telegram · 10:31 · 3 с</div></div></div>
+      <div class="item"><span class="g">[[i grip 15]]</span><div style="min-width: 0;"><div class="tx">Добавь в Supabase таблицу users с полями id, email и created_at.</div><div class="mt"><span class="fp bars">[[bars 6 4 2 11]]</span>Cursor · 09:47 · 6 с</div></div></div>
+      <div class="item"><span class="g">[[i grip 15]]</span><div style="min-width: 0;"><div class="tx">localhost:3000/settings</div><div class="mt"><span class="fp bars">[[bars 2 5 2 11]]</span>Safari · 09:12 · 2 с</div></div></div>
       <div class="day">Вчера</div>
-      <div class="item"><span class="g">[[i grip 15]]</span><div style="min-width: 0;"><div class="tx">Напиши тест на Jest для функции parseDate: пустая строка, ISO и timestamp.</div><div class="mt">Cursor · 18:20 · 7 с</div></div></div>
+      <div class="item"><span class="g">[[i grip 15]]</span><div style="min-width: 0;"><div class="tx">Напиши тест на Jest для функции parseDate: пустая строка, ISO и timestamp.</div><div class="mt"><span class="fp bars">[[bars 7 6 2 11]]</span>Cursor · 18:20 · 7 с</div></div></div>
     </div>
 
     <div class="detail well">
@@ -62,7 +64,7 @@
         <p><span class="del">эээ</span> <span class="ins">Т</span>ак<span class="ins">,</span> во<span class="ins">-</span>первых<span class="ins">,</span> поправь <span class="code">useEffect</span> в <span class="code">Header</span><span class="ins"> —</span> он дёргается при каждом рендере<span class="ins">.</span></p>
         <p style="margin-top: 12px;"><span class="ins">В</span>о<span class="ins">-</span>вторых<span class="ins">,</span> задеплой ветку <span class="code">feature/auth</span> на Vercel<span class="ins">,</span> ну и скинь превью в Telegram<span class="ins">.</span></p>
       </div>
-      <div class="cap" style="margin-top: 18px; font-size: 12.5px; display: flex; align-items: center; gap: 6px;">[[i shield 14]]Слова не переписаны: добавлены только знаки и абзац, убрано «эээ».</div>
+      <div class="cap" style="margin-top: 18px; font-size: 12.5px; display: flex; align-items: center; gap: 6px;">[[i shield 14]]Изменены знаки и абзацы, удалено «эээ». Слова те же.</div>
 
       <div style="position: absolute; left: 24px; right: 24px; bottom: 20px; display: flex; align-items: center; gap: 8px;">
         <span class="ib">[[i grip 14]]Перетащить</span>

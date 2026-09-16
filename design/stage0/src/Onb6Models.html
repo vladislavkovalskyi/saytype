@@ -1,43 +1,49 @@
 <style>
-.vessel { position: absolute; left: 92px; top: 90px; width: 240px; height: 336px; border-radius: 50px; overflow: hidden; z-index: 3; }
-.liquid { position: absolute; left: 0; right: 0; bottom: 0; height: 64%; background: linear-gradient(180deg, oklch(0.85 0.11 165 / .96), oklch(0.55 0.11 175 / .96)); }
+.vessel { position: absolute; left: 64px; top: 50px; width: 220px; height: 304px; border-radius: 48px; overflow: hidden; z-index: 3; }
+.liquid { position: absolute; left: 0; right: 0; bottom: 0; height: 64%; background: linear-gradient(180deg, oklch(0.85 0.11 165 / .96), oklch(0.52 0.11 178 / .96)); }
 .liquid svg { position: absolute; left: 0; top: -13px; width: 100%; height: 14px; display: block; }
-.step { display: flex; align-items: flex-start; gap: 14px; }
-.dot { width: 22px; height: 22px; border-radius: 50%; flex: none; margin-top: 1px; box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.28); }
-.spin { background: conic-gradient(#f7f3ec 0 64%, rgba(255,255,255,.16) 64% 100%); box-shadow: none; -webkit-mask: radial-gradient(circle, transparent 7.5px, #000 8px); mask: radial-gradient(circle, transparent 7.5px, #000 8px); }
+.spec { position: absolute; left: 336px; top: 60px; width: 500px; z-index: 3; }
+.kv { display: grid; grid-template-columns: 110px minmax(0, 1fr); row-gap: 10px; align-items: baseline; }
+.kv b { font-size: 15px; font-weight: 500; color: rgba(246,243,238,.94); }
+.steps { margin-top: 24px; display: flex; flex-direction: column; gap: 10px; }
+.stp { display: flex; align-items: center; gap: 12px; font-size: 14.5px; color: rgba(246,243,238,.7); }
+.stp.on { color: #fff; font-weight: 500; }
+.dot { width: 16px; height: 16px; border-radius: 50%; flex: none; box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.3); }
+.spin { background: conic-gradient(#f7f3ec 0 64%, rgba(255,255,255,.16) 64% 100%); box-shadow: none; -webkit-mask: radial-gradient(circle, transparent 5px, #000 5.5px); mask: radial-gradient(circle, transparent 5px, #000 5.5px); }
 </style>
 <div class="stage">
 <div class="win" style="[[field 155]]">
   [[chrome 6]]
-  <div class="layer" style="left: 20px; top: 100px; width: 400px; height: 360px; background: radial-gradient(closest-side, oklch(0.74 0.13 160 / .45), transparent); z-index: 2;"></div>
-  <div class="vessel glass">
+  <div class="layer" style="left: -20px; top: 20px; width: 420px; height: 380px; background: radial-gradient(closest-side, oklch(0.76 0.13 160 / .45), transparent); z-index: 2;"></div>
+  <div class="vessel glass rim">
     <div class="liquid"><svg viewBox="0 0 240 14" preserveAspectRatio="none"><path d="M0 8 C 30 0, 60 0, 90 7 S 150 14, 180 7 S 225 1, 240 6 L 240 14 L 0 14 Z" style="fill: oklch(0.85 0.11 165 / .96);"/></svg></div>
-    <div style="position: absolute; left: 16px; top: 24px; bottom: 24px; width: 12px; border-radius: 6px; background: linear-gradient(180deg, rgba(255,255,255,.38), rgba(255,255,255,0));"></div>
-    <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-shadow: 0 2px 14px rgba(0,40,30,.45);">
-      <div style="font-family: 'Unbounded', 'Onest', sans-serif; font-size: 48px; font-weight: 600; letter-spacing: -.02em; line-height: 1;">64%</div>
-      <div style="font-size: 13px; color: rgba(255,255,255,.82); margin-top: 8px;">401 из 626 МБ</div>
+    <div style="position: absolute; left: 16px; top: 26px; bottom: 26px; width: 11px; border-radius: 6px; background: linear-gradient(180deg, rgba(255,255,255,.38), rgba(255,255,255,0)); z-index: 2;"></div>
+    <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-shadow: 0 2px 14px rgba(0,40,30,.45); z-index: 2;">
+      <div style="font-family: 'Unbounded', 'Onest', sans-serif; font-size: 50px; font-weight: 600; letter-spacing: -.02em; line-height: 1;">64%</div>
     </div>
   </div>
 
-  <div class="layer" style="left: 392px; top: 92px; width: 420px;">
-    <div class="cap" style="font-size: 13px;">Модель распознавания</div>
-    <h2 class="h2" style="margin-top: 8px; font-size: 21px;">Whisper large-v3-turbo</h2>
-    <p class="sub" style="margin-top: 8px;">Скачивается один раз. Потом всё работает без интернета.</p>
-    <div style="margin-top: 26px; display: flex; flex-direction: column; gap: 16px;">
-      <div class="step"><div class="dot spin"></div><div style="flex: 1; display: flex; justify-content: space-between; font-size: 14.5px; font-weight: 600;"><span>Загрузка</span><span class="cap" style="font-size: 13px; font-weight: 400;">38 МБ/с · ещё 6 с</span></div></div>
-      <div class="step"><div class="dot"></div><div><div style="font-size: 14.5px; font-weight: 500; color: rgba(246,243,238,.8);">Подготовка под M3 Pro</div><div class="cap" style="margin-top: 2px;">Несколько минут. Повторится только после обновления macOS</div></div></div>
-      <div class="step"><div class="dot"></div><div style="font-size: 14.5px; font-weight: 500; color: rgba(246,243,238,.8);">Готово к диктовке</div></div>
+  <div class="spec">
+    <div class="kv">
+      <span class="ml">модель</span><b>Whisper large-v3-turbo</b>
+      <span class="ml">размер</span><b>626 МБ</b>
+      <span class="ml">скачано</span><b>401 МБ · 38 МБ/с</b>
+      <span class="ml">осталось</span><b>0:06</b>
     </div>
-    <div class="glass" style="margin-top: 26px; border-radius: 18px; padding: 14px 16px; display: flex; align-items: center; gap: 14px;">
-      <div style="flex: 1;"><div style="font-size: 14.5px; font-weight: 600;">Умная структура</div><div class="cap" style="margin-top: 2px;">+1,2 ГБ · списки и абзацы в длинных фразах</div></div>
+    <div class="steps">
+      <div class="stp on"><span class="dot spin"></span>Загрузка</div>
+      <div class="stp"><span class="dot"></span>Подготовка под M3 Pro<span class="ml" style="margin-left: auto;">до нескольких минут</span></div>
+      <div class="stp"><span class="dot"></span>Готово</div>
+    </div>
+    <div class="glass rim" style="margin-top: 22px; border-radius: 18px; padding: 13px 16px; display: flex; align-items: center; gap: 14px;">
+      <div style="flex: 1; font-size: 14.5px; font-weight: 600;">Умная структура</div>
+      <span class="ml">+1,2 ГБ</span>
       <div class="toggle on"></div>
     </div>
   </div>
-  <div class="layer cap center" style="top: 474px; display: flex; justify-content: center; align-items: center; gap: 6px; font-size: 13px;">[[i info 14]]Можно идти дальше — пока модель качается, работает встроенная диктовка macOS</div>
 
-  <div class="footer">
-    <div class="left btn btn-ghost">[[i chevronLeft 16]]Назад</div>
-    <div class="btn btn-primary">Дальше</div>
-  </div>
+  <h1 class="title">Модель</h1>
+  <p class="lede">Загрузка продолжится в фоне. После неё интернет не нужен.</p>
+  <div class="actions"><span class="btn btn-ghost">Назад</span><span class="btn btn-primary">Дальше</span></div>
 </div>
 </div>
