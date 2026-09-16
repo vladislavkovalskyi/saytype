@@ -7,7 +7,8 @@ enum LegacyMigration {
     static let settingsKey = "settings.v1"
 
     static func run(currentID: String = Bundle.main.bundleIdentifier ?? "dev.kovalskyi.saytype") {
-        guard currentID != legacyID else { return }
+        // Previews and snapshots must not move data out from under a running voicemode build.
+        guard currentID != legacyID, !AppModel.isPreviewLaunch else { return }
         moveSupportFolder(to: currentID)
         copySettings()
     }

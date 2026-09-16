@@ -26,7 +26,12 @@ final class Updater {
 
     init(bundle: Bundle = .main) {
         let hasKey = Self.hasValidPublicKey(in: bundle)
+        #if DEBUG
+        // Development builds are not in the appcast; checking would only report errors.
+        isEnabled = false
+        #else
         isEnabled = hasKey && !AppModel.isPreviewLaunch
+        #endif
         controller = SPUStandardUpdaterController(
             startingUpdater: isEnabled,
             updaterDelegate: nil,

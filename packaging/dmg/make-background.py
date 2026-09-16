@@ -24,11 +24,12 @@ APPLICATIONS_SLOT = (490, 180)
 ICON_SIZE = 128
 WORDMARK_Y = 344
 
-# Palette: the ember world of the app.
-TOP = (0x2A, 0x12, 0x16)
-BOTTOM = (0x12, 0x0D, 0x10)
-GLOW = (0xE0, 0x60, 0x2F)
-INK = (0xF6, 0xD8, 0xC8)
+# Palette: the ember world of the app, mid-toned so Finder's icon labels stay readable in
+# both appearances (black labels in light mode, white in dark mode).
+TOP = (0xF2, 0x95, 0x43)
+BOTTOM = (0xB8, 0x3A, 0x3A)
+GLOW = (0xFF, 0xD6, 0xA0)
+INK = (0xFF, 0xF4, 0xEA)
 
 SUPERSAMPLE = 4
 
@@ -55,9 +56,9 @@ def ground(scale):
             t = min(1.0, max(0.0, 0.78 * v + 0.22 * u))
             t = t * t * (3 - 2 * t)
             dx, dy = (x - gx) / rx, (y - gy) / ry
-            glow = 0.13 * math.exp(-2.2 * (dx * dx + dy * dy))
+            glow = 0.22 * math.exp(-2.2 * (dx * dx + dy * dy))
             cx, cy = u - 0.5, v - 0.5
-            vignette = 1.0 - 0.28 * (cx * cx + cy * cy)
+            vignette = 1.0 - 0.18 * (cx * cx + cy * cy)
             for c in range(3):
                 base = lerp(TOP[c], BOTTOM[c], t)
                 value = lerp(base, GLOW[c], glow) * vignette

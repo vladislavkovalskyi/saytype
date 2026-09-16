@@ -70,7 +70,7 @@ targets:
         # key here; docs/RELEASING.md has the steps. The updater stays off while the
         # placeholder is in place.
         SUFeedURL: https://vladislavkovalskyi.github.io/saytype/appcast.xml
-        SUPublicEDKey: REPLACE_WITH_SPARKLE_PUBLIC_KEY
+        SUPublicEDKey: tJXCduZaPnFP2Tm8wKQi/VX2lUrJ1axWe+solKFKUno=
         SUEnableAutomaticChecks: true
     settings:
       base:
