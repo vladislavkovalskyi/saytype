@@ -19,7 +19,13 @@ final class OverlayModel {
 
     private(set) var hover = Hover.none
     /// Frame of the visible island or pill in the panel's view coordinates, for hit testing.
-    var hitFrame: CGRect = .zero
+    /// Updated every frame of a transition; no view reads it, so nothing observes it.
+    @ObservationIgnored var hitFrame: CGRect = .zero {
+        didSet { if hitFrame != oldValue { onHitFrameChange?() } }
+    }
+    /// Set by the controller: a shape that grows or shrinks under a still pointer takes or lets
+    /// through clicks right away, not on the next mouse move.
+    @ObservationIgnored var onHitFrameChange: (() -> Void)?
     /// A popup menu from the panel is on screen; the panel must not close under it.
     var menuOpen = false {
         didSet { if !menuOpen, !pointerInside { pointerExited() } }
@@ -99,16 +105,26 @@ final class OverlayModel {
 }
 
 extension DictationController.Notice {
-    var title: LocalizedStringKey {
+    var label: Text {
         switch self {
-        case .passwordField: "Password field"
-        case .modelMissing: "Model not downloaded"
-        case .modelFailed: "Model failed to load"
-        case .microphoneUnavailable: "Microphone unavailable"
-        case .recognitionFailed: "Couldn't transcribe"
-        case .nothingHeard: "Nothing heard"
-        case .copied: "Copied"
-        case .mode(let title): "\(title)"
+        case .passwordField: Text("Password field")
+        case .modelMissing: Text("Model not downloaded")
+        case .modelFailed: Text("Model failed to load")
+        case .microphoneUnavailable: Text("Microphone unavailable")
+        case .recognitionFailed: Text("Couldn't transcribe")
+        case .nothingHeard: Text("Nothing heard")
+        case .copied: Text("Copied")
+        // Already localized, or the name the user gave a custom mode.
+        case .mode(let title): Text(verbatim: title)
+        }
+    }
+
+    /// Symbol colour: green for done, the text colour for a mode switch, amber for problems.
+    func tint(ink: Color) -> Color {
+        switch self {
+        case .copied: OverlayPalette.done
+        case .mode: ink.opacity(0.72)
+        default: OverlayPalette.warning
         }
     }
 

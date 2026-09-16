@@ -555,6 +555,12 @@ final class DictationController {
         levels = levels.map { _ in Float.random(in: 0.15...0.9) }
     }
 
+    func demoMode(_ mode: DictationMode, stage: FinishingStage = .transcribing, handsFree: Bool = false) {
+        activeMode = mode
+        finishingStage = stage
+        self.handsFree = handsFree
+    }
+
     private func show(_ phase: Phase, for seconds: Double) {
         hideTask?.cancel()
         self.phase = phase

@@ -5,29 +5,46 @@ import VMCore
 import VMSystem
 
 /// The island: a black shape that grows out of the camera notch.
+///
+/// One shape morphs between states. The row level with the notch stays in place and swaps only
+/// the small items in its ears; live text, the panel and the card sit under it and are revealed as
+/// the shape grows. `IslandSurface` interpolates the size every display frame, so the clip and the
+/// hit frame follow the shape on screen.
 struct IslandView: View {
     let model: OverlayModel
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    /// Height of the live text as laid out, reported by `LiveWords`.
+    @State private var textHeight: CGFloat = 0
     private var notch: NotchMetrics { .shared }
 
     enum Mode: Equatable {
         case idle
         case peek
         case panel
-        case listening(expanded: Bool)
-        case finishing
+        case listening
+        case finishing(rewriting: Bool)
         case inserted
         case notice(DictationController.Notice)
         case card(String)
     }
 
+    static let panelWidth: CGFloat = 504
+    static let panelBodyHeight: CGFloat = 150
+    /// The widest the island may grow inside its panel, ears included.
+    private static let maxWidth = OverlayController.islandPanelSize.width - 28
+    /// Space between the notch row and the live text, and under the text.
+    static let textTop: CGFloat = 7
+    private static let textBottom: CGFloat = 15
+    /// Room for the timer in the right ear.
+    private static let timerWidth: CGFloat = 34
+
     private var mode: Mode {
         let dictation = model.dictation
         switch dictation.phase {
         case .listening:
-            return .listening(expanded: !(dictation.committedText.isEmpty && dictation.pendingText.isEmpty))
+            return .listening
         case .finishing:
-            return .finishing
+            return .finishing(rewriting: dictation.finishingStage == .rewriting)
         case .card(let text):
             return .card(text)
         case .inserted:
@@ -43,117 +60,289 @@ struct IslandView: View {
         }
     }
 
-    private struct Geometry: Equatable {
-        var size: CGSize
-        var ear: CGFloat
-        var radius: CGFloat
+    private var showsText: Bool {
+        !(model.dictation.committedText.isEmpty && model.dictation.pendingText.isEmpty)
     }
 
-    private func geometry(_ mode: Mode) -> Geometry {
+    private func geometry(_ mode: Mode) -> IslandGeometry {
         let base = max(notch.width, 150)
         let h = notch.height
         switch mode {
         case .idle:
-            return Geometry(size: CGSize(width: base, height: h), ear: 0, radius: 10)
+            return IslandGeometry(width: base, height: h, ear: 0, radius: 10)
         case .peek:
-            return Geometry(size: CGSize(width: base + 72, height: h + 6), ear: 8, radius: 15)
+            return IslandGeometry(width: base + 72, height: h + 6, ear: 8, radius: 15)
         case .panel:
-            return Geometry(size: CGSize(width: 444, height: h + 150), ear: 14, radius: 28)
-        case .listening(let expanded):
-            return expanded
-                ? Geometry(size: CGSize(width: 464, height: h + textRowHeight), ear: 14, radius: 26)
-                : Geometry(size: CGSize(width: base + 144, height: h), ear: 8, radius: 12)
-        case .finishing:
-            return Geometry(size: CGSize(width: 464, height: h + textRowHeight), ear: 14, radius: 26)
+            return IslandGeometry(width: Self.panelWidth, height: h + Self.panelBodyHeight, ear: 14, radius: 28)
+        case .listening, .finishing:
+            let row = rowWidth(fitting: dictationEars)
+            guard showsText else {
+                return IslandGeometry(width: row, height: h, ear: 8, radius: 12)
+            }
+            // Before the first layout pass reports a height, assume one line.
+            let text = textHeight > 0 ? textHeight : TextMeasure.lineHeight(size: 15)
+            return IslandGeometry(width: textWidth + 48, height: h + Self.textTop + text + Self.textBottom, ear: 14, radius: 26)
         case .inserted:
-            return Geometry(size: CGSize(width: base + 96, height: h), ear: 8, radius: 12)
+            return IslandGeometry(width: base + 96, height: h, ear: 8, radius: 12)
         case .notice(let notice):
             let side = max(TextMeasure.width(notice.measuredTitle, size: 12) + 40, 60)
-            return Geometry(size: CGSize(width: base + side * 2, height: h), ear: 8, radius: 12)
+            return IslandGeometry(width: base + side * 2, height: h, ear: 8, radius: 12)
         case .card(let text):
-            let lineHeight: CGFloat = 20.5
-            let textHeight = min(TextMeasure.height(text, width: 416, size: 14, lineHeight: lineHeight), lineHeight * 8)
-            return Geometry(size: CGSize(width: 464, height: h + textHeight + 62), ear: 14, radius: 28)
+            return IslandGeometry(width: 464, height: h + cardBodyHeight(text), ear: 14, radius: 28)
         }
     }
 
-    /// One line of live text needs less room than two; the island grows when it wraps.
-    private var textRowHeight: CGFloat {
-        let text = [model.dictation.committedText, model.dictation.pendingText].joined(separator: " ")
-        return TextMeasure.width(text, size: 15) > 410 ? 76 : 55
+    /// The narrowest row that fits `content` points in each ear, and no narrower than the
+    /// resting recording row.
+    private func rowWidth(fitting content: CGFloat) -> CGFloat {
+        let base = max(notch.width, 150)
+        return min(max(base + 144, notch.width + 60 + 2 * max(content, 46)), Self.maxWidth)
+    }
+
+    /// Room for content in each ear of a row this wide: the row less the notch, the insets and
+    /// the gaps around the notch.
+    private func earRoom(_ width: CGFloat) -> CGFloat {
+        (width - notch.width - 60) / 2
+    }
+
+    /// Width of the bars, and of the spinner's slot, so a mode tag beside them stays put.
+    private static let barsWidth = VoiceBars.width(count: 9, barWidth: 3)
+
+    /// The widest ear of any dictation stage: bars and the mode tag on the left, the timer and the
+    /// stop button on the right, the rewrite label and its skip button. One width for all stages
+    /// keeps the island and the wrapping of its text still from recording to insertion.
+    private var dictationEars: CGFloat {
+        let dictation = model.dictation
+        let tag = dictation.activeMode.isStandard ? 0 : ModeTag.width(dictation.activeMode.title) + 8
+        let rewrite = dictation.activeMode.usesLanguageModel || dictation.finishingStage == .rewriting
+        return max(
+            Self.barsWidth + tag,
+            Self.timerWidth + (dictation.handsFree ? 30 : 0),
+            rewrite ? max(RewritingLabel.width, SkipRewriteButton.width) : 0
+        )
+    }
+
+    /// Width of the live text: the island's width less its side margins, at least 416 points.
+    private var textWidth: CGFloat {
+        max(464, rowWidth(fitting: dictationEars)) - 48
+    }
+
+    private func cardBodyHeight(_ text: String) -> CGFloat {
+        let lineHeight: CGFloat = 20.5
+        return min(TextMeasure.height(text, width: 416, size: 14, lineHeight: lineHeight), lineHeight * 8) + 62
     }
 
     var body: some View {
         let mode = mode
-        let shape = geometry(mode)
-        ZStack(alignment: .top) {
-            IslandShape(ear: shape.ear, radius: shape.radius)
-                .fill(.black)
-                .frame(width: shape.size.width + shape.ear * 2, height: shape.size.height)
-                .shadow(color: OverlayPalette.ember.opacity(glow(mode)), radius: 24, y: 12)
-            content(mode)
-                .frame(width: shape.size.width, height: shape.size.height, alignment: .top)
-                .clipped()
+        let geometry = geometry(mode)
+        VStack(spacing: 0) {
+            IslandTopRow(inset: mode == .peek ? 12 : 18, height: notch.height + (mode == .peek ? 6 : 0)) {
+                ZStack(alignment: .leading) { leadingEar(mode, width: geometry.width) }
+            } trailing: {
+                ZStack(alignment: .trailing) { trailingEar(mode) }
+            }
+            below(mode)
         }
-        .frame(width: shape.size.width + shape.ear * 2, height: shape.size.height, alignment: .top)
+        .modifier(IslandSurface(geometry: geometry, glows: mode == .listening, dictation: model.dictation) { model.hitFrame = $0 })
         .foregroundStyle(.white)
         // A screen without a notch has nothing to hide behind: the resting island disappears.
         .opacity(mode == .idle && !notch.hasNotch ? 0 : 1)
-        .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { model.hitFrame = $0 }
-        .animation(.island(reduceMotion: reduceMotion), value: shape)
+        .animation(.island(reduceMotion: reduceMotion), value: geometry)
         .animation(.island(reduceMotion: reduceMotion), value: mode)
     }
 
-    private func glow(_ mode: Mode) -> Double {
-        guard case .listening = mode else { return 0 }
-        return Double(model.dictation.currentLevel) * 0.85
-    }
+    // MARK: Ears
 
-    @ViewBuilder private func content(_ mode: Mode) -> some View {
+    @ViewBuilder private func leadingEar(_ mode: Mode, width: CGFloat) -> some View {
+        let dictation = model.dictation
         switch mode {
         case .idle:
-            Color.clear
+            EmptyView()
         case .peek:
-            IslandTopRow(inset: 12) {
-                Image(systemName: "waveform").font(.system(size: 11, weight: .bold)).foregroundStyle(OverlayPalette.ember)
-            } trailing: {
-                KeyCap(label: model.settings.value.recordKey.capLabel)
-            }
-            .frame(height: notch.height + 6)
-            .transition(.islandContent)
+            Image(systemName: "waveform")
+                .font(.system(size: 11, weight: .bold))
+                .foregroundStyle(OverlayPalette.ember)
+                .transition(.islandContent)
         case .panel:
-            IslandPanel(model: model).transition(.islandContent)
-        case .listening(let expanded):
-            IslandListening(model: model, expanded: expanded, finishing: false).transition(.islandContent)
-        case .finishing:
-            IslandListening(model: model, expanded: true, finishing: true).transition(.islandContent)
-        case .inserted:
-            IslandTopRow {
-                if case .inserted(let target) = model.dictation.phase {
-                    AppIconBadge(icon: target?.icon)
+            ModelStatus(model: model).transition(.islandContent)
+        case .listening, .finishing(rewriting: false):
+            // One row for both: the spinner takes the bars' slot and the mode tag stays put.
+            HStack(spacing: 8) {
+                ZStack(alignment: .leading) {
+                    if mode == .listening {
+                        VoiceBars(dictation: dictation).transition(.islandContent)
+                    } else {
+                        SpinnerRing().transition(.islandContent)
+                    }
                 }
-            } trailing: {
-                DoneCheck()
+                .frame(width: Self.barsWidth, alignment: .leading)
+                if !dictation.activeMode.isStandard {
+                    ModeTag(title: dictation.activeMode.title, maxWidth: earRoom(width) - Self.barsWidth - 8)
+                        .transition(.islandContent)
+                }
             }
             .transition(.islandContent)
+        case .finishing(rewriting: true):
+            RewritingLabel().transition(.islandContent)
+        case .inserted:
+            if case .inserted(let target) = dictation.phase {
+                AppIconBadge(icon: target?.icon).transition(.islandContent)
+            }
         case .notice(let notice):
-            IslandTopRow {
-                Image(systemName: notice.symbol)
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(notice == .copied ? OverlayPalette.done : OverlayPalette.warning)
-            } trailing: {
-                Text(notice.title).font(.onest(12, .medium)).foregroundStyle(.white.opacity(0.88)).fixedSize()
+            Image(systemName: notice.symbol)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(notice.tint(ink: .white))
+                .id(notice.symbol)
+                .transition(.islandContent)
+        case .card:
+            Image(systemName: "line.3.horizontal")
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(.white.opacity(0.45))
+                .transition(.islandContent)
+        }
+    }
+
+    @ViewBuilder private func trailingEar(_ mode: Mode) -> some View {
+        let dictation = model.dictation
+        switch mode {
+        case .idle:
+            EmptyView()
+        case .peek:
+            KeyCap(label: model.settings.value.recordKey.capLabel).transition(.islandContent)
+        case .panel:
+            HStack(spacing: 2) {
+                Button {
+                    model.collapse()
+                    model.openMain(.history)
+                } label: {
+                    Image(systemName: "clock.arrow.circlepath")
+                }
+                .buttonStyle(IslandIconButtonStyle(size: 22, filled: false))
+                .help(Text("History"))
+                Button {
+                    model.collapse()
+                    model.openMain(.home)
+                } label: {
+                    Image(systemName: "gearshape.fill")
+                }
+                .buttonStyle(IslandIconButtonStyle(size: 22, filled: false))
+                .help(Text("Settings"))
             }
             .transition(.islandContent)
-        case .card(let text):
-            IslandCard(model: model, text: text).transition(.islandContent)
+        case .listening:
+            HStack(spacing: 8) {
+                if let startedAt = dictation.startedAt {
+                    Text(startedAt, style: .timer)
+                        .font(.mono(11, .medium))
+                        .foregroundStyle(.white.opacity(0.6))
+                        .monospacedDigit()
+                        .fixedSize()
+                }
+                if dictation.handsFree {
+                    Button {
+                        dictation.toggleRecordingFromOverlay()
+                    } label: {
+                        Image(systemName: "stop.fill")
+                    }
+                    .buttonStyle(IslandIconButtonStyle(size: 22))
+                    .help(Text("Stop"))
+                    .transition(.islandContent)
+                }
+            }
+            .transition(.islandContent)
+        case .finishing(rewriting: false):
+            EmptyView()
+        case .finishing(rewriting: true):
+            SkipRewriteButton(dictation: dictation).transition(.islandContent)
+        case .inserted:
+            DoneCheck().transition(.islandContent)
+        case .notice(let notice):
+            notice.label
+                .font(.onest(12, .medium))
+                .foregroundStyle(.white.opacity(0.88))
+                .fixedSize()
+                .id(notice.measuredTitle)
+                .transition(.islandContent)
+        case .card:
+            Button {
+                dictation.dismissCard()
+            } label: {
+                Image(systemName: "xmark")
+            }
+            .buttonStyle(IslandIconButtonStyle(size: 22, filled: false))
+            .help(Text("Close"))
+            .transition(.islandContent)
         }
+    }
+
+    // MARK: Below the notch
+
+    @ViewBuilder private func below(_ mode: Mode) -> some View {
+        switch mode {
+        case .listening, .finishing:
+            if showsText {
+                IslandLiveText(model: model, width: textWidth, finishing: mode != .listening, rewriting: mode == .finishing(rewriting: true)) { textHeight = $0 }
+                    .transition(.islandContent)
+            }
+        case .panel:
+            // The rows fade in one after another on their own; leaving, the panel fades as one.
+            IslandPanel(model: model)
+                .transition(.asymmetric(insertion: .identity, removal: .islandContent))
+        case .card(let text):
+            IslandCard(model: model, text: text)
+                .frame(width: 464, height: cardBodyHeight(text), alignment: .top)
+                .transition(.islandContent)
+        default:
+            EmptyView()
+        }
+    }
+}
+
+/// Size and corners of the island shape.
+struct IslandGeometry: Equatable {
+    var width: CGFloat
+    var height: CGFloat
+    var ear: CGFloat
+    var radius: CGFloat
+}
+
+/// Draws the black shape behind the island's content and clips the content to it. SwiftUI
+/// interpolates the geometry every display frame, so layout, the clip and the frame reported for
+/// hit testing match the shape on screen for the whole transition.
+private struct IslandSurface: ViewModifier, Animatable {
+    var geometry: IslandGeometry
+    let glows: Bool
+    let dictation: DictationController
+    let onFrame: (CGRect) -> Void
+
+    nonisolated var animatableData: AnimatablePair<AnimatablePair<CGFloat, CGFloat>, AnimatablePair<CGFloat, CGFloat>> {
+        get { AnimatablePair(AnimatablePair(geometry.width, geometry.height), AnimatablePair(geometry.ear, geometry.radius)) }
+        set { geometry = IslandGeometry(width: newValue.first.first, height: newValue.first.second, ear: newValue.second.first, radius: newValue.second.second) }
+    }
+
+    func body(content: Content) -> some View {
+        let shape = geometry
+        let corner = min(shape.radius, shape.height / 2)
+        content
+            .frame(width: shape.width, height: shape.height, alignment: .top)
+            .clipShape(UnevenRoundedRectangle(bottomLeadingRadius: corner, bottomTrailingRadius: corner))
+            .frame(width: shape.width + shape.ear * 2, height: shape.height, alignment: .top)
+            .background {
+                // The glow follows the voice every frame while recording; otherwise its timeline is paused.
+                VoiceLevel(dictation: dictation, active: glows) { level in
+                    IslandShape(ear: shape.ear, radius: shape.radius)
+                        .fill(.black)
+                        .shadow(color: OverlayPalette.ember.opacity(level * 0.85), radius: 24, y: 12)
+                }
+            }
+            .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { onFrame($0) }
     }
 }
 
 /// The row level with the notch: content sits in the "ears" left and right of the camera.
 struct IslandTopRow<Leading: View, Trailing: View>: View {
     var inset: CGFloat = 18
+    var height = NotchMetrics.shared.height
     @ViewBuilder let leading: Leading
     @ViewBuilder let trailing: Trailing
 
@@ -164,60 +353,34 @@ struct IslandTopRow<Leading: View, Trailing: View>: View {
             trailing
         }
         .padding(.horizontal, inset)
-        .frame(height: NotchMetrics.shared.height)
+        .frame(height: height)
     }
 }
 
-// MARK: Listening
+// MARK: Live text
 
-private struct IslandListening: View {
+private struct IslandLiveText: View {
     let model: OverlayModel
-    let expanded: Bool
+    let width: CGFloat
     let finishing: Bool
+    let rewriting: Bool
+    let onHeightChange: (CGFloat) -> Void
 
     var body: some View {
         let dictation = model.dictation
-        VStack(alignment: .leading, spacing: 0) {
-            IslandTopRow {
-                if finishing {
-                    SpinnerRing()
-                } else {
-                    VoiceBars(levels: Array(dictation.levels.suffix(9)))
-                }
-            } trailing: {
-                HStack(spacing: 8) {
-                    if let startedAt = dictation.startedAt, !finishing {
-                        Text(startedAt, style: .timer)
-                            .font(.mono(11, .medium))
-                            .foregroundStyle(.white.opacity(0.6))
-                            .monospacedDigit()
-                            .fixedSize()
-                    }
-                    if dictation.handsFree, !finishing {
-                        Button {
-                            dictation.toggleRecordingFromOverlay()
-                        } label: {
-                            Image(systemName: "stop.fill")
-                        }
-                        .buttonStyle(IslandIconButtonStyle(size: 22))
-                        .help(Text("Stop"))
-                    }
-                }
-            }
-            if expanded {
-                Group {
-                    if finishing {
-                        LiveWords(committed: [dictation.committedText, dictation.pendingText].joined(separator: " "), pending: "", dimPending: false)
-                            .modifier(Shimmer())
-                    } else {
-                        LiveWords(committed: dictation.committedText, pending: dictation.pendingText)
-                    }
-                }
-                .padding(.horizontal, 24)
-                .padding(.top, 8)
-                .transition(.islandContent)
-            }
-        }
+        // While finishing every word counts as heard; the ids stay the same, so nothing re-enters.
+        LiveWords(
+            committed: finishing ? [dictation.committedText, dictation.pendingText].joined(separator: " ") : dictation.committedText,
+            pending: finishing ? "" : dictation.pendingText,
+            dimPending: !finishing,
+            onHeightChange: onHeightChange
+        )
+        .modifier(Shimmer(active: finishing && !rewriting))
+        // The model is rewriting this text; the label in the ear shimmers instead.
+        .opacity(rewriting ? 0.5 : 1)
+        .frame(width: width, alignment: .leading)
+        .padding(.top, IslandView.textTop)
+        .onDisappear { onHeightChange(0) }
     }
 }
 
@@ -230,19 +393,6 @@ private struct IslandPanel: View {
     var body: some View {
         let dictation = model.dictation
         VStack(spacing: 0) {
-            IslandTopRow {
-                ModelStatus(model: model)
-            } trailing: {
-                Button {
-                    model.collapse()
-                    model.openMain(.home)
-                } label: {
-                    Image(systemName: "gearshape.fill")
-                }
-                .buttonStyle(IslandIconButtonStyle(size: 22, filled: false))
-                .help(Text("Settings"))
-            }
-
             HStack(spacing: 14) {
                 Button {
                     model.collapse()
@@ -285,25 +435,22 @@ private struct IslandPanel: View {
             .padding(.leading, 20)
             .padding(.trailing, 16)
             .padding(.top, 10)
+            .staggered(0)
 
             Spacer(minLength: 0)
 
             HStack(spacing: 6) {
                 LanguageSwitch(settings: model.settings)
+                ModeChip(model: model)
                 SmartChip(isOn: model.smartStructure)
                 MicrophoneChip(model: model)
                 Spacer(minLength: 0)
-                Button {
-                    model.collapse()
-                    model.openMain(.history)
-                } label: {
-                    Text("History")
-                }
-                .buttonStyle(IslandChipStyle())
             }
             .padding(.horizontal, 14)
             .padding(.bottom, 13)
+            .staggered(1)
         }
+        .frame(width: IslandView.panelWidth, height: IslandView.panelBodyHeight)
     }
 }
 
@@ -452,9 +599,9 @@ private struct MicrophoneChip: View {
         } label: {
             HStack(spacing: 5) {
                 Image(systemName: "mic.fill").font(.system(size: 9.5, weight: .semibold))
-                Text(name ?? String(localized: "No microphone"))
-                    .frame(maxWidth: 92, alignment: .leading)
-                    .truncationMode(.tail)
+                CappedWidth(limit: 80) {
+                    Text(name ?? String(localized: "No microphone")).truncationMode(.tail)
+                }
             }
         }
         .buttonStyle(IslandChipStyle())
@@ -481,19 +628,6 @@ private struct IslandCard: View {
     var body: some View {
         let dictation = model.dictation
         VStack(alignment: .leading, spacing: 0) {
-            IslandTopRow {
-                Image(systemName: "line.3.horizontal")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(.white.opacity(0.45))
-            } trailing: {
-                Button {
-                    dictation.dismissCard()
-                } label: {
-                    Image(systemName: "xmark")
-                }
-                .buttonStyle(IslandIconButtonStyle(size: 22, filled: false))
-                .help(Text("Close"))
-            }
             Text(CodeWords.attributed(text, size: 14))
                 .font(.onest(14))
                 .lineSpacing(3.5)
@@ -561,7 +695,12 @@ struct IslandShape: Shape {
 struct OverlayMenuItem {
     let title: String
     let isOn: Bool
+    var isSeparator = false
     let action: @MainActor () -> Void
+
+    static var separator: OverlayMenuItem {
+        OverlayMenuItem(title: "", isOn: false, isSeparator: true) {}
+    }
 }
 
 /// Pops a native menu under a view inside the non-activating overlay panel.
@@ -575,7 +714,7 @@ final class OverlayMenuAnchor {
         let menu = NSMenu()
         menu.autoenablesItems = false
         for item in items {
-            menu.addItem(ClosureMenuItem(title: item.title, isOn: item.isOn, action: item.action))
+            menu.addItem(item.isSeparator ? .separator() : ClosureMenuItem(title: item.title, isOn: item.isOn, action: item.action))
         }
         menu.popUp(positioning: nil, at: NSPoint(x: 0, y: view.bounds.height + 4), in: view)
     }
