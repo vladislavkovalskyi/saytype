@@ -172,6 +172,14 @@ Speak Russian with English terms? Choose Russian: the built-in dictionary turns 
     <td><b>Model.</b> Whisper turbo or large-v3, smart structure, memory use, model files.</td>
     <td><b>Permissions.</b> State of each permission with a shortcut to System Settings.</td>
   </tr>
+  <tr>
+    <td><img src="docs/media/en/section-about.webp" alt="About"></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><b>About.</b> Version and updates, author, source code, issues and the open source parts saytype is built on.</td>
+    <td></td>
+  </tr>
 </table>
 
 ## Models
