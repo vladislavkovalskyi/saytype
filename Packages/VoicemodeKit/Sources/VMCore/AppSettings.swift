@@ -62,6 +62,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
     public var smartStructureMinWords = 40
     public var fillerMode = FillerMode.hesitations
     public var latinTerms = true
+    public var dictionary: [DictionaryEntry] = DictionaryEntry.starter
     public var dropTrailingPeriodInShortPhrases = false
 
     public var whisperModel = "large-v3-v20240930_turbo_632MB"
@@ -89,6 +90,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
         smartStructureMinWords = try c.decodeIfPresent(Int.self, forKey: .smartStructureMinWords) ?? defaults.smartStructureMinWords
         fillerMode = try c.decodeIfPresent(FillerMode.self, forKey: .fillerMode) ?? defaults.fillerMode
         latinTerms = try c.decodeIfPresent(Bool.self, forKey: .latinTerms) ?? defaults.latinTerms
+        dictionary = try c.decodeIfPresent([DictionaryEntry].self, forKey: .dictionary) ?? defaults.dictionary
         dropTrailingPeriodInShortPhrases = try c.decodeIfPresent(Bool.self, forKey: .dropTrailingPeriodInShortPhrases) ?? defaults.dropTrailingPeriodInShortPhrases
         whisperModel = try c.decodeIfPresent(String.self, forKey: .whisperModel) ?? defaults.whisperModel
         systemEngineFallback = try c.decodeIfPresent(Bool.self, forKey: .systemEngineFallback) ?? defaults.systemEngineFallback

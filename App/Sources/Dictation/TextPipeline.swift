@@ -7,7 +7,7 @@ struct TextPipeline {
     func format(_ transcript: Transcript) -> String {
         var text = transcript.text
         if settings.latinTerms {
-            text = TermCanonicalizer(terms: settings.glossaryTerms).apply(to: text)
+            text = DictionaryRewriter(entries: settings.dictionary).apply(to: text)
         }
         text = Cleanup.removeFillers(text, mode: settings.fillerMode)
         if settings.dropTrailingPeriodInShortPhrases {

@@ -21,6 +21,8 @@ final class DictationController {
 
     enum ModelState: Equatable {
         case missing
+        case downloading(Double)
+        /// Core ML is compiling the model for this chip. The first time takes minutes.
         case loading
         case ready
         case failed(String)
@@ -34,6 +36,7 @@ final class DictationController {
     private(set) var pendingText = ""
     private(set) var startedAt: Date?
     private(set) var history: [DictationRecord] = []
+    var stats: HistoryStats { HistoryStats(records: history) }
     private(set) var keyMonitorActive = false
 
     @ObservationIgnored private let settings: SettingsStore
@@ -50,6 +53,7 @@ final class DictationController {
     @ObservationIgnored private var targetBundleID: String?
     @ObservationIgnored private var targetAppName: String?
     @ObservationIgnored private let store = ModelStore()
+    @ObservationIgnored private let historyStore = HistoryStore()
 
     /// Live passes stop above this length; the final pass still covers everything.
     private let liveLimitSeconds = 30.0
@@ -63,6 +67,47 @@ final class DictationController {
     func activate() {
         startKeyMonitor()
         loadModelIfPresent()
+        Task { history = await historyStore.all() }
+    }
+
+    var isModelDownloaded: Bool { store.isDownloaded(settings.value.whisperModel) }
+
+    /// Downloads the selected model, then loads it.
+    func downloadModel() {
+        if case .downloading = modelState { return }
+        let variant = settings.value.whisperModel
+        modelState = .downloading(0)
+        let store = store
+        Task {
+            do {
+                _ = try await store.download(variant) { fraction in
+                    Task { @MainActor [weak self] in
+                        guard let self, case .downloading = self.modelState else { return }
+                        self.modelState = .downloading(fraction)
+                    }
+                }
+                modelState = .missing
+                loadModelIfPresent()
+            } catch {
+                modelState = .failed(error.localizedDescription)
+            }
+        }
+    }
+
+    func removeFromHistory(_ id: UUID) {
+        Task { history = await historyStore.remove(id) }
+    }
+
+    func clearHistory() {
+        Task {
+            await historyStore.clear()
+            history = []
+        }
+    }
+
+    /// Pastes a past dictation again into the focused app.
+    func insertAgain(_ record: DictationRecord) {
+        Task { _ = await Paster.paste(record.text) }
     }
 
     func startKeyMonitor() {
@@ -88,7 +133,7 @@ final class DictationController {
             engine = WhisperKitEngine(store: store, variant: variant)
             engineVariant = variant
         }
-        guard let engine, modelState != .ready else { return }
+        guard let engine, modelState != .ready, modelState != .loading else { return }
         modelState = .loading
         Task {
             do {
@@ -210,7 +255,7 @@ final class DictationController {
 
     private func finalize(_ recorded: [Float], duration: Double, engine: WhisperKitEngine) async {
         let value = settings.value
-        let terms = value.glossaryTerms
+        let terms = DictionaryRewriter.promptTerms(entries: value.dictionary)
         let hints = TranscriptionHints(language: value.language.whisperCode, prompt: PromptBuilder.prompt(glossary: terms), wordTimestamps: true)
         let transcript: Transcript
         do {
@@ -226,6 +271,8 @@ final class DictationController {
         }
         let record = DictationRecord(text: text, raw: transcript.text, appName: targetAppName, bundleID: targetBundleID, duration: duration, date: Date())
         history.insert(record, at: 0)
+        let retention = value.historyRetentionDays
+        Task { history = await historyStore.add(record, retentionDays: retention) }
         await deliver(text, settings: value)
     }
 
@@ -283,16 +330,6 @@ final class DictationController {
     }
 }
 
-struct DictationRecord: Identifiable, Equatable {
-    let id = UUID()
-    let text: String
-    let raw: String
-    let appName: String?
-    let bundleID: String?
-    let duration: Double
-    let date: Date
-}
-
 extension AppSettings.SpeechLanguage {
     var whisperCode: String? {
         switch self {
@@ -301,11 +338,6 @@ extension AppSettings.SpeechLanguage {
         case .auto: nil
         }
     }
-}
-
-extension AppSettings {
-    /// Built-in developer terms; the user dictionary will be added in front.
-    var glossaryTerms: [String] { PromptBuilder.builtInTerms }
 }
 
 enum Sounds {
