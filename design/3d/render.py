@@ -431,6 +431,30 @@ def obj_appicon():
     return (1000, 1000)
 
 
+def obj_appicon_front():
+    """App icon face-on: export.py masks it to the macOS squircle."""
+    body = jelly("icon", (1.0, 0.36, 0.08), glow=0.0, rough=0.3, transmission=0.0, coat=0.35)
+    glow = jelly("bars", (1.0, 0.97, 0.94), glow=1.2, rough=0.1, transmission=0.0)
+    parts = [box("icon", (2.6, 2.6, 0.9), bevel=0.5, segments=14, mat=body)]
+    for i, h in enumerate([0.35, 0.7, 1.15, 0.8, 1.45, 0.95, 0.55, 0.3]):
+        x = -0.98 + i * 0.28
+        rodobj = rod(f"b{i}", 0.075, h, loc=(x, 0.08, 0.47), mat=glow)
+        rodobj.rotation_euler = (math.pi / 2, 0, 0)
+        parts.append(rodobj)
+    root = parent_all(parts, "appicon_front")
+    root.rotation_euler = (math.radians(90), 0, 0)
+    studio((1.0, 0.6, 0.35))
+    cam_data = bpy.data.cameras.new("cam")
+    cam_data.type = "ORTHO"
+    cam_data.ortho_scale = 2.62
+    cam = bpy.data.objects.new("cam", cam_data)
+    bpy.context.collection.objects.link(cam)
+    cam.location = Vector((0, -10, 0))
+    cam.rotation_euler = (math.radians(90), 0, 0)
+    bpy.context.scene.camera = cam
+    return (1024, 1024)
+
+
 def obj_mic():
     head_m = jelly("head", (1.0, 0.28, 0.36), glow=0.02, transmission=0.3)
     metal = jelly("yoke", (1.0, 0.93, 0.95), rough=0.12, transmission=0.15)
@@ -481,6 +505,7 @@ def obj_mic():
 OBJECTS = {
     "mic": obj_mic,
     "appicon": obj_appicon,
+    "appicon_front": obj_appicon_front,
     "capsule": obj_capsule,
     "capsule_milk": obj_capsule_milk,
     "keycap": obj_keycap,
