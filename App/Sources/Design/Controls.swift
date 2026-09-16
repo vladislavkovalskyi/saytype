@@ -1,42 +1,5 @@
 import SwiftUI
 
-/// Two or more options on a translucent track; the selected one is a white pill.
-struct WorldSegmented<Value: Hashable>: View {
-    let options: [Value]
-    @Binding var selection: Value
-    let title: (Value) -> String
-
-    var body: some View {
-        HStack(spacing: 2) {
-            ForEach(options, id: \.self) { option in
-                let on = option == selection
-                Button {
-                    selection = option
-                } label: {
-                    Text(title(option))
-                        .font(.onest(13, on ? .semibold : .medium))
-                        .foregroundStyle(on ? Color(hex: 0x1D1A20) : .white.opacity(0.86))
-                        .padding(.horizontal, 13)
-                        .frame(height: 28)
-                        .background {
-                            if on {
-                                Capsule()
-                                    .fill(.white)
-                                    .shadow(color: Color(hex: 0x140A1E, opacity: 0.18), radius: 4, y: 2)
-                            }
-                        }
-                        .contentShape(Capsule())
-                }
-                .buttonStyle(.plain)
-            }
-        }
-        .padding(3)
-        .background(Capsule().fill(.white.opacity(0.14)))
-        .overlay(Capsule().strokeBorder(.white.opacity(0.16), lineWidth: 1))
-        .animation(.snappy(duration: 0.2), value: selection)
-    }
-}
-
 /// Small white capsule button used inside frosted rows.
 struct WhiteButton: View {
     let title: String

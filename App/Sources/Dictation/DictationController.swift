@@ -132,16 +132,21 @@ final class DictationController {
             return
         }
         if engineVariant != variant {
+            // Switching models: the old engine's state says nothing about the new one.
+            if let old = engine { Task { await old.unload() } }
             engine = WhisperKitEngine(store: store, variant: variant)
             engineVariant = variant
+            modelState = .missing
         }
         guard let engine, modelState != .ready, modelState != .loading else { return }
         modelState = .loading
         Task {
             do {
                 try await engine.prepare()
+                guard engineVariant == variant else { return }
                 modelState = .ready
             } catch {
+                guard engineVariant == variant else { return }
                 modelState = .failed(error.localizedDescription)
             }
         }

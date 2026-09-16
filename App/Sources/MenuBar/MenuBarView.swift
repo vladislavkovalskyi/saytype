@@ -15,7 +15,7 @@ struct MenuBarView: View {
             if let last = dictation.history.first {
                 LastDictationCard(record: last) { insert(last) }
             } else {
-                EmptyCard(keyName: model.settings.value.recordKey.menuName)
+                EmptyCard(keyName: model.settings.value.recordKey.title)
             }
 
             if dictation.history.count > 1 {
@@ -122,7 +122,7 @@ private struct LastDictationCard: View {
             .font(.onest(12))
             .opacity(0.85)
 
-            Text(AttributedString.dictated(showRaw ? record.raw : record.text, size: 14.5))
+            Text(CodeWords.attributed(showRaw ? record.raw : record.text, size: 14.5, chip: .white.opacity(0.22)))
                 .font(.onest(14.5))
                 .lineSpacing(3)
                 .lineLimit(6)
@@ -322,15 +322,5 @@ private struct MenuRow: View {
         }
         .buttonStyle(.plain)
         .onHover { hovered = $0 }
-    }
-}
-
-extension AppSettings.RecordKey {
-    var menuName: String {
-        switch self {
-        case .fn: "Fn"
-        case .rightOption: "Правый ⌥"
-        case .rightCommand: "Правый ⌘"
-        }
     }
 }

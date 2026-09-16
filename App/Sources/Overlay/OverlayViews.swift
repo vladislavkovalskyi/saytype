@@ -113,11 +113,10 @@ enum LiveText {
         if committed.isEmpty && pending.isEmpty {
             return Text(handsFree ? "без рук" : "").foregroundStyle(.secondary)
         }
-        var result = Text(AttributedString.dictated(committed, size: size, chip: .clear))
-        if !pending.isEmpty {
-            result = result + Text(AttributedString.dictated(committed.isEmpty ? pending : " " + pending, size: size, chip: .clear)).foregroundStyle(.secondary)
-        }
-        return result
+        let bright = Text(CodeWords.attributed(committed, size: size))
+        guard !pending.isEmpty else { return bright }
+        let dim = Text(CodeWords.attributed(committed.isEmpty ? pending : " " + pending, size: size)).foregroundStyle(.secondary)
+        return Text("\(bright)\(dim)")
     }
 }
 

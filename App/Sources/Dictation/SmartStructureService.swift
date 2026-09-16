@@ -32,6 +32,31 @@ final class SmartStructureService {
         state = store.isDownloaded ? .ready : .missing
     }
 
+    /// The switch in settings: on when enabled and the model is on disk or downloading.
+    func isOn(_ settings: AppSettings) -> Bool {
+        settings.smartStructure && state != .missing
+    }
+
+    /// Turning the switch on downloads the model if it is not there yet.
+    func turn(_ on: Bool, settings: SettingsStore) {
+        settings.value.smartStructure = on
+        guard on else { return }
+        switch state {
+        case .missing, .failed: download()
+        case .downloading, .ready: break
+        }
+    }
+
+    /// Short state line under the switch.
+    var detail: String {
+        switch state {
+        case .missing: "Qwen3 1.7B · \(downloadSize) МБ"
+        case .downloading(let fraction): "загрузка · \(Int(fraction * 100))%"
+        case .ready: "Qwen3 1.7B · списки и абзацы"
+        case .failed: "не скачалась, включите ещё раз"
+        }
+    }
+
     func download() {
         if case .downloading = state { return }
         state = .downloading(0)

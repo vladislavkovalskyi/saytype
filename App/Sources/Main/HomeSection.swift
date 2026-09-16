@@ -1,78 +1,338 @@
 import SwiftUI
+import VMCore
 
 struct HomeSection: View {
+    @Binding var section: MainSection
+
     var body: some View {
-        Grid(horizontalSpacing: 16, verticalSpacing: 16) {
-            GridRow {
+        HStack(alignment: .top, spacing: 16) {
+            VStack(spacing: 16) {
                 ReadyTile()
                     .frame(width: 660, height: 360)
-                VStack(spacing: 16) {
-                    InfoTile(title: "Модель", value: "Whisper turbo", detail: "офлайн · 626 МБ", object: "ObjectChip")
-                    InfoTile(title: "Словарь", value: "Терминов пока нет", detail: "добавятся из истории", object: "ObjectAa")
-                }
-                .frame(width: 392, height: 360)
-            }
-            GridRow {
-                InfoTile(title: "История", value: "Пока пусто", detail: "зажми fn и скажи фразу", object: "ObjectStack")
+                HistoryTile { section = .history }
                     .frame(width: 660, height: 292)
-                InfoTile(title: "Текст", value: "Умная структура", detail: "списки и абзацы", object: "ObjectTextcard")
+            }
+            VStack(spacing: 16) {
+                ModelTile { section = .model }
+                    .frame(width: 392, height: 172)
+                DictionaryTile { section = .dictionary }
+                    .frame(width: 392, height: 172)
+                TextTile { section = .text }
                     .frame(width: 392, height: 292)
             }
         }
     }
 }
 
-private struct ReadyTile: View {
+// MARK: Tile
+
+/// Object art placement in a tile, measured like the mockup: offsets beyond the tile's bottom right corner.
+private struct TileArt {
+    let name: String
+    let width: CGFloat
+    let right: CGFloat
+    let bottom: CGFloat
+}
+
+private struct Tile<Content: View>: View {
+    let title: String
+    var art: TileArt?
+    var action: (() -> Void)?
+    @ViewBuilder let content: Content
+
     var body: some View {
         ZStack(alignment: .topLeading) {
-            Image("ObjectCapsule")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 520)
-                .offset(x: 250, y: 90)
-            VStack(alignment: .leading, spacing: 0) {
-                Text("Готово к диктовке").font(.onest(15, .semibold))
-                Text("Зажми fn")
-                    .font(.onest(46, .bold))
-                    .padding(.top, 30)
-                Text("Плашка появится у выреза камеры")
-                    .font(.onest(14))
-                    .foregroundStyle(.white.opacity(0.88))
-                    .frame(width: 230, alignment: .leading)
-                    .padding(.top, 8)
-            }
-            .padding(22)
+            Text(title)
+                .font(.onest(15, .semibold))
+                .foregroundStyle(.white.opacity(0.94))
+                .padding(.leading, 22)
+                .padding(.top, 18)
+            content
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-        .frost(cornerRadius: 22, hot: true)
+        .background(alignment: .bottomTrailing) {
+            if let art {
+                Image(art.name)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: art.width * 0.92, height: art.width * 0.92)
+                    .frame(width: art.width, height: art.width)
+                    .offset(x: -art.right, y: -art.bottom)
+                    .allowsHitTesting(false)
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .frost(cornerRadius: 20)
+        .contentShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .onTapGesture { action?() }
     }
 }
 
-private struct InfoTile: View {
-    let title: String
+private struct TileValue: View {
     let value: String
-    let detail: String
-    let object: String
+    let detail: Text
 
     var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(value)
+                .font(.onest(21, .semibold))
+                .tracking(-0.2)
+            detail
+                .font(.onest(13))
+                .foregroundStyle(.white.opacity(0.74))
+        }
+        .padding(.leading, 22)
+        .padding(.top, 70)
+    }
+}
+
+// MARK: Ready
+
+private struct ReadyTile: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        let dictation = model.dictation
+        let info = WhisperModelInfo(variant: model.settings.value.whisperModel)
         ZStack(alignment: .topLeading) {
-            Image(object)
-                .resizable()
-                .scaledToFit()
-                .frame(width: 190, height: 190)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-                .offset(x: 26, y: 34)
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title).font(.onest(15, .semibold))
-                Spacer().frame(height: 30)
-                Text(value).font(.onest(21, .semibold))
-                Text(detail).font(.onest(13)).foregroundStyle(.white.opacity(0.74))
+            Text(state.title)
+                .font(.onest(15, .semibold))
+                .foregroundStyle(.white.opacity(0.94))
+                .padding(.leading, 22)
+                .padding(.top, 18)
+
+            VStack(alignment: .leading, spacing: 0) {
+                Text(headline(info: info))
+                    .font(.onest(46, .bold))
+                    .tracking(-1.15)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
+                    .frame(width: 400, alignment: .leading)
+                Text(detail(info: info))
+                    .font(.onest(14))
+                    .foregroundStyle(.white.opacity(0.88))
+                    .lineLimit(3)
+                    .frame(width: 230, alignment: .leading)
+                    .padding(.top, 4)
+                action(dictation: dictation, info: info)
+                    .padding(.top, 18)
             }
-            .padding(22)
+            .padding(.leading, 22)
+            .padding(.top, 66)
+
+            HStack(alignment: .top, spacing: 34) {
+                Stat(value: dictation.stats.wordsToday, caption: Format.plural(dictation.stats.wordsToday, "слово сегодня", "слова сегодня", "слов сегодня"))
+                Stat(value: dictation.stats.wordsPerMinute, caption: Format.plural(dictation.stats.wordsPerMinute, "слово в минуту", "слова в минуту", "слов в минуту"))
+            }
+            .padding(.leading, 22)
+            .padding(.bottom, 24)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-        .frost(cornerRadius: 22)
+        .background(alignment: .topLeading) {
+            Image("ObjectCapsule")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 650)
+                .offset(x: 270, y: 76)
+                .allowsHitTesting(false)
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .frost(cornerRadius: 20, hot: true)
+    }
+
+    private var state: DictationController.ModelState {
+        model.dictation.modelState
+    }
+
+    private func headline(info: WhisperModelInfo) -> String {
+        switch state {
+        case .ready: "Зажми \(model.settings.value.recordKey.inlineName)"
+        case .downloading(let fraction): "\(Int((fraction * 100).rounded()))%"
+        case .missing, .loading, .failed: info.shortTitle
+        }
+    }
+
+    private func detail(info: WhisperModelInfo) -> String {
+        switch state {
+        case .ready:
+            model.settings.value.overlayStyle == .island ? "Плашка появится у выреза камеры" : "Плашка появится внизу экрана"
+        case .downloading(let fraction):
+            "\(Int((fraction * Double(info.megabytes)).rounded())) из \(info.megabytes) МБ"
+        case .missing, .loading:
+            "\(info.megabytes) МБ · офлайн"
+        case .failed(let message):
+            message
+        }
+    }
+
+    @ViewBuilder
+    private func action(dictation: DictationController, info: WhisperModelInfo) -> some View {
+        switch state {
+        case .missing:
+            Button {
+                dictation.downloadModel()
+            } label: {
+                Label { Text("Скачать") } icon: { Icon(.download, size: 14, stroke: 2.2) }
+            }
+            .buttonStyle(WhiteButtonStyle())
+        case .failed:
+            Button("Повторить") {
+                if dictation.isModelDownloaded {
+                    dictation.loadModelIfPresent()
+                } else {
+                    dictation.downloadModel()
+                }
+            }
+            .buttonStyle(WhiteButtonStyle())
+        case .downloading(let fraction):
+            ProgressTrack(fraction: fraction)
+                .frame(width: 280)
+        case .loading:
+            ProgressView()
+                .progressViewStyle(.circular)
+                .controlSize(.small)
+                .tint(.white)
+        case .ready:
+            EmptyView()
+        }
+    }
+}
+
+private extension DictationController.ModelState {
+    var title: String {
+        switch self {
+        case .ready: "Готово к диктовке"
+        case .missing: "Модель не скачана"
+        case .downloading: "Загрузка модели"
+        case .loading: "Подготовка под \(MacInfo.chip)"
+        case .failed: "Модель не загрузилась"
+        }
+    }
+}
+
+/// White bar on a translucent track.
+struct ProgressTrack: View {
+    let fraction: Double
+
+    var body: some View {
+        GeometryReader { proxy in
+            ZStack(alignment: .leading) {
+                Capsule().fill(.white.opacity(0.22))
+                Capsule()
+                    .fill(.white)
+                    .shadow(color: .white.opacity(0.8), radius: 7)
+                    .frame(width: max(10, proxy.size.width * min(max(fraction, 0), 1)))
+            }
+        }
+        .frame(height: 10)
+        .animation(.smooth(duration: 0.3), value: fraction)
+    }
+}
+
+private struct Stat: View {
+    let value: Int
+    let caption: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 1) {
+            Text(Format.grouped(value))
+                .font(.onest(30, .bold))
+                .tracking(-0.6)
+            Text(caption)
+                .font(.onest(13))
+                .foregroundStyle(.white.opacity(0.8))
+        }
+    }
+}
+
+// MARK: Tiles
+
+private struct ModelTile: View {
+    @Environment(AppModel.self) private var model
+    let action: () -> Void
+
+    var body: some View {
+        let info = WhisperModelInfo(variant: model.settings.value.whisperModel)
+        Tile(title: "Модель", art: TileArt(name: "ObjectChip", width: 190, right: -26, bottom: -34), action: action) {
+            TileValue(value: info.shortTitle, detail: Text("офлайн · \(info.megabytes) МБ"))
+        }
+    }
+}
+
+private struct DictionaryTile: View {
+    @Environment(AppModel.self) private var model
+    let action: () -> Void
+
+    var body: some View {
+        let entries = model.settings.value.dictionary
+        Tile(title: "Словарь", art: TileArt(name: "ObjectAa", width: 180, right: -18, bottom: -30), action: action) {
+            if let first = entries.first {
+                TileValue(value: Format.count(entries.count, "термин", "термина", "терминов"), detail: example(first))
+            } else {
+                TileValue(value: "Терминов нет", detail: Text(""))
+            }
+        }
+    }
+
+    private func example(_ entry: DictionaryEntry) -> Text {
+        var written = AttributedString(entry.written)
+        written.font = .mono(13 * 0.88)
+        guard !entry.heard.isEmpty else { return Text(written) }
+        return Text(AttributedString("\(entry.heard) → ") + written)
+    }
+}
+
+private struct HistoryTile: View {
+    @Environment(AppModel.self) private var model
+    let action: () -> Void
+
+    var body: some View {
+        let records = Array(model.dictation.history.prefix(4))
+        Tile(title: "История", art: TileArt(name: "ObjectStack", width: 230, right: -30, bottom: -40), action: action) {
+            if records.isEmpty {
+                TileValue(value: "Пока пусто", detail: Text(""))
+            } else {
+                VStack(alignment: .leading, spacing: 0) {
+                    ForEach(Array(records.enumerated()), id: \.element.id) { index, record in
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(CodeWords.attributed(record.text.replacingOccurrences(of: "\n", with: " "), size: 14.5))
+                                .font(.onest(14.5))
+                                .lineLimit(1)
+                                .truncationMode(.tail)
+                            Text([record.appName, Format.moment(record.date)].compactMap { $0 }.joined(separator: " · "))
+                                .font(.onest(12.5))
+                                .foregroundStyle(.white.opacity(0.68))
+                        }
+                        .padding(.vertical, 9)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        if index < records.count - 1 {
+                            RowDivider()
+                        }
+                    }
+                }
+                .padding(.leading, 22)
+                .padding(.trailing, 200)
+                .padding(.top, 56)
+            }
+        }
+    }
+}
+
+private struct TextTile: View {
+    @Environment(AppModel.self) private var model
+    let action: () -> Void
+
+    var body: some View {
+        @Bindable var settings = model.settings
+        Tile(title: "Текст", art: TileArt(name: "ObjectTextcard", width: 230, right: -30, bottom: -44), action: action) {
+            TileValue(value: "Умная структура", detail: Text(model.dictation.smart.detail))
+            Toggle(isOn: model.smartStructureBinding) { EmptyView() }
+                .toggleStyle(WorldToggleStyle(accent: MainSection.home.world.accent))
+                .frame(width: 42)
+                .padding(.top, 16)
+                .padding(.trailing, 20)
+                .frame(maxWidth: .infinity, alignment: .topTrailing)
+        }
     }
 }

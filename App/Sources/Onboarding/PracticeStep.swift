@@ -46,12 +46,7 @@ struct PracticeStep: View {
 
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
-                    WorldSegmented(options: [Mode.formatted, .raw], selection: $mode) { mode in
-                        switch mode {
-                        case .formatted: "Оформлено"
-                        case .raw: "Как сказал"
-                        }
-                    }
+                    WorldSegmented(selection: $mode, options: [(.formatted, "Оформлено"), (.raw, "Как сказал")])
                     Spacer(minLength: 0)
                     if let record {
                         Muted(meta(for: record))

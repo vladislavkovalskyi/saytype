@@ -25,12 +25,7 @@ struct LookStep: View {
             }
             .place(x: 490, y: 150)
 
-            WorldSegmented(options: AppSettings.Glass.allCases, selection: $settings.value.glass) { glass in
-                switch glass {
-                case .dark: "Тёмное стекло"
-                case .light: "Светлое стекло"
-                }
-            }
+            WorldSegmented(selection: $settings.value.glass, options: [(.dark, "Тёмное стекло"), (.light, "Светлое стекло")])
             .frame(width: OnboardingLayout.size.width)
             .place(x: 0, y: 462)
         }

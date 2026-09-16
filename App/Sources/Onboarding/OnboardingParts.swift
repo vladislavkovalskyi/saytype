@@ -96,12 +96,3 @@ struct Muted: View {
             .foregroundStyle(.white.opacity(0.74))
     }
 }
-
-/// Hairline between rows of a frosted list.
-struct RowDivider: View {
-    var body: some View {
-        Rectangle()
-            .fill(.white.opacity(0.14))
-            .frame(height: 1)
-    }
-}

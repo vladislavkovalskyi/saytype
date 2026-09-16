@@ -58,26 +58,11 @@ struct ModelStep: View {
 
     /// On means the setting is on and the model is on disk or on its way; turning it on downloads.
     private var smartBinding: Binding<Bool> {
-        let smart = model.dictation.smart
-        return Binding {
-            model.settings.value.smartStructure && smart.state != .missing
-        } set: { on in
-            model.settings.value.smartStructure = on
-            guard on else { return }
-            switch smart.state {
-            case .missing, .failed: smart.download()
-            case .downloading, .ready: break
-            }
-        }
+        model.smartStructureBinding
     }
 
     private var smartSubtitle: String {
-        switch model.dictation.smart.state {
-        case .missing: "списки и абзацы · \(model.dictation.smart.downloadSize) МБ"
-        case .downloading(let fraction): "загрузка · \(Int(fraction * 100))%"
-        case .ready: "списки и абзацы"
-        case .failed: "не скачалась, включите ещё раз"
-        }
+        model.dictation.smart.detail
     }
 
     private func startIfNeeded() {
@@ -264,24 +249,6 @@ private struct StageIndicator: View {
             }
         }
         .frame(width: 18, height: 18)
-    }
-}
-
-private struct ProgressTrack: View {
-    let fraction: Double
-
-    var body: some View {
-        GeometryReader { proxy in
-            ZStack(alignment: .leading) {
-                Capsule().fill(.white.opacity(0.22))
-                Capsule()
-                    .fill(.white)
-                    .frame(width: proxy.size.width * fraction)
-                    .shadow(color: .white.opacity(0.8), radius: 7)
-            }
-        }
-        .frame(height: 10)
-        .animation(.easeOut(duration: 0.3), value: fraction)
     }
 }
 

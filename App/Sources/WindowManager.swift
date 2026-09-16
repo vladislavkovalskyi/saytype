@@ -16,7 +16,8 @@ final class WindowManager {
 
     func showMain() {
         if main == nil {
-            main = makeWindow(size: CGSize(width: 1180, height: 740), root: MainWindow().environment(model))
+            // The main window's 740 pt include the transparent title bar, as in the mockups.
+            main = makeWindow(size: CGSize(width: 1180, height: 740), root: MainWindow().environment(model), titleBarInside: true)
         }
         present(main)
     }
@@ -51,7 +52,9 @@ final class WindowManager {
         window.makeKeyAndOrderFront(nil)
     }
 
-    private func makeWindow(size: CGSize, root: some View) -> NSWindow {
+    /// `size` is the whole window, title bar included. `titleBarInside` lets the content
+    /// run under the transparent title bar instead of starting below it.
+    private func makeWindow(size: CGSize, root: some View, titleBarInside: Bool = false) -> NSWindow {
         let window = NSWindow(
             contentRect: CGRect(origin: .zero, size: size),
             styleMask: [.titled, .closable, .miniaturizable, .fullSizeContentView],
@@ -62,7 +65,11 @@ final class WindowManager {
         window.titleVisibility = .hidden
         window.isMovableByWindowBackground = true
         window.isReleasedWhenClosed = false
-        window.contentView = NSHostingView(rootView: root)
+        let hosting = NSHostingView(rootView: root)
+        if titleBarInside {
+            hosting.safeAreaRegions = []
+        }
+        window.contentView = hosting
         // The content rect excludes the title bar; the design sizes include it.
         window.setFrame(CGRect(origin: .zero, size: size), display: false)
         window.center()
