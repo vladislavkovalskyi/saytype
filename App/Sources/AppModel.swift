@@ -12,6 +12,8 @@ final class AppModel {
     @ObservationIgnored private(set) lazy var dictation = DictationController(settings: settings)
     @ObservationIgnored private(set) lazy var windows = WindowManager(model: self)
     @ObservationIgnored private var overlay: OverlayController?
+    @ObservationIgnored private var statusItem: StatusItemController?
+    @ObservationIgnored private var hotKeys: GlobalHotKeys?
     private(set) var permissions: [Permission: PermissionState] = [:]
     /// Section shown in the main window.
     var mainSection = MainSection.home
@@ -36,6 +38,10 @@ final class AppModel {
             smartStructure: smartStructureBinding
         )
         overlay = OverlayController(model: overlayModel)
+        if !Self.isPreviewLaunch {
+            statusItem = StatusItemController(model: self)
+            registerHotKeys()
+        }
         dictation.activate(listening: !Self.isPreviewLaunch)
         monitoredKey = settings.value.recordKey
         // macOS has no callback for Accessibility and Input Monitoring changes.
@@ -46,15 +52,6 @@ final class AppModel {
         if let i = arguments.firstIndex(of: "--demo-overlay"), i + 1 < arguments.count,
            let style = AppSettings.OverlayStyle(rawValue: arguments[i + 1]) {
             dictation.runDemo(style: style, settings: settings)
-            return
-        }
-        if arguments.contains("--demo-menu") {
-            Task {
-                // Lands after activate() has read the real history.
-                try? await Task.sleep(for: .milliseconds(500))
-                dictation.demoHistory(DictationController.sampleHistory())
-            }
-            windows.showMenuPreview()
             return
         }
         if let i = arguments.firstIndex(of: "--show-main"), i + 1 < arguments.count,
@@ -96,6 +93,18 @@ final class AppModel {
 
     func state(of permission: Permission) -> PermissionState {
         permissions[permission] ?? .notDetermined
+    }
+
+    private func registerHotKeys() {
+        let keys = GlobalHotKeys()
+        let dictation = dictation
+        keys.register(.pasteAgain) {
+            if let last = dictation.lastRecord { dictation.insertAgain(last) }
+        }
+        keys.register(.copyLast) {
+            if let last = dictation.lastRecord { Paster.copy(last.text) }
+        }
+        hotKeys = keys
     }
 
     /// Settings switch for smart structure; turning it on downloads the model.
