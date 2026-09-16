@@ -502,6 +502,30 @@ def obj_mic():
     return (1000, 1000)
 
 
+def obj_switches():
+    """Modes: a glass panel with two toggles in opposite positions."""
+    panel = jelly("panel", (0.86, 0.07, 0.24), glow=0.03, transmission=0.22)
+    track_on = jelly("track_on", (1.0, 0.62, 0.22), glow=0.25, transmission=0.2)
+    track_off = jelly("track_off", (0.42, 0.04, 0.16), glow=0.0, transmission=0.2)
+    knob = jelly("knob", (1.0, 0.98, 0.96), glow=0.6, rough=0.1, transmission=0.0)
+    line = emissive("line", (1.0, 0.97, 0.95), 4.0)
+    parts = [box("panel", (3.0, 2.4, 0.34), bevel=0.18, segments=10, mat=panel)]
+    for i, (on, y) in enumerate(((True, 0.52), (False, -0.52))):
+        parts.append(capsule_mesh(f"track{i}", 0.26, 1.2, loc=(0.35, y, 0.3), mat=track_on if on else track_off))
+        bpy.ops.mesh.primitive_uv_sphere_add(segments=64, ring_count=32, radius=0.3, location=(0.35 + (0.6 if on else -0.6), y, 0.52))
+        sphere = bpy.context.active_object
+        for poly in sphere.data.polygons:
+            poly.use_smooth = True
+        sphere.data.materials.append(knob)
+        parts.append(sphere)
+        parts.append(capsule_mesh(f"label{i}", 0.07, 0.5, loc=(-0.95, y, 0.22), mat=line))
+    root = parent_all(parts, "switches")
+    root.rotation_euler = (math.radians(46), 0, math.radians(-20))
+    studio((1.0, 0.4, 0.45))
+    camera(10.5, lens=70, height=0.45)
+    return (1000, 1000)
+
+
 OBJECTS = {
     "mic": obj_mic,
     "appicon": obj_appicon,
@@ -514,6 +538,7 @@ OBJECTS = {
     "stack": obj_stack,
     "aa": obj_aa,
     "chip": obj_chip,
+    "switches": obj_switches,
 }
 
 for name, build in OBJECTS.items():

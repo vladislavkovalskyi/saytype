@@ -508,6 +508,16 @@
         }
       }
     },
+    "`useEffect` for Markdown in agents and GitHub" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "`useEffect` для Markdown в агентах и GitHub"
+          }
+        }
+      }
+    },
     "About" : {
       "localizations" : {
         "ru" : {
@@ -538,6 +548,16 @@
         }
       }
     },
+    "Active" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сейчас"
+          }
+        }
+      }
+    },
     "Add" : {
       "comment" : "Confirm button of the app picker",
       "localizations" : {
@@ -545,6 +565,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Добавить"
+          }
+        }
+      }
+    },
+    "Add app" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добавить приложение"
           }
         }
       }
@@ -586,6 +616,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "После записи"
+          }
+        }
+      }
+    },
+    "Agent prompt" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Промпт для агента"
           }
         }
       }
@@ -636,6 +676,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Вся история…"
+          }
+        }
+      }
+    },
+    "all other apps" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "все остальные приложения"
           }
         }
       }
@@ -697,6 +747,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Включать с"
+          }
+        }
+      }
+    },
+    "Apps" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Приложения"
+          }
+        }
+      }
+    },
+    "As in Key and overlay" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Как в «Клавиша и плашка»"
           }
         }
       }
@@ -852,6 +922,16 @@
         }
       }
     },
+    "by hand" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "вручную"
+          }
+        }
+      }
+    },
     "Can be changed in settings." : {
       "localizations" : {
         "ru" : {
@@ -922,12 +1002,32 @@
         }
       }
     },
+    "chat style" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "как в чате"
+          }
+        }
+      }
+    },
     "Check for Updates…" : {
       "localizations" : {
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Проверить обновления…"
+          }
+        }
+      }
+    },
+    "Cleaner" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Чище"
           }
         }
       }
@@ -953,6 +1053,26 @@
         }
       }
     },
+    "Code" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Код"
+          }
+        }
+      }
+    },
+    "Code in backticks" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Код в обратных кавычках"
+          }
+        }
+      }
+    },
     "Commas" : {
       "localizations" : {
         "ru" : {
@@ -963,12 +1083,42 @@
         }
       }
     },
+    "commas only" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "только запятые"
+          }
+        }
+      }
+    },
     "commas, paragraphs, lists" : {
       "localizations" : {
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "запятые, абзацы, списки"
+          }
+        }
+      }
+    },
+    "Commit" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Коммит"
+          }
+        }
+      }
+    },
+    "Conventional Commit in English" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conventional Commit на английском"
           }
         }
       }
@@ -1229,6 +1379,26 @@
         }
       }
     },
+    "Edit Modes…" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Настроить режимы…"
+          }
+        }
+      }
+    },
+    "Email" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Письмо"
+          }
+        }
+      }
+    },
     "EN" : {
       "shouldTranslate" : false
     },
@@ -1239,6 +1409,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "английский"
+          }
+        }
+      }
+    },
+    "Every app without its own mode" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Все приложения без своего режима"
           }
         }
       }
@@ -1382,6 +1562,16 @@
         }
       }
     },
+    "For example: turn this into a bug report with steps to reproduce" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Например: оформи как баг-репорт с шагами воспроизведения"
+          }
+        }
+      }
+    },
     "Formatted" : {
       "localizations" : {
         "ru" : {
@@ -1432,6 +1622,16 @@
         }
       }
     },
+    "full punctuation" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "полная пунктуация"
+          }
+        }
+      }
+    },
     "Glass" : {
       "localizations" : {
         "ru" : {
@@ -1468,6 +1668,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Globe включает диктовку"
+          }
+        }
+      }
+    },
+    "goal, context, steps; files and names stay" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "цель, контекст, шаги; файлы и имена на месте"
           }
         }
       }
@@ -1638,6 +1848,16 @@
         }
       }
     },
+    "in every app of this mode" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "во всех приложениях режима"
+          }
+        }
+      }
+    },
     "in Header" : {
       "comment" : "Dimmed end of the sample live text in the overlay preview: fix useEffect in Header",
       "localizations" : {
@@ -1774,6 +1994,26 @@
         }
       }
     },
+    "Language model" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Языковая модель"
+          }
+        }
+      }
+    },
+    "Language model is off" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Языковая модель выключена"
+          }
+        }
+      }
+    },
     "Last Dictation" : {
       "localizations" : {
         "ru" : {
@@ -1855,6 +2095,16 @@
         }
       }
     },
+    "lists and paragraphs in long dictations" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "списки и абзацы в длинных диктовках"
+          }
+        }
+      }
+    },
     "Live text" : {
       "localizations" : {
         "ru" : {
@@ -1905,6 +2155,16 @@
         }
       }
     },
+    "Message" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сообщение"
+          }
+        }
+      }
+    },
     "Microphone" : {
       "localizations" : {
         "ru" : {
@@ -1931,6 +2191,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Микрофон недоступен"
+          }
+        }
+      }
+    },
+    "Mode" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Режим"
+          }
+        }
+      }
+    },
+    "Mode by app" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "По приложению"
+          }
+        }
+      }
+    },
+    "Mode name" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Название режима"
           }
         }
       }
@@ -1996,12 +2286,32 @@
         }
       }
     },
+    "Modes" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Режимы"
+          }
+        }
+      }
+    },
     "more accurate, slower" : {
       "localizations" : {
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "точнее, медленнее"
+          }
+        }
+      }
+    },
+    "New mode" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Новый режим"
           }
         }
       }
@@ -2087,6 +2397,16 @@
         }
       }
     },
+    "no punctuation" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "без знаков"
+          }
+        }
+      }
+    },
     "No results" : {
       "localizations" : {
         "ru" : {
@@ -2158,6 +2478,16 @@
         }
       }
     },
+    "Off" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выкл"
+          }
+        }
+      }
+    },
     "Offline" : {
       "localizations" : {
         "ru" : {
@@ -2174,6 +2504,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "офлайн · %lld МБ"
+          }
+        }
+      }
+    },
+    "on" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "вкл"
           }
         }
       }
@@ -2228,6 +2568,16 @@
         }
       }
     },
+    "Open Text" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Открыть «Текст»"
+          }
+        }
+      }
+    },
     "Other models" : {
       "localizations" : {
         "ru" : {
@@ -2244,6 +2594,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Остальные слова не меняются."
+          }
+        }
+      }
+    },
+    "Output" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вывод"
           }
         }
       }
@@ -2274,6 +2634,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Плашка появится у выреза камеры"
+          }
+        }
+      }
+    },
+    "Own instruction" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Своя инструкция"
           }
         }
       }
@@ -2412,6 +2782,16 @@
         }
       }
     },
+    "Punctuation, letter case, filler words" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пунктуация, регистр, слова-паразиты"
+          }
+        }
+      }
+    },
     "Quit saytype" : {
       "localizations" : {
         "ru" : {
@@ -2503,6 +2883,16 @@
         }
       }
     },
+    "Restore" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сбросить"
+          }
+        }
+      }
+    },
     "Result" : {
       "localizations" : {
         "ru" : {
@@ -2529,6 +2919,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Enter после вставки"
+          }
+        }
+      }
+    },
+    "Rewrite" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Переписать"
           }
         }
       }
@@ -2644,6 +3044,16 @@
         }
       }
     },
+    "Set up" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Настроить"
+          }
+        }
+      }
+    },
     "Settings" : {
       "localizations" : {
         "ru" : {
@@ -2736,12 +3146,42 @@
         }
       }
     },
+    "speak in any language" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "говорите на любом языке"
+          }
+        }
+      }
+    },
     "Speech language" : {
       "localizations" : {
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Язык речи"
+          }
+        }
+      }
+    },
+    "Spoken code" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Код голосом"
+          }
+        }
+      }
+    },
+    "Standard" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Обычный"
           }
         }
       }
@@ -2813,6 +3253,16 @@
         }
       }
     },
+    "Style" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Стиль"
+          }
+        }
+      }
+    },
     "System default" : {
       "localizations" : {
         "ru" : {
@@ -2854,6 +3304,36 @@
         }
       }
     },
+    "text as spoken" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "текст как сказан"
+          }
+        }
+      }
+    },
+    "text is inserted without the rewrite" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "текст вставится без переписывания"
+          }
+        }
+      }
+    },
+    "Text rules for each app" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Правила текста для каждого приложения"
+          }
+        }
+      }
+    },
     "the command goes straight to the agent" : {
       "localizations" : {
         "ru" : {
@@ -2870,6 +3350,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Модель скачивается один раз. Дальше всё работает офлайн."
+          }
+        }
+      }
+    },
+    "the other modes switch on in their apps" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "остальные режимы включаются в своих приложениях"
           }
         }
       }
@@ -2895,6 +3385,16 @@
         }
       }
     },
+    "Translate to English" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Перевод на английский"
+          }
+        }
+      }
+    },
     "Try it" : {
       "localizations" : {
         "ru" : {
@@ -2911,6 +3411,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Отключить"
+          }
+        }
+      }
+    },
+    "turned off in Text" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "выключена в разделе «Текст»"
           }
         }
       }
@@ -2932,6 +3442,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "эээ"
+          }
+        }
+      }
+    },
+    "Untitled mode" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Режим без названия"
           }
         }
       }
@@ -3006,8 +3526,28 @@
         }
       }
     },
+    "Whisper translates, terms may change" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "переводит Whisper, термины могут исказиться"
+          }
+        }
+      }
+    },
     "Whisper turbo" : {
       "shouldTranslate" : false
+    },
+    "Without apps the mode is picked in the menu bar, on the island or with ⌃⌥M." : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Без приложений режим выбирается в строке меню, на острове или по ⌃⌥M."
+          }
+        }
+      }
     },
     "without pasting" : {
       "localizations" : {
@@ -3015,6 +3555,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "без вставки"
+          }
+        }
+      }
+    },
+    "without repeats and corrections" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "без повторов и оговорок"
           }
         }
       }
@@ -3039,6 +3589,16 @@
         }
       }
     },
+    "your instruction" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ваша инструкция"
+          }
+        }
+      }
+    },
     "Your terms" : {
       "localizations" : {
         "ru" : {
@@ -3055,6 +3615,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ваши слова удаляются в любом режиме."
+          }
+        }
+      }
+    },
+    "“camel case user data” → userData, paths, =>" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "«кэмел кейс юзер дата» → userData, пути, =>"
           }
         }
       }

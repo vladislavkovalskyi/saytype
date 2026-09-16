@@ -27,7 +27,7 @@ enum MainSection: String, CaseIterable, Identifiable {
         case .home: "ObjectAppicon"
         case .keys: "ObjectKeycap"
         case .text: "ObjectTextcard"
-        case .modes: "ObjectMic"
+        case .modes: "ObjectSwitches"
         case .dictionary: "ObjectAa"
         case .history: "ObjectStack"
         case .model: "ObjectChip"
