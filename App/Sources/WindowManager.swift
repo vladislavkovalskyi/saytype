@@ -8,6 +8,7 @@ final class WindowManager {
     private unowned let model: AppModel
     private var main: NSWindow?
     private var onboarding: NSWindow?
+    private var menuPreview: NSWindow?
 
     init(model: AppModel) {
         self.model = model
@@ -25,6 +26,18 @@ final class WindowManager {
             onboarding = makeWindow(size: CGSize(width: 960, height: 640), root: OnboardingWindow().environment(model))
         }
         present(onboarding)
+    }
+
+    /// The menu bar popover in a normal window, for screenshots: `voicemode --demo-menu`.
+    func showMenuPreview() {
+        let window = NSWindow(contentRect: CGRect(x: 0, y: 0, width: 380, height: 560), styleMask: [.titled, .closable, .fullSizeContentView], backing: .buffered, defer: false)
+        window.titlebarAppearsTransparent = true
+        window.titleVisibility = .hidden
+        window.isReleasedWhenClosed = false
+        window.contentView = NSHostingView(rootView: MenuBarView().environment(model).fixedSize(horizontal: false, vertical: true))
+        window.center()
+        present(window)
+        menuPreview = window
     }
 
     func closeOnboarding() {

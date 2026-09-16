@@ -319,6 +319,10 @@ final class DictationController {
         if startedAt == nil { startedAt = Date() }
     }
 
+    func demoHistory(_ records: [DictationRecord]) {
+        history = records
+    }
+
     func demoLevels() {
         levels = levels.map { _ in Float.random(in: 0.15...0.9) }
     }

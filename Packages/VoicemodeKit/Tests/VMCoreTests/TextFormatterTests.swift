@@ -54,3 +54,14 @@ import Testing
         #expect(TextFormatter.format(transcript, settings: settings) == "Обнови Next.js потом feature/auth")
     }
 }
+
+@Suite struct CodeLikeTests {
+    @Test func detectsIdentifiersButNotProse() {
+        for word in ["useEffect", "Next.js,", "feature/auth", "OPENAI_API_KEY", "localhost:3000", "/start", ".env", "process.env."] {
+            #expect(Words.isCodeLike(word), "\(word)")
+        }
+        for word in ["Vercel", "React.", "поправь", "API", "15.2", "U.S"] {
+            #expect(!Words.isCodeLike(word), "\(word)")
+        }
+    }
+}

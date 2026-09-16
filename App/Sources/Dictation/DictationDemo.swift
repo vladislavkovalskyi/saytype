@@ -30,3 +30,20 @@ extension DictationController {
         }
     }
 }
+
+extension DictationController {
+    /// In-memory history for `voicemode --demo-menu`; nothing is written to disk.
+    static func sampleHistory(now: Date = Date()) -> [DictationRecord] {
+        let samples: [(String, String, String?, Double, Double)] = [
+            ("Вынеси загрузку пользователя в хук useUser и добавь массив зависимостей.", "вынеси загрузку пользователя в хук юз юзер и добавь массив зависимостей", "Терминал", 6, 0),
+            ("1. Поправь useEffect в Header.\n2. Задеплой feature/auth на Vercel.", "во-первых поправь юз эффект в хедер во-вторых задеплой фичер аус на версель", "Cursor", 9, 120),
+            ("Задеплой feature/auth на Vercel и скинь превью.", "задеплой фичер аус на версель и скинь превью", "Cursor", 4, 2_640),
+            ("Созвон перенесли на четыре, ссылку скину позже.", "созвон перенесли на четыре ссылку скину позже", "Telegram", 3, 4_260),
+            ("Добавь в Supabase таблицу users с полями id, email и created_at.", "добавь в супабейс таблицу юзерс с полями айди имейл и криэйтед эт", "Cursor", 12, 6_900),
+            ("localhost:3000/settings", "локалхост три тысячи слэш сеттингс", "Safari", 2, 9_000),
+        ]
+        return samples.map { text, raw, app, duration, ago in
+            DictationRecord(text: text, raw: raw, appName: app, bundleID: nil, duration: duration, date: now.addingTimeInterval(-ago))
+        }
+    }
+}

@@ -31,6 +31,15 @@ final class AppModel {
             dictation.runDemo(style: style, settings: settings)
             return
         }
+        if arguments.contains("--demo-menu") {
+            Task {
+                // Lands after activate() has read the real history.
+                try? await Task.sleep(for: .milliseconds(500))
+                dictation.demoHistory(DictationController.sampleHistory())
+            }
+            windows.showMenuPreview()
+            return
+        }
         if !settings.value.onboardingCompleted {
             windows.showOnboarding()
         }
