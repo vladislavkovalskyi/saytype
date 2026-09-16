@@ -133,6 +133,16 @@
         }
       }
     },
+    "%lld min this week, typing at %lld wpm" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld мин за неделю при печати %lld слов/мин"
+          }
+        }
+      }
+    },
     "%lld of %lld MB" : {
       "comment" : "Download progress in megabytes",
       "localizations" : {
@@ -508,6 +518,36 @@
         }
       }
     },
+    "10 s" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "10 с"
+          }
+        }
+      }
+    },
+    "3 s" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3 с"
+          }
+        }
+      }
+    },
+    "5 s" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "5 с"
+          }
+        }
+      }
+    },
     "`useEffect` for Markdown in agents and GitHub" : {
       "localizations" : {
         "ru" : {
@@ -579,6 +619,16 @@
         }
       }
     },
+    "Add to dictionary" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добавить в словарь"
+          }
+        }
+      }
+    },
     "Add word" : {
       "localizations" : {
         "ru" : {
@@ -595,6 +645,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Добавьте свои слова, и они пропадут из текста."
+          }
+        }
+      }
+    },
+    "Add ⌃ or ⌥" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добавьте ⌃ или ⌥"
+          }
+        }
+      }
+    },
+    "Added to dictionary" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добавлено в словарь"
           }
         }
       }
@@ -1143,6 +1213,16 @@
         }
       }
     },
+    "Copy last dictation" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Копировать последнюю диктовку"
+          }
+        }
+      }
+    },
     "Couldn't transcribe" : {
       "localizations" : {
         "ru" : {
@@ -1413,6 +1493,16 @@
         }
       }
     },
+    "esc cancels, ⌫ turns off" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "esc — отмена, ⌫ — выкл."
+          }
+        }
+      }
+    },
     "Every app without its own mode" : {
       "localizations" : {
         "ru" : {
@@ -1528,6 +1618,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "поправь %1$@ %2$@"
+          }
+        }
+      }
+    },
+    "Fix spelling" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Исправить написание"
           }
         }
       }
@@ -2195,6 +2295,16 @@
         }
       }
     },
+    "min saved today" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "мин сэкономлено сегодня"
+          }
+        }
+      }
+    },
     "Mode" : {
       "localizations" : {
         "ru" : {
@@ -2772,6 +2882,16 @@
         }
       }
     },
+    "Press keys" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нажмите…"
+          }
+        }
+      }
+    },
     "Punctuation" : {
       "localizations" : {
         "ru" : {
@@ -3243,6 +3363,16 @@
         }
       }
     },
+    "Stop after silence" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Остановка при тишине"
+          }
+        }
+      }
+    },
     "Structure" : {
       "localizations" : {
         "ru" : {
@@ -3263,6 +3393,16 @@
         }
       }
     },
+    "Switch mode" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сменить режим"
+          }
+        }
+      }
+    },
     "System default" : {
       "localizations" : {
         "ru" : {
@@ -3279,6 +3419,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Системные настройки › Конфиденциальность и безопасность"
+          }
+        }
+      }
+    },
+    "Taken by another app" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Занято другим приложением"
           }
         }
       }
@@ -3435,6 +3585,16 @@
         }
       }
     },
+    "Typing at %lld wpm" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Печать %lld слов/мин"
+          }
+        }
+      }
+    },
     "um" : {
       "comment" : "Struck-out hesitation at the start of the raw sample dictation",
       "localizations" : {
@@ -3492,6 +3652,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Версия %@ (%@)"
+          }
+        }
+      }
+    },
+    "Voice commands" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Голосовые команды"
           }
         }
       }
@@ -3625,6 +3795,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "«кэмел кейс юзер дата» → userData, пути, =>"
+          }
+        }
+      }
+    },
+    "“new line”, “new paragraph”, “delete last sentence”, “open quote … close quote”, “send it” at the end" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "«новая строка», «новый абзац», «удали последнее предложение», «открой кавычки … закрой кавычки», «отправь» в конце"
           }
         }
       }

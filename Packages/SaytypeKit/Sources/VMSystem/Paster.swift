@@ -61,6 +61,11 @@ public enum Paster {
         return .pasted
     }
 
+    /// Return alone, for a dictation that was only "отправь".
+    public static func pressReturn() {
+        KeyPoster.press(CGKeyCode(kVK_Return), flags: [])
+    }
+
     public static func copy(_ text: String) {
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()

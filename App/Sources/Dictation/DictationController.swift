@@ -355,7 +355,14 @@ final class DictationController {
         }
         if mode.backticks { text = Backticks.wrap(text) }
         guard !text.isEmpty else {
-            show(.notice(.nothingHeard), for: 1.5)
+            if formatted.send, style.outputMode == .paste {
+                // Only "отправь": send what is already typed in the field.
+                Paster.pressReturn()
+                show(.inserted(target), for: 1.2)
+            } else {
+                show(.notice(.nothingHeard), for: 1.5)
+            }
+            handsFree = false
             return
         }
         let record = DictationRecord(text: text, raw: transcript.text, appName: target?.name, bundleID: target?.bundleID, duration: duration, date: Date())
