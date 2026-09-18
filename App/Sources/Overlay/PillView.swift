@@ -281,41 +281,11 @@ private struct PillBubble: View {
         ZStack(alignment: .bottom) {
             switch mode {
             case .card(let text):
-                VStack(alignment: .leading, spacing: 12) {
-                    Text(CodeWords.attributed(text, size: 14))
-                        .font(.onest(14))
-                        .lineSpacing(3.5)
-                        .lineLimit(8)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .contentShape(Rectangle())
-                        .onDrag { NSItemProvider(object: text as NSString) }
-                    HStack(spacing: 6) {
-                        Button {
-                            dictation.copyCard()
-                        } label: {
-                            CardAction(title: "Copy", key: dictation.cardShortcutsActive ? "⌘C" : nil, ink: light ? .white : Color(hex: 0x1A1318))
-                        }
-                        .buttonStyle(CapsuleButtonStyle(prominent: true, light: light))
-                        Button {
-                            dictation.insertCard()
-                        } label: {
-                            CardAction(title: "Paste", key: dictation.cardShortcutsActive ? "V" : nil, ink: light ? Color(hex: 0x1A1318) : .white)
-                        }
-                        .buttonStyle(CapsuleButtonStyle(light: light))
-                        Spacer()
-                        Button {
-                            dictation.dismissCard()
-                        } label: {
-                            Image(systemName: "xmark")
-                        }
-                        .buttonStyle(IslandIconButtonStyle(size: 26, tint: ink))
-                        .help(Text("Close"))
-                    }
-                }
-                .frame(width: 420)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
-                .transition(.islandContent)
+                OverlayCard(model: model, text: text, style: .pill, light: light)
+                    .frame(width: 420)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                    .transition(.islandContent)
             case .listening, .finishing:
                 if showsText {
                     let finishing = mode != .listening

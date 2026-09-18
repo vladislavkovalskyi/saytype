@@ -289,7 +289,7 @@ struct IslandView: View {
             IslandPanel(model: model)
                 .transition(.asymmetric(insertion: .identity, removal: .islandContent))
         case .card(let text):
-            IslandCard(model: model, text: text)
+            OverlayCard(model: model, text: text)
                 .frame(width: 464, height: cardBodyHeight(text), alignment: .top)
                 .transition(.islandContent)
         default:
@@ -616,46 +616,6 @@ private struct MicrophoneChip: View {
             items.append(OverlayMenuItem(title: device.name, isOn: device.uid == current) { settings.value.microphoneUID = device.uid })
         }
         model.withMenu { anchor.pop(items) }
-    }
-}
-
-// MARK: Card
-
-private struct IslandCard: View {
-    let model: OverlayModel
-    let text: String
-
-    var body: some View {
-        let dictation = model.dictation
-        VStack(alignment: .leading, spacing: 0) {
-            Text(CodeWords.attributed(text, size: 14))
-                .font(.onest(14))
-                .lineSpacing(3.5)
-                .lineLimit(8)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 24)
-                .padding(.top, 8)
-                .contentShape(Rectangle())
-                .onDrag { NSItemProvider(object: text as NSString) }
-            Spacer(minLength: 0)
-            HStack(spacing: 6) {
-                Button {
-                    dictation.copyCard()
-                } label: {
-                    CardAction(title: "Copy", key: dictation.cardShortcutsActive ? "⌘C" : nil, ink: Color(hex: 0x1A1318))
-                }
-                .buttonStyle(CapsuleButtonStyle(prominent: true))
-                Button {
-                    dictation.insertCard()
-                } label: {
-                    CardAction(title: "Paste", key: dictation.cardShortcutsActive ? "V" : nil, ink: .white)
-                }
-                .buttonStyle(CapsuleButtonStyle())
-                Spacer()
-            }
-            .padding(.horizontal, 18)
-            .padding(.bottom, 14)
-        }
     }
 }
 
