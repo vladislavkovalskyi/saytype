@@ -225,7 +225,7 @@ private struct AfterRecordingPanel: View {
                 ModeCard(icon: .returnKey, title: "Paste", detail: "into the active field", isSelected: settings.value.outputMode == .paste) {
                     settings.value.outputMode = .paste
                 }
-                ModeCard(icon: .card, title: "Card", detail: "stays in the overlay", isSelected: settings.value.outputMode == .card) {
+                ModeCard(icon: .card, title: "Card", detail: "stays in the overlay, editable", isSelected: settings.value.outputMode == .card) {
                     settings.value.outputMode = .card
                 }
                 ModeCard(icon: .clipboard, title: "Clipboard", detail: "without pasting", isSelected: settings.value.outputMode == .clipboard) {
@@ -235,10 +235,17 @@ private struct AfterRecordingPanel: View {
             .padding(.horizontal, 20)
             .padding(.top, 12)
 
-            SettingsRow("Return after paste", detail: "the command goes straight to the agent") {
-                AutoEnterApps()
+            // The row belongs to the chosen mode: Return after a paste, learning after an edit.
+            Group {
+                if settings.value.outputMode == .card {
+                    ToggleRow("Learn from edits", detail: "fixed terms go to the dictionary", isOn: $settings.value.learnFromEdits, accent: world.accent)
+                } else {
+                    SettingsRow("Return after paste", detail: "the command goes straight to the agent") {
+                        AutoEnterApps()
+                    }
+                    .opacity(settings.value.outputMode == .paste ? 1 : 0.5)
+                }
             }
-            .opacity(settings.value.outputMode == .paste ? 1 : 0.5)
             .padding(.top, 14)
 
             RowDivider()
