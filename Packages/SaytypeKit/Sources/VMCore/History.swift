@@ -55,6 +55,16 @@ public actor HistoryStore {
         return records
     }
 
+    /// Replaces the text of a record the user edited. `raw` stays as Whisper heard it, so the
+    /// history keeps showing what changed on the way from speech to text.
+    public func update(_ id: UUID, text: String) -> [DictationRecord] {
+        loadIfNeeded()
+        guard let index = records.firstIndex(where: { $0.id == id }) else { return records }
+        records[index].text = text
+        save()
+        return records
+    }
+
     public func remove(_ id: UUID) -> [DictationRecord] {
         loadIfNeeded()
         records.removeAll { $0.id == id }
@@ -150,7 +160,7 @@ public enum HistoryCorrection {
         let rawWords = Words.split(raw)
         guard !rawWords.isEmpty else { return picked }
 
-        let pairs = alignment(rawWords.map(Words.key), textWords.map(Words.key))
+        let pairs = Words.alignment(rawWords.map(Words.key), textWords.map(Words.key))
         // Runs between matched words: raw words replaced by text words.
         var gaps: [(raw: Range<Int>, text: Range<Int>)] = []
         var rawStart = 0
@@ -212,36 +222,6 @@ public enum HistoryCorrection {
     private static func isFiller(_ word: String) -> Bool {
         let key = Words.key(word)
         return Cleanup.hesitations.contains(key) || Cleanup.fillerWords.contains(key)
-    }
-
-    /// Index pairs of a longest common subsequence.
-    private static func alignment(_ a: [String], _ b: [String]) -> [(Int, Int)] {
-        let n = a.count
-        let m = b.count
-        guard n > 0, m > 0 else { return [] }
-        var table = [Int32](repeating: 0, count: (n + 1) * (m + 1))
-        for x in stride(from: n - 1, through: 0, by: -1) {
-            for y in stride(from: m - 1, through: 0, by: -1) {
-                table[x * (m + 1) + y] = a[x] == b[y]
-                    ? table[(x + 1) * (m + 1) + y + 1] + 1
-                    : max(table[(x + 1) * (m + 1) + y], table[x * (m + 1) + y + 1])
-            }
-        }
-        var pairs: [(Int, Int)] = []
-        var x = 0
-        var y = 0
-        while x < n, y < m {
-            if a[x] == b[y] {
-                pairs.append((x, y))
-                x += 1
-                y += 1
-            } else if table[(x + 1) * (m + 1) + y] >= table[x * (m + 1) + y + 1] {
-                x += 1
-            } else {
-                y += 1
-            }
-        }
-        return pairs
     }
 }
 

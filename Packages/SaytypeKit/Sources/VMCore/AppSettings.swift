@@ -65,6 +65,8 @@ public struct AppSettings: Codable, Equatable, Sendable {
     public var outputMode = OutputMode.paste
     /// Bundle identifiers of apps that get Return after a paste.
     public var autoEnterApps: [String] = ["com.apple.Terminal", "com.googlecode.iterm2"]
+    /// Spelling fixes typed into the card go to the dictionary.
+    public var learnFromEdits = true
 
     public var language = SpeechLanguage.systemDefault
     public var punctuationStyle = PunctuationStyle.full
@@ -120,6 +122,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
         glass = try c.decodeIfPresent(Glass.self, forKey: .glass) ?? defaults.glass
         outputMode = try c.decodeIfPresent(OutputMode.self, forKey: .outputMode) ?? defaults.outputMode
         autoEnterApps = try c.decodeIfPresent([String].self, forKey: .autoEnterApps) ?? defaults.autoEnterApps
+        learnFromEdits = try c.decodeIfPresent(Bool.self, forKey: .learnFromEdits) ?? defaults.learnFromEdits
         language = try c.decodeIfPresent(SpeechLanguage.self, forKey: .language) ?? defaults.language
         // Before 0.1.3 punctuation was a single on/off switch.
         let legacy = try decoder.container(keyedBy: LegacyKeys.self)

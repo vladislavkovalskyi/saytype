@@ -31,3 +31,36 @@ extension Words {
         return false
     }
 }
+
+extension Words {
+    /// Index pairs of a longest common subsequence of two word lists, in order. Used to line up
+    /// what was heard, what was written and what the user edited.
+    public static func alignment(_ a: [String], _ b: [String]) -> [(Int, Int)] {
+        let n = a.count
+        let m = b.count
+        guard n > 0, m > 0 else { return [] }
+        var table = [Int32](repeating: 0, count: (n + 1) * (m + 1))
+        for x in stride(from: n - 1, through: 0, by: -1) {
+            for y in stride(from: m - 1, through: 0, by: -1) {
+                table[x * (m + 1) + y] = a[x] == b[y]
+                    ? table[(x + 1) * (m + 1) + y + 1] + 1
+                    : max(table[(x + 1) * (m + 1) + y], table[x * (m + 1) + y + 1])
+            }
+        }
+        var pairs: [(Int, Int)] = []
+        var x = 0
+        var y = 0
+        while x < n, y < m {
+            if a[x] == b[y] {
+                pairs.append((x, y))
+                x += 1
+                y += 1
+            } else if table[(x + 1) * (m + 1) + y] >= table[x * (m + 1) + y + 1] {
+                x += 1
+            } else {
+                y += 1
+            }
+        }
+        return pairs
+    }
+}
