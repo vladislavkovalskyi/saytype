@@ -169,6 +169,21 @@ Whisper recognizes 99 languages. Pick yours in **Text → Speech language**, in 
 
 Speak Russian with English terms? Choose Russian: the built-in dictionary turns «юз эффект» into `useEffect`. Tried another language? Tell how it went in [Issues](https://github.com/vladislavkovalskyi/saytype/issues).
 
+## Translate everything
+
+Hover the notch or the pill and flip the switch next to **→ EN**: from then on every dictation is
+translated before it is pasted, whatever app you are in and whatever mode is running. The code next
+to the switch opens the language menu — English by default, any of Whisper's 99 languages instead.
+The same switch is in the menu bar under **Translate**.
+
+Translating is the language model's job (**Model** → Rewrites); Whisper can translate on its own,
+but only into English and only on the large-v3 models, not the turbo one that ships by default.
+With nothing that can translate, the code beside the switch turns amber and dictations go in
+unchanged.
+
+Code, paths, links, numbers and dictionary terms survive the translation — the same check runs as
+for any other rewrite.
+
 ## Style and filters
 
 | | As spoken | You get |
