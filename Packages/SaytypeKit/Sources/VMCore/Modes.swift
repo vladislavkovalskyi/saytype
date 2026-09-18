@@ -17,6 +17,12 @@ public struct DictationMode: Codable, Equatable, Identifiable, Sendable {
         case cleaner
         /// The user's own instruction in `instruction`.
         case custom
+        /// Not a mode: the shortcut that edits the text selected in another app, where the
+        /// instruction is what the user just said.
+        case selection
+
+        /// The styles a mode can be set to, in the order the menu lists them.
+        public static let modeStyles: [Rewrite] = [.none, .prompt, .commit, .cleaner, .custom]
     }
 
     public var id: String

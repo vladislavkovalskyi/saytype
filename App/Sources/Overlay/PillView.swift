@@ -53,7 +53,7 @@ struct PillView: View {
             return CGSize(width: 6 + 28 + 9 + 22 + 9 + record + 18 + chip + 7, height: 40)
         case .listening, .finishing(rewriting: false):
             // Both keep the recording width, so the spinner takes the orb's place without a jump.
-            let tag = dictation.activeMode.isStandard ? 0 : ModeTag.width(dictation.activeMode.title) + 9
+            let tag = dictation.recordingTag.map { ModeTag.width($0) + 9 } ?? 0
             let stop: CGFloat = dictation.handsFree ? 33 : 0
             return CGSize(width: max(250, 8 + Self.voiceWidth + tag + 9 + 9 + 34 + stop + 12), height: 44)
         case .finishing(rewriting: true):
@@ -162,8 +162,8 @@ struct PillView: View {
                     }
                 }
                 .frame(width: Self.voiceWidth, alignment: .leading)
-                if !dictation.activeMode.isStandard {
-                    ModeTag(title: dictation.activeMode.title, ink: ink).transition(.islandContent)
+                if let tag = dictation.recordingTag {
+                    ModeTag(title: tag, ink: ink).transition(.islandContent)
                 }
                 Spacer(minLength: 0)
                 if listening, let startedAt = dictation.startedAt {

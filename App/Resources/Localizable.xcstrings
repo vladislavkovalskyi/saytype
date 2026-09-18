@@ -1313,12 +1313,12 @@
         }
       }
     },
-    "Copy last dictation" : {
+    "Copy last" : {
       "localizations" : {
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Копировать последнюю диктовку"
+            "value" : "Копировать последнюю"
           }
         }
       }
@@ -1559,12 +1559,34 @@
         }
       }
     },
+    "Edit" : {
+      "comment" : "Card action: open the dictation for editing",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Править"
+          }
+        }
+      }
+    },
     "Edit Modes…" : {
       "localizations" : {
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Настроить режимы…"
+          }
+        }
+      }
+    },
+    "Edit selection" : {
+      "comment" : "Global shortcut: rewrite the text selected in another app",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Править выделенное"
           }
         }
       }
@@ -1738,6 +1760,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Исправить написание"
+          }
+        }
+      }
+    },
+    "fixed terms go to the dictionary" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "исправленные термины идут в словарь"
           }
         }
       }
@@ -2264,6 +2296,16 @@
         }
       }
     },
+    "Learn from edits" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Учиться на правках"
+          }
+        }
+      }
+    },
     "Letter case" : {
       "localizations" : {
         "ru" : {
@@ -2502,6 +2544,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Модель %lld%%"
+          }
+        }
+      }
+    },
+    "Model didn't answer" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Модель не ответила"
           }
         }
       }
@@ -2804,6 +2856,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ничего не слышно"
+          }
+        }
+      }
+    },
+    "Nothing selected" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ничего не выделено"
           }
         }
       }
@@ -3431,6 +3493,17 @@
         }
       }
     },
+    "Save" : {
+      "comment" : "Card action: keep the edited text",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сохранить"
+          }
+        }
+      }
+    },
     "Say a few words. The bars move only when there is sound." : {
       "localizations" : {
         "ru" : {
@@ -3480,6 +3553,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Найти"
+          }
+        }
+      }
+    },
+    "Selection" : {
+      "comment" : "Overlay tag: this dictation edits the text selected in another app",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выделенное"
           }
         }
       }
@@ -3667,12 +3751,12 @@
         }
       }
     },
-    "stays in the overlay" : {
+    "stays in the overlay, editable" : {
       "localizations" : {
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "остаётся в плашке"
+            "value" : "остаётся в плашке, можно править"
           }
         }
       }
@@ -3992,6 +4076,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "недоступна"
+          }
+        }
+      }
+    },
+    "Undo" : {
+      "comment" : "Takes back the dictionary entries the last edit added",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отменить"
           }
         }
       }

@@ -36,6 +36,12 @@ final class DictationController {
         case recognitionFailed
         case nothingHeard
         case copied
+        /// The Edit selection shortcut found nothing selected in the app in front.
+        case nothingSelected
+        /// The Edit selection shortcut needs a language model and there is none.
+        case modelOff
+        /// The model did not answer, or answered with nothing; the selection is untouched.
+        case editFailed
         /// The mode shortcut picked a mode; the title of the mode or of automatic selection.
         case mode(String)
     }
@@ -99,6 +105,8 @@ final class DictationController {
     @ObservationIgnored private var engine: WhisperKitEngine?
     @ObservationIgnored private var engineVariant: String?
     @ObservationIgnored private var target: TargetApp?
+    /// The text selected in another app: this dictation is an instruction over it, not text.
+    @ObservationIgnored private var selection: String?
     @ObservationIgnored private var silence = SilenceDetector(limit: 0)
     /// Resumes the final pass without the rewrite; set while the model runs.
     @ObservationIgnored private var skipRewriteAction: (() -> Void)?
@@ -234,8 +242,11 @@ final class DictationController {
         }
     }
 
-    private func startRecording(handsFree: Bool) {
+    private func startRecording(handsFree: Bool, selection: String? = nil) {
         hideTask?.cancel()
+        self.selection = selection
+        // The next card is a new dictation's; the old one must not be what an edit learns from.
+        cardRecord = nil
         if FocusInspector.isSecureFieldFocused() {
             show(.notice(.passwordField), for: 2)
             return
@@ -275,7 +286,7 @@ final class DictationController {
         phase = .listening
         finishingStage = .transcribing
         smart.warmUp(settings: settings.value.applying(activeMode))
-        rewriter.warmUp(settings.value, mode: activeMode)
+        rewriter.warmUp(settings.value, mode: selection == nil ? activeMode : nil)
         if settings.value.sounds { Sounds.start() }
         runLiveLoop()
     }
@@ -311,6 +322,7 @@ final class DictationController {
 
     private func cancelRecording() {
         stopCapture()
+        selection = nil
         phase = .idle
         handsFree = false
     }
@@ -347,7 +359,7 @@ final class DictationController {
         let terms = DictionaryRewriter.promptTerms(entries: value.dictionary, projectTerms: projectTerms)
         // Whisper translates only when no language model will: the model keeps terms intact.
         // Turbo cannot translate at all; its modes stay in the spoken language without a model.
-        let whisperTranslates = mode.translateToEnglish && !rewriter.isReady(value) && WhisperKitEngine.supportsTranslation(value.whisperModel)
+        let whisperTranslates = selection == nil && mode.translateToEnglish && !rewriter.isReady(value) && WhisperKitEngine.supportsTranslation(value.whisperModel)
         let hints = TranscriptionHints(
             language: value.language.whisperCode,
             prompt: PromptBuilder.prompt(glossary: terms),
@@ -364,6 +376,10 @@ final class DictationController {
         let style = value.applying(mode)
         let formatted = DictationPipeline.format(transcript, settings: value, mode: mode, projectTerms: projectTerms)
         var text = formatted.text
+        if let selection {
+            await editSelection(selection, instruction: text, settings: value, style: style)
+            return
+        }
         if mode.usesLanguageModel || (mode.translateToEnglish && !whisperTranslates), !text.isEmpty, rewriter.isReady(value) {
             finishingStage = .rewriting
             if let rewritten = await rewriteSkippably(text, mode: mode, settings: value), !rewritten.isEmpty {
@@ -393,6 +409,36 @@ final class DictationController {
         await deliver(text, settings: style, pressReturn: formatted.send || mode.pressReturn)
     }
 
+    /// What the overlay's tag says while recording: the selection job, or a mode that is not the
+    /// standard one. `nil` leaves the tag out.
+    var recordingTag: String? {
+        if selection != nil { return String(localized: "Selection", comment: "Overlay tag: this dictation edits the text selected in another app") }
+        return activeMode.isStandard ? nil : activeMode.title
+    }
+
+    // MARK: Editing a selection
+
+    /// The Edit selection shortcut: reads what is selected in the app in front, then records the
+    /// instruction. A second press ends the recording, esc cancels it.
+    func editSelection() {
+        if phase == .listening {
+            finishRecording()
+            return
+        }
+        guard phase == .idle || isTransient else { return }
+        guard rewriter.isReady(settings.value) else {
+            show(.notice(.modelOff), for: 2.5)
+            return
+        }
+        Task {
+            guard let text = await SelectionReader.read() else {
+                show(.notice(.nothingSelected), for: 2)
+                return
+            }
+            startRecording(handsFree: true, selection: text)
+        }
+    }
+
     /// Esc while the model rewrites: insert the formatted text now.
     func skipRewrite() {
         skipRewriteAction?()
@@ -401,9 +447,14 @@ final class DictationController {
     /// The rewrite, or `nil` as soon as the user skips it, even if the model keeps running.
     private func rewriteSkippably(_ text: String, mode: DictationMode, settings value: AppSettings) async -> String? {
         let rewriter = rewriter
+        return await skippable { await rewriter.rewrite(text, mode: mode, settings: value) }
+    }
+
+    /// Runs the model with esc as a way out: the result, or `nil` as soon as the user presses it.
+    private func skippable(_ body: @escaping () async -> String?) async -> String? {
         let result = await withCheckedContinuation { (continuation: CheckedContinuation<String?, Never>) in
             let race = FirstResult(continuation)
-            let work = Task { await rewriter.rewrite(text, mode: mode, settings: value) }
+            let work = Task { await body() }
             skipRewriteAction = {
                 work.cancel()
                 race.finish(nil)
@@ -412,6 +463,28 @@ final class DictationController {
         }
         skipRewriteAction = nil
         return result
+    }
+
+    /// The spoken instruction over the selected text: the model edits the fragment and the
+    /// result goes back the usual way, over the selection it came from.
+    private func editSelection(_ selection: String, instruction: String, settings value: AppSettings, style: AppSettings) async {
+        self.selection = nil
+        guard !instruction.isEmpty else {
+            show(.notice(.nothingHeard), for: 1.5)
+            handsFree = false
+            return
+        }
+        finishingStage = .rewriting
+        let rewriter = rewriter
+        let edited = await skippable { await rewriter.editSelection(selection, instruction: instruction, settings: value) }
+        finishingStage = .transcribing
+        handsFree = false
+        guard let edited, !edited.isEmpty else {
+            // Esc during the rewrite lands here too: the selection is left as it was.
+            show(.notice(.editFailed), for: 2.5)
+            return
+        }
+        await deliver(edited, settings: style, pressReturn: false)
     }
 
     private func deliver(_ text: String, settings value: AppSettings, pressReturn modeReturn: Bool) async {

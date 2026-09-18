@@ -23,6 +23,8 @@ public struct KeyShortcut: Codable, Hashable, Sendable {
     public static let copyLast = KeyShortcut(keyCode: 0x08, control: true, option: true)
     /// ⌃⌥M
     public static let cycleMode = KeyShortcut(keyCode: 0x2E, control: true, option: true)
+    /// ⌃⌥E
+    public static let editSelection = KeyShortcut(keyCode: 0x0E, control: true, option: true)
 }
 
 extension AppSettings {
@@ -31,6 +33,7 @@ extension AppSettings {
         public var pasteAgain: KeyShortcut? = .pasteAgain
         public var copyLast: KeyShortcut? = .copyLast
         public var cycleMode: KeyShortcut? = .cycleMode
+        public var editSelection: KeyShortcut? = .editSelection
 
         public init() {}
 
@@ -41,6 +44,7 @@ extension AppSettings {
             pasteAgain = c.contains(.pasteAgain) ? try c.decodeIfPresent(KeyShortcut.self, forKey: .pasteAgain) : defaults.pasteAgain
             copyLast = c.contains(.copyLast) ? try c.decodeIfPresent(KeyShortcut.self, forKey: .copyLast) : defaults.copyLast
             cycleMode = c.contains(.cycleMode) ? try c.decodeIfPresent(KeyShortcut.self, forKey: .cycleMode) : defaults.cycleMode
+            editSelection = c.contains(.editSelection) ? try c.decodeIfPresent(KeyShortcut.self, forKey: .editSelection) : defaults.editSelection
         }
 
         public func encode(to encoder: any Encoder) throws {
@@ -48,10 +52,11 @@ extension AppSettings {
             try c.encode(pasteAgain, forKey: .pasteAgain)
             try c.encode(copyLast, forKey: .copyLast)
             try c.encode(cycleMode, forKey: .cycleMode)
+            try c.encode(editSelection, forKey: .editSelection)
         }
 
         private enum CodingKeys: String, CodingKey {
-            case pasteAgain, copyLast, cycleMode
+            case pasteAgain, copyLast, cycleMode, editSelection
         }
     }
 

@@ -113,7 +113,7 @@ struct IslandView: View {
     /// keeps the island and the wrapping of its text still from recording to insertion.
     private var dictationEars: CGFloat {
         let dictation = model.dictation
-        let tag = dictation.activeMode.isStandard ? 0 : ModeTag.width(dictation.activeMode.title) + 8
+        let tag = dictation.recordingTag.map { ModeTag.width($0) + 8 } ?? 0
         let rewrite = dictation.activeMode.usesLanguageModel || dictation.finishingStage == .rewriting
         return max(
             Self.barsWidth + tag,
@@ -183,8 +183,8 @@ struct IslandView: View {
                     }
                 }
                 .frame(width: Self.barsWidth, alignment: .leading)
-                if !dictation.activeMode.isStandard {
-                    ModeTag(title: dictation.activeMode.title, maxWidth: earRoom(width) - Self.barsWidth - 8)
+                if let tag = dictation.recordingTag {
+                    ModeTag(title: tag, maxWidth: earRoom(width) - Self.barsWidth - 8)
                         .transition(.islandContent)
                 }
             }

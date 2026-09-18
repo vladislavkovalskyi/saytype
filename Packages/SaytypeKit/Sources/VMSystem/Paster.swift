@@ -118,8 +118,7 @@ enum KeyPoster {
 
     /// Finds the key that types `character` in the current ASCII-capable layout,
     /// so ⌘V works on Dvorak and other layouts. Falls back to the ANSI position.
-    static func keycode(for character: Character) -> CGKeyCode {
-        let fallback = CGKeyCode(kVK_ANSI_V)
+    static func keycode(for character: Character, fallback: CGKeyCode = CGKeyCode(kVK_ANSI_V)) -> CGKeyCode {
         guard
             let source = TISCopyCurrentASCIICapableKeyboardLayoutInputSource()?.takeRetainedValue(),
             let pointer = TISGetInputSourceProperty(source, kTISPropertyUnicodeKeyLayoutData)

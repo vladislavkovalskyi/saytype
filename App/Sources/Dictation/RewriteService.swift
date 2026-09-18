@@ -193,9 +193,20 @@ final class RewriteService {
 
     /// The rewritten text, or `nil` when the engine is off, slow, failed or dropped content.
     func rewrite(_ text: String, mode: DictationMode, settings: AppSettings) async -> String? {
-        guard !AppModel.isPreviewLaunch, isReady(settings),
-              let request = RewriteRequest(mode: mode, language: settings.language)
-        else { return nil }
+        guard let request = RewriteRequest(mode: mode, language: settings.language) else { return nil }
+        return await run(text, request: request, settings: settings)
+    }
+
+    /// The text selected in another app, edited as the spoken instruction says; `nil` when the
+    /// engine is off, slow or failed, and the selection is then left alone.
+    func editSelection(_ selection: String, instruction: String, settings: AppSettings) async -> String? {
+        let instruction = instruction.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !instruction.isEmpty else { return nil }
+        return await run(selection, request: RewriteRequest(style: .selection, instruction: instruction), settings: settings)
+    }
+
+    private func run(_ text: String, request: RewriteRequest, settings: AppSettings) async -> String? {
+        guard !AppModel.isPreviewLaunch, isReady(settings) else { return nil }
 
         let engine = settings.languageModel.engine
         let timeout = settings.languageModel.timeoutSeconds
