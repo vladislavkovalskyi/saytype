@@ -6,28 +6,51 @@ public struct RewriteRequest: Equatable, Sendable {
     public var style: DictationMode.Rewrite
     public var instruction: String
     public var translate: Bool
+    /// English name of the language to translate into, e.g. "Ukrainian"; `nil` means English.
+    public var targetLanguage: String?
     /// English name of the answer's language when it stays the dictation's, e.g. "Russian";
     /// `nil` when the speech language is detected.
     public var sourceLanguage: String?
 
-    public init(style: DictationMode.Rewrite, instruction: String = "", translate: Bool = false, sourceLanguage: String? = nil) {
+    public init(style: DictationMode.Rewrite, instruction: String = "", translate: Bool = false, targetLanguage: String? = nil, sourceLanguage: String? = nil) {
         self.style = style
         self.instruction = instruction
         self.translate = translate
+        self.targetLanguage = targetLanguage
         self.sourceLanguage = sourceLanguage
     }
 
     /// `nil` when the mode needs no model: no rewrite and no translation, or an empty custom instruction.
-    public init?(mode: DictationMode, language: AppSettings.SpeechLanguage) {
+    ///
+    /// - Parameter translateTo: the language everything is translated into, from the overlay's
+    ///   switch. It wins over the mode's own translation; `nil` leaves the mode to decide.
+    public init?(mode: DictationMode, language: AppSettings.SpeechLanguage, translateTo target: AppSettings.SpeechLanguage? = nil) {
         let instruction = mode.instruction.trimmingCharacters(in: .whitespacesAndNewlines)
         let style = mode.rewrite == .custom && instruction.isEmpty ? .none : mode.rewrite
-        guard style != .none || mode.translateToEnglish else { return nil }
-        let name = language.whisperCode.flatMap { Locale(identifier: "en").localizedString(forLanguageCode: $0) }
-        self.init(style: style, instruction: instruction, translate: mode.translateToEnglish, sourceLanguage: name)
+        let target = target ?? (mode.translateToEnglish ? .english : nil)
+        guard style != .none || target != nil else { return nil }
+        self.init(
+            style: style,
+            instruction: instruction,
+            translate: target != nil,
+            targetLanguage: target.flatMap(Self.englishName),
+            sourceLanguage: Self.englishName(of: language)
+        )
     }
 
-    /// A commit message is English whatever was spoken.
-    public var answersInEnglish: Bool { translate || style == .commit }
+    /// "Ukrainian" for `uk`; `nil` for a language Whisper is left to detect.
+    static func englishName(of language: AppSettings.SpeechLanguage) -> String? {
+        language.whisperCode.flatMap { Locale(identifier: "en").localizedString(forLanguageCode: $0) }
+    }
+
+    /// A commit message is English whatever was spoken, and so is a translation with no other
+    /// target named.
+    public var answersInEnglish: Bool {
+        style == .commit || (translate && (targetLanguage == nil || targetLanguage == "English"))
+    }
+
+    /// Where a translation goes, by its English name.
+    public var target: String { targetLanguage ?? "English" }
 
     // MARK: Prompts
 
@@ -58,14 +81,14 @@ public struct RewriteRequest: Equatable, Sendable {
     }
 
     var taskReminder: String {
-        let language = answersInEnglish ? "English" : sourceLanguage ?? "the language of the dictation"
+        let language = translate ? target : (answersInEnglish ? "English" : sourceLanguage ?? "the language of the dictation")
         return switch style {
         case .prompt: "Rewrite this dictation as a prompt for a coding agent, in \(language)."
         case .commit: "Write a Conventional Commit message in English for this dictation."
         case .cleaner: "Clean up this dictation, in \(language)."
         case .custom: "Apply the instruction to this dictation, in \(language)."
         case .selection: "Apply the instruction to this fragment and reply with the whole fragment, edited."
-        case .none: "Translate this dictation into English."
+        case .none: "Translate this dictation into \(target)."
         }
     }
 
@@ -158,6 +181,7 @@ public struct RewriteRequest: Equatable, Sendable {
     var languageRule: String {
         // The instruction may itself ask for another language: "переведи на английский".
         if style == .selection { return "Answer in the language the instruction asks for; otherwise keep the language of the fragment." }
+        if translate { return "Write the answer in \(target)." }
         if answersInEnglish { return "Write the answer in English." }
         if let sourceLanguage { return "Write the answer in \(sourceLanguage), the language of the dictation." }
         return "Write the answer in the language of the dictation."

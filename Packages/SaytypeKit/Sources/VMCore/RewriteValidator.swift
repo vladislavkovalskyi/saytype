@@ -149,6 +149,9 @@ public enum RewriteValidator {
         if request.answersInEnglish {
             return Double(after.cyrillic) <= Double(after.cyrillic + after.latin) * 0.15
         }
+        // Another target: Ukrainian is Cyrillic and Polish is Latin, so the script of the answer
+        // says nothing about whether the model translated.
+        if request.translate { return true }
         let before = letters(original)
         return before.cyrillic > before.latin ? after.cyrillic >= after.latin : after.cyrillic <= after.latin
     }

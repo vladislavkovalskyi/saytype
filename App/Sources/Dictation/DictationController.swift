@@ -288,7 +288,7 @@ final class DictationController {
         phase = .listening
         finishingStage = .transcribing
         smart.warmUp(settings: settings.value.applying(activeMode))
-        rewriter.warmUp(settings.value, mode: selection == nil ? activeMode : nil)
+        rewriter.warmUp(settings.value, mode: selection == nil ? activeMode : nil, translateTo: settings.value.autoTranslate ? settings.value.translateTarget : nil)
         if settings.value.sounds { Sounds.start() }
         runLiveLoop()
     }
@@ -361,7 +361,9 @@ final class DictationController {
         let terms = DictionaryRewriter.promptTerms(entries: value.dictionary, projectTerms: projectTerms)
         // Whisper translates only when no language model will: the model keeps terms intact.
         // Turbo cannot translate at all; its modes stay in the spoken language without a model.
-        let whisperTranslates = selection == nil && mode.translateToEnglish && !rewriter.isReady(value) && WhisperKitEngine.supportsTranslation(value.whisperModel)
+        // The overlay's switch translates everything; without it the mode decides.
+        let translateTo = translationTarget(mode: mode, settings: value)
+        let whisperTranslates = selection == nil && translateTo == .english && !rewriter.isReady(value) && WhisperKitEngine.supportsTranslation(value.whisperModel)
         let hints = TranscriptionHints(
             language: value.language.whisperCode,
             prompt: PromptBuilder.prompt(glossary: terms),
@@ -382,7 +384,7 @@ final class DictationController {
             await editSelection(selection, instruction: text, settings: value, style: style)
             return
         }
-        if mode.usesLanguageModel || (mode.translateToEnglish && !whisperTranslates), !text.isEmpty, rewriter.isReady(value) {
+        if mode.usesLanguageModel || (translateTo != nil && !whisperTranslates), !text.isEmpty, rewriter.isReady(value) {
             finishingStage = .rewriting
             if let rewritten = await rewriteSkippably(text, mode: mode, settings: value), !rewritten.isEmpty {
                 text = rewritten
@@ -418,6 +420,27 @@ final class DictationController {
         return activeMode.isStandard ? nil : activeMode.title
     }
 
+    // MARK: Translation
+
+    /// Where this dictation is translated to, or `nil` when it is not translated. The overlay's
+    /// switch covers every mode; without it only a mode that asks for English translates.
+    private func translationTarget(mode: DictationMode, settings value: AppSettings) -> AppSettings.SpeechLanguage? {
+        if value.autoTranslate { return value.translateTarget }
+        return mode.translateToEnglish ? .english : nil
+    }
+
+    /// Something can translate right now: the language model, or Whisper itself into English.
+    /// Whisper's own translation only works into English and only on the large-v3 models.
+    var canTranslate: Bool {
+        if rewriter.isReady(settings.value) { return true }
+        return settings.value.translateTarget == .english && WhisperKitEngine.supportsTranslation(settings.value.whisperModel)
+    }
+
+    /// The overlay reserves room for the rewrite stage when a model is going to run.
+    var expectsRewrite: Bool {
+        activeMode.usesLanguageModel || activeMode.translateToEnglish || settings.value.autoTranslate || finishingStage == .rewriting
+    }
+
     // MARK: Editing a selection
 
     /// The Edit selection shortcut: reads what is selected in the app in front, then records the
@@ -449,7 +472,8 @@ final class DictationController {
     /// The rewrite, or `nil` as soon as the user skips it, even if the model keeps running.
     private func rewriteSkippably(_ text: String, mode: DictationMode, settings value: AppSettings) async -> String? {
         let rewriter = rewriter
-        return await skippable { await rewriter.rewrite(text, mode: mode, settings: value) }
+        let target = value.autoTranslate ? value.translateTarget : nil
+        return await skippable { await rewriter.rewrite(text, mode: mode, target: target, settings: value) }
     }
 
     /// Runs the model with esc as a way out: the result, or `nil` as soon as the user presses it.

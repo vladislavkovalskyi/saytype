@@ -28,7 +28,8 @@ struct IslandView: View {
         case card(String)
     }
 
-    static let panelWidth: CGFloat = 504
+    // Room for the chip row: language, mode, structure, translation, microphone.
+    static let panelWidth: CGFloat = 560
     static let panelBodyHeight: CGFloat = 150
     /// The widest the island may grow inside its panel, ears included.
     private static let maxWidth = OverlayController.islandPanelSize.width - 28
@@ -114,7 +115,7 @@ struct IslandView: View {
     private var dictationEars: CGFloat {
         let dictation = model.dictation
         let tag = dictation.recordingTag.map { ModeTag.width($0) + 8 } ?? 0
-        let rewrite = dictation.activeMode.usesLanguageModel || dictation.finishingStage == .rewriting
+        let rewrite = dictation.expectsRewrite
         return max(
             Self.barsWidth + tag,
             Self.timerWidth + (dictation.handsFree ? 30 : 0),
@@ -450,6 +451,7 @@ private struct IslandPanel: View {
                 LanguageSwitch(settings: model.settings)
                 ModeChip(model: model)
                 SmartChip(isOn: model.smartStructure)
+                TranslateChip(model: model)
                 MicrophoneChip(model: model)
                 Spacer(minLength: 0)
             }
@@ -606,7 +608,7 @@ private struct MicrophoneChip: View {
         } label: {
             HStack(spacing: 5) {
                 Image(systemName: "mic.fill").font(.system(size: 9.5, weight: .semibold))
-                CappedWidth(limit: 80) {
+                CappedWidth(limit: 64) {
                     Text(name ?? String(localized: "No microphone")).truncationMode(.tail)
                 }
             }

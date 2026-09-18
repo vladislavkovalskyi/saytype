@@ -155,9 +155,9 @@ final class RewriteService {
     // MARK: Warm-up
 
     /// Loads the model when a dictation that needs it starts, so the final pass does not wait.
-    func warmUp(_ settings: AppSettings, mode: DictationMode? = nil) {
+    func warmUp(_ settings: AppSettings, mode: DictationMode? = nil, translateTo target: AppSettings.SpeechLanguage? = nil) {
         guard !AppModel.isPreviewLaunch else { return }
-        let request = mode.flatMap { RewriteRequest(mode: $0, language: settings.language) }
+        let request = mode.flatMap { RewriteRequest(mode: $0, language: settings.language, translateTo: target) }
         guard mode == nil || request != nil else { return }
         switch settings.languageModel.engine {
         case .off:
@@ -192,8 +192,10 @@ final class RewriteService {
     // MARK: Rewrite
 
     /// The rewritten text, or `nil` when the engine is off, slow, failed or dropped content.
-    func rewrite(_ text: String, mode: DictationMode, settings: AppSettings) async -> String? {
-        guard let request = RewriteRequest(mode: mode, language: settings.language) else { return nil }
+    /// - Parameter target: the language the overlay's switch translates everything into; `nil`
+    ///   leaves the mode to decide.
+    func rewrite(_ text: String, mode: DictationMode, target: AppSettings.SpeechLanguage?, settings: AppSettings) async -> String? {
+        guard let request = RewriteRequest(mode: mode, language: settings.language, translateTo: target) else { return nil }
         return await run(text, request: request, settings: settings)
     }
 

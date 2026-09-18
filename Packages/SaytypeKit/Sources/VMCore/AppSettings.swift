@@ -69,6 +69,10 @@ public struct AppSettings: Codable, Equatable, Sendable {
     public var learnFromEdits = true
 
     public var language = SpeechLanguage.systemDefault
+    /// Every dictation is translated, whatever mode it runs in. The switch lives in the overlay.
+    public var autoTranslate = false
+    /// Where `autoTranslate` translates to. Kept while the switch is off, so it comes back as it was.
+    public var translateTarget = SpeechLanguage.english
     public var punctuationStyle = PunctuationStyle.full
     public var letterCase = LetterCase.asSpoken
     public var smartStructure = true
@@ -124,6 +128,8 @@ public struct AppSettings: Codable, Equatable, Sendable {
         autoEnterApps = try c.decodeIfPresent([String].self, forKey: .autoEnterApps) ?? defaults.autoEnterApps
         learnFromEdits = try c.decodeIfPresent(Bool.self, forKey: .learnFromEdits) ?? defaults.learnFromEdits
         language = try c.decodeIfPresent(SpeechLanguage.self, forKey: .language) ?? defaults.language
+        autoTranslate = try c.decodeIfPresent(Bool.self, forKey: .autoTranslate) ?? defaults.autoTranslate
+        translateTarget = try c.decodeIfPresent(SpeechLanguage.self, forKey: .translateTarget) ?? defaults.translateTarget
         // Before 0.1.3 punctuation was a single on/off switch.
         let legacy = try decoder.container(keyedBy: LegacyKeys.self)
         let legacyStyle = try legacy.decodeIfPresent(Bool.self, forKey: .punctuation).map { $0 ? PunctuationStyle.full : .none }

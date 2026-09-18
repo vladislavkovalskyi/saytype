@@ -3999,12 +3999,45 @@
         }
       }
     },
+    "Translate" : {
+      "comment" : "Menu bar submenu: translate every dictation",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Перевод"
+          }
+        }
+      }
+    },
+    "Translate every dictation" : {
+      "comment" : "Tooltip of the overlay's translation switch",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Переводить каждую диктовку"
+          }
+        }
+      }
+    },
     "Translate to English" : {
       "localizations" : {
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Перевод на английский"
+          }
+        }
+      }
+    },
+    "Translation needs a language model" : {
+      "comment" : "Tooltip when translation is on but nothing can translate",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Для перевода нужна языковая модель"
           }
         }
       }

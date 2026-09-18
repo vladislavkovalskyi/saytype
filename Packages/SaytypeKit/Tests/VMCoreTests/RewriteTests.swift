@@ -22,6 +22,21 @@ import Testing
         #expect(RewriteRequest(style: .prompt, translate: true, sourceLanguage: "Russian").systemPrompt.contains("Goal, Context, Steps, Constraints"))
     }
 
+    /// The overlay's switch translates everything, into whatever language it names.
+    @Test func translatesIntoTheChosenLanguage() {
+        let mode = DictationMode(id: DictationMode.standardID)
+        let request = RewriteRequest(mode: mode, language: .russian, translateTo: AppSettings.SpeechLanguage(rawValue: "uk"))
+        #expect(request?.translate == true)
+        #expect(request?.targetLanguage == "Ukrainian")
+        #expect(request?.answersInEnglish == false)
+        #expect(request?.systemPrompt.hasSuffix("Write the answer in Ukrainian.") == true)
+        #expect(request?.userMessage("Поправь хедер").hasPrefix("Translate this dictation into Ukrainian.") == true)
+        // English is still English, named or not.
+        #expect(RewriteRequest(mode: mode, language: .russian, translateTo: .english)?.answersInEnglish == true)
+        // Without the switch a mode that does not translate needs no model at all.
+        #expect(RewriteRequest(mode: mode, language: .russian) == nil)
+    }
+
     @Test func commitIsEnglishWithoutTranslation() {
         let request = RewriteRequest(style: .commit, sourceLanguage: "Russian")
         #expect(request.answersInEnglish)
@@ -96,6 +111,15 @@ import Testing
         #expect(RewriteValidator.check(original: fragment, candidate: "Finishing auth and the deploy today.", request: selection) == .accepted)
         #expect(RewriteValidator.check(original: fragment, candidate: "  ", request: selection) == .rejected(.empty))
         #expect(RewriteValidator.check(original: fragment, candidate: String(repeating: "слово ", count: 200), request: selection) == .rejected(.tooLong))
+    }
+
+    /// Ukrainian is Cyrillic and Polish is Latin: the script of the answer says nothing about
+    /// whether the model translated, so only English is checked.
+    @Test func languageIsCheckedForEnglishOnly() {
+        let toUkrainian = RewriteRequest(style: .none, translate: true, targetLanguage: "Ukrainian", sourceLanguage: "Russian")
+        let fragment = "Поправь хедер в компоненте, он дёргается."
+        #expect(RewriteValidator.check(original: fragment, candidate: "Виправ хедер у компоненті, він смикається.", request: toUkrainian) == .accepted)
+        #expect(RewriteValidator.check(original: fragment, candidate: "Поправь хедер в компоненте, он дёргается.", request: translation) == .rejected(.wrongLanguage))
     }
 
     @Test func rejectsDroppedCodePathsNumbersAndLinks() {

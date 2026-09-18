@@ -50,7 +50,8 @@ struct PillView: View {
         case .peek:
             let record = TextMeasure.width(String(localized: "Record"), size: 12.5)
             let chip = ModeChip.width(dictation.currentMode().title)
-            return CGSize(width: 6 + 28 + 9 + 22 + 9 + record + 18 + chip + 7, height: 40)
+            let translate = TranslateChip.width(model.settings.value.translateTarget)
+            return CGSize(width: 6 + 28 + 9 + 22 + 9 + record + 18 + chip + 9 + translate + 7, height: 40)
         case .listening, .finishing(rewriting: false):
             // Both keep the recording width, so the spinner takes the orb's place without a jump.
             let tag = dictation.recordingTag.map { ModeTag.width($0) + 9 } ?? 0
@@ -139,6 +140,7 @@ struct PillView: View {
                 Text("Record").font(.onest(12.5, .medium)).opacity(0.8).fixedSize()
                 Spacer(minLength: 0)
                 ModeChip(model: model, ink: ink)
+                TranslateChip(model: model, ink: ink)
             }
             .padding(.leading, 6)
             .padding(.trailing, 7)
