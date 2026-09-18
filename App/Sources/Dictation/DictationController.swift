@@ -110,6 +110,8 @@ final class DictationController {
     @ObservationIgnored private var silence = SilenceDetector(limit: 0)
     /// Resumes the final pass without the rewrite; set while the model runs.
     @ObservationIgnored private var skipRewriteAction: (() -> Void)?
+    /// The last run of the model ended because the user pressed esc, not because it failed.
+    @ObservationIgnored private var skippedRewrite = false
     @ObservationIgnored private let store = ModelStore()
     /// Preview launches get a throwaway history file, so they can never show or change the real one.
     @ObservationIgnored private let historyStore = AppModel.isPreviewLaunch
@@ -452,10 +454,12 @@ final class DictationController {
 
     /// Runs the model with esc as a way out: the result, or `nil` as soon as the user presses it.
     private func skippable(_ body: @escaping () async -> String?) async -> String? {
+        skippedRewrite = false
         let result = await withCheckedContinuation { (continuation: CheckedContinuation<String?, Never>) in
             let race = FirstResult(continuation)
             let work = Task { await body() }
-            skipRewriteAction = {
+            skipRewriteAction = { [weak self] in
+                self?.skippedRewrite = true
                 work.cancel()
                 race.finish(nil)
             }
@@ -468,7 +472,8 @@ final class DictationController {
     /// The spoken instruction over the selected text: the model edits the fragment and the
     /// result goes back the usual way, over the selection it came from.
     private func editSelection(_ selection: String, instruction: String, settings value: AppSettings, style: AppSettings) async {
-        self.selection = nil
+        // The overlay's tag reads this until the edit is delivered; a new recording clears it.
+        defer { self.selection = nil }
         guard !instruction.isEmpty else {
             show(.notice(.nothingHeard), for: 1.5)
             handsFree = false
@@ -479,8 +484,12 @@ final class DictationController {
         let edited = await skippable { await rewriter.editSelection(selection, instruction: instruction, settings: value) }
         finishingStage = .transcribing
         handsFree = false
+        // Esc during the rewrite: the user wanted out, and the selection stays as it was.
+        guard !skippedRewrite else {
+            phase = .idle
+            return
+        }
         guard let edited, !edited.isEmpty else {
-            // Esc during the rewrite lands here too: the selection is left as it was.
             show(.notice(.editFailed), for: 2.5)
             return
         }
@@ -565,6 +574,7 @@ final class DictationController {
         guard !added.isEmpty else { return }
         settings.value.dictionary = dictionary
         dictionaryBeforeLearning = before
+        dictionaryAfterLearning = dictionary
         cardLearned = added
         learnedHideTask?.cancel()
         learnedHideTask = Task { [weak self] in
@@ -574,10 +584,12 @@ final class DictationController {
         }
     }
 
-    /// Takes back what the last edit taught, dictionary and readout both.
+    /// Takes back what the last edit taught, dictionary and readout both. A dictionary the user
+    /// has changed in the meantime is left alone.
     func undoLearned() {
-        guard let before = dictionaryBeforeLearning else { return }
-        settings.value.dictionary = before
+        if let before = dictionaryBeforeLearning, settings.value.dictionary == dictionaryAfterLearning {
+            settings.value.dictionary = before
+        }
         hideLearned()
     }
 
@@ -585,6 +597,7 @@ final class DictationController {
         learnedHideTask?.cancel()
         learnedHideTask = nil
         dictionaryBeforeLearning = nil
+        dictionaryAfterLearning = nil
         if !cardLearned.isEmpty { cardLearned = [] }
     }
 
@@ -596,6 +609,7 @@ final class DictationController {
     @ObservationIgnored private var cardRecord: DictationRecord?
     /// The dictionary as it was before the last edit taught it anything, for the undo.
     @ObservationIgnored private var dictionaryBeforeLearning: [DictionaryEntry]?
+    @ObservationIgnored private var dictionaryAfterLearning: [DictionaryEntry]?
     @ObservationIgnored private var learnedHideTask: Task<Void, Never>?
 
     private func updateCardShortcuts() {
@@ -617,7 +631,7 @@ final class DictationController {
             cardKeysStop = Task { [weak self] in
                 try? await Task.sleep(for: .milliseconds(300))
                 guard let self, !Task.isCancelled else { return }
-                if case .card = self.phase { return }
+                if case .card = self.phase, !self.cardEditing { return }
                 self.cardKeys?.stop()
                 self.cardKeys = nil
             }

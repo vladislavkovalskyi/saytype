@@ -46,6 +46,8 @@ enum OverlaySnapshots {
             Shot("7-inserted", .inserted(terminal)),
             Shot("8-notice", .notice(.passwordField)),
             Shot("8b-notice-mode", .notice(.mode(DictationMode(id: DictationMode.promptID).title))),
+            Shot("8c-notice-nothing-selected", .notice(.nothingSelected)),
+            Shot("8d-notice-model-off", .notice(.modelOff)),
             Shot("9-card", .card(card)),
             Shot("9b-card-editing", .card(card), editing: card.replacingOccurrences(of: "Next.js", with: "некст джей эс")),
             Shot("9c-card-learned", .card(card), learned: [DictionaryEntry(heard: "некст джей эс", written: "Next.js", source: .history)]),
