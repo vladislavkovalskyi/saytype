@@ -77,7 +77,8 @@ struct PillView: View {
             return CGSize(width: textWidth + 32, height: bubbleHeight > 0 ? bubbleHeight : TextMeasure.lineHeight(size: 15) + 24)
         case .card(let text):
             let lineHeight: CGFloat = 20.5
-            let estimate = min(TextMeasure.height(text, width: 420, size: 14, lineHeight: lineHeight), lineHeight * 8) + 12 + 28 + 24
+            let body = model.dictation.cardEditing ? model.dictation.cardDraft : text
+            let estimate = min(TextMeasure.height(body, width: 420, size: 14, lineHeight: lineHeight), lineHeight * 8) + 12 + 28 + 24
             return CGSize(width: 452, height: bubbleHeight > 0 ? bubbleHeight : estimate)
         default:
             return nil

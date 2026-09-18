@@ -129,7 +129,14 @@ struct IslandView: View {
 
     private func cardBodyHeight(_ text: String) -> CGFloat {
         let lineHeight: CGFloat = 20.5
-        return min(TextMeasure.height(text, width: 416, size: 14, lineHeight: lineHeight), lineHeight * 8) + 62
+        let dictation = model.dictation
+        let editing = dictation.cardEditing
+        let body = editing ? dictation.cardDraft : text
+        var height = min(TextMeasure.height(body, width: 416, size: 14, lineHeight: lineHeight), lineHeight * 8)
+        // The editor keeps room for three lines, so the card does not shrink under the caret.
+        if editing { height = max(height, lineHeight * 3) + 20 }
+        if !dictation.cardLearned.isEmpty { height += 36 }
+        return height + 62
     }
 
     var body: some View {

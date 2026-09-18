@@ -57,10 +57,23 @@ final class DictationController {
     }
 
     private(set) var phase = Phase.idle {
-        didSet { updateCardShortcuts() }
+        didSet {
+            // Anything but a card leaves no card to edit and no fresh entries to show.
+            if case .card = phase {} else {
+                cardEditing = false
+                hideLearned()
+            }
+            updateCardShortcuts()
+        }
     }
     /// ⌘C, V and esc act on the card from any app until the user types something else.
     private(set) var cardShortcutsActive = false
+    /// The card is open for editing; while it is, the overlay takes keyboard focus.
+    private(set) var cardEditing = false
+    /// The card's text while it is being edited.
+    var cardDraft = ""
+    /// What the last edit taught the dictionary, for the readout under the card and its undo.
+    private(set) var cardLearned: [DictionaryEntry] = []
     private(set) var modelState = ModelState.missing
     private(set) var handsFree = false
     private(set) var levels = [Float](repeating: 0, count: 28)
@@ -373,6 +386,7 @@ final class DictationController {
             return
         }
         let record = DictationRecord(text: text, raw: transcript.text, appName: target?.name, bundleID: target?.bundleID, duration: duration, date: Date())
+        cardRecord = record
         history.insert(record, at: 0)
         let retention = value.historyRetentionDays
         Task { history = await historyStore.add(record, retentionDays: retention) }
@@ -422,16 +436,97 @@ final class DictationController {
     }
 
     func dismissCard() {
-        if case .card = phase { phase = .idle }
+        guard case .card = phase else { return }
+        cardEditing = false
+        phase = .idle
+    }
+
+    // MARK: Editing the card
+
+    func beginCardEdit() {
+        guard case .card(let text) = phase, !cardEditing else { return }
+        cardDraft = text
+        hideLearned()
+        cardEditing = true
+        // The keys of the card go to the text field now, not to the tap that swallows them.
+        updateCardShortcuts()
+    }
+
+    func cancelCardEdit() {
+        guard cardEditing else { return }
+        cardEditing = false
+        updateCardShortcuts()
+    }
+
+    /// Keeps the edited text and teaches the dictionary what was fixed.
+    func commitCardEdit() {
+        guard cardEditing, case .card(let text) = phase else { return }
+        let edited = cardDraft.trimmingCharacters(in: .whitespacesAndNewlines)
+        cardEditing = false
+        guard !edited.isEmpty, edited != text else {
+            updateCardShortcuts()
+            return
+        }
+        phase = .card(edited)
+        guard let record = cardRecord else { return }
+        cardRecord?.text = edited
+        if let index = history.firstIndex(where: { $0.id == record.id }) { history[index].text = edited }
+        Task { history = await historyStore.update(record.id, text: edited) }
+        learn(from: record, edited: edited)
+    }
+
+    /// Dictionary entries for the spelling fixes in an edit, added to the user's dictionary.
+    private func learn(from record: DictationRecord, edited: String) {
+        guard settings.value.learnFromEdits else { return }
+        let known = settings.value.dictionary.map(\.written)
+            + projects.terms
+            + (settings.value.builtInDictionary ? BuiltInDictionary.canonicalTerms : [])
+        let corrections = EditLearning.corrections(raw: record.raw, text: record.text, edited: edited, knownTerms: known)
+        guard !corrections.isEmpty else { return }
+        var dictionary = settings.value.dictionary
+        let before = dictionary
+        var added: [DictionaryEntry] = []
+        for entry in corrections where dictionary.addCorrection(entry) {
+            added.append(entry)
+        }
+        guard !added.isEmpty else { return }
+        settings.value.dictionary = dictionary
+        dictionaryBeforeLearning = before
+        cardLearned = added
+        learnedHideTask?.cancel()
+        learnedHideTask = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(4))
+            guard !Task.isCancelled else { return }
+            self?.hideLearned()
+        }
+    }
+
+    /// Takes back what the last edit taught, dictionary and readout both.
+    func undoLearned() {
+        guard let before = dictionaryBeforeLearning else { return }
+        settings.value.dictionary = before
+        hideLearned()
+    }
+
+    private func hideLearned() {
+        learnedHideTask?.cancel()
+        learnedHideTask = nil
+        dictionaryBeforeLearning = nil
+        if !cardLearned.isEmpty { cardLearned = [] }
     }
 
     // MARK: Card shortcuts
 
     @ObservationIgnored private var cardKeys: KeyInterceptor?
     @ObservationIgnored private var cardKeysStop: Task<Void, Never>?
+    /// The dictation the card holds: its raw transcript is what an edit learns from.
+    @ObservationIgnored private var cardRecord: DictationRecord?
+    /// The dictionary as it was before the last edit taught it anything, for the undo.
+    @ObservationIgnored private var dictionaryBeforeLearning: [DictionaryEntry]?
+    @ObservationIgnored private var learnedHideTask: Task<Void, Never>?
 
     private func updateCardShortcuts() {
-        if case .card = phase {
+        if case .card = phase, !cardEditing {
             cardKeysStop?.cancel()
             // Previews and snapshots must never swallow the user's keys.
             if cardKeys == nil, !AppModel.isPreviewLaunch {
@@ -464,6 +559,9 @@ final class DictationController {
             return true
         case kVK_ANSI_V where !press.hasModifiers:
             if !press.isRepeat { insertCard() }
+            return true
+        case kVK_ANSI_E where !press.hasModifiers:
+            if !press.isRepeat { beginCardEdit() }
             return true
         case kVK_Escape where !press.hasModifiers:
             dismissCard()
@@ -555,6 +653,15 @@ final class DictationController {
 
     func demoCardShortcuts() {
         cardShortcutsActive = true
+    }
+
+    func demoCardEdit(_ draft: String?) {
+        cardEditing = draft != nil
+        cardDraft = draft ?? ""
+    }
+
+    func demoLearned(_ entries: [DictionaryEntry]) {
+        cardLearned = entries
     }
 
     func demoModelReady() {
