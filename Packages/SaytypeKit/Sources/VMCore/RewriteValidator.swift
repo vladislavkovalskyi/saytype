@@ -46,6 +46,9 @@ public enum RewriteValidator {
         if let minimum = minimumRatio(request.style), length >= 60, Double(candidate.count) < length * minimum {
             return .rejected(.tooShort)
         }
+        // A selection edit is asked for in words: which words change, and into what language, is
+        // the instruction's business. Only an empty or runaway answer is rejected.
+        if request.style == .selection { return .accepted }
         if request.style == .commit, !isConventionalHeader(candidate) { return .rejected(.notConventionalCommit) }
         if !languageMatches(original: original, candidate: candidate, request: request) { return .rejected(.wrongLanguage) }
 
@@ -94,6 +97,7 @@ public enum RewriteValidator {
         case .commit: (1.5, 80)
         case .cleaner: (1.15, 40)
         case .custom: (3, 240)
+        case .selection: (3, 240)
         case .none: (1.6, 40)
         }
     }
@@ -104,7 +108,7 @@ public enum RewriteValidator {
         case .cleaner: 0.4
         case .none: 0.45
         case .prompt: 0.3
-        case .commit, .custom: nil
+        case .commit, .custom, .selection: nil
         }
     }
 
@@ -145,6 +149,9 @@ public enum RewriteValidator {
         if request.answersInEnglish {
             return Double(after.cyrillic) <= Double(after.cyrillic + after.latin) * 0.15
         }
+        // Another target: Ukrainian is Cyrillic and Polish is Latin, so the script of the answer
+        // says nothing about whether the model translated.
+        if request.translate { return true }
         let before = letters(original)
         return before.cyrillic > before.latin ? after.cyrillic >= after.latin : after.cyrillic <= after.latin
     }

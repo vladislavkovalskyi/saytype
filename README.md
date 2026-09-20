@@ -120,12 +120,42 @@ Setup takes eight short steps. Whisper downloads once (632 MB), then Core ML pre
 | <kbd>⌃</kbd><kbd>⌥</kbd><kbd>V</kbd> | paste the last dictation again |
 | <kbd>⌃</kbd><kbd>⌥</kbd><kbd>C</kbd> | copy the last dictation |
 | <kbd>⌃</kbd><kbd>⌥</kbd><kbd>M</kbd> | switch mode: by app, then each mode |
+| <kbd>⌃</kbd><kbd>⌥</kbd><kbd>E</kbd> | edit the selected text by voice |
 | <kbd>esc</kbd> while rewriting | insert without the language model |
 | <kbd>⌘</kbd><kbd>C</kbd> on the card | copy the text (output mode “Card”) |
 | <kbd>V</kbd> on the card | paste it into the field you're typing in |
+| <kbd>E</kbd> on the card | edit the text, <kbd>⌘</kbd><kbd>↩</kbd> keeps it |
 | <kbd>esc</kbd> on the card | close the card |
 
 Change the global shortcuts in **Key and overlay**.
+
+## Editing and learning
+
+In the **Card** output mode the dictation stays in the overlay instead of going into the field.
+Press <kbd>E</kbd> and the card becomes a text field: fix what Whisper misheard, <kbd>⌘</kbd><kbd>↩</kbd>
+keeps it, <kbd>esc</kbd> drops it. The corrected text is what <kbd>V</kbd> pastes, what
+<kbd>⌘</kbd><kbd>C</kbd> copies and what the history keeps.
+
+Then saytype learns. It compares the dictation with your edit and adds the spelling fixes to the
+dictionary: “хедер” → `Header`, “юз эффект” → `useEffect`, “github” → `GitHub`. From the next
+dictation on, that word comes out right — the entry rewrites the text and goes into Whisper's
+prompt. What was added is shown under the card and one press takes it back.
+
+Only spellings are learned, never rewritten sentences: an entry applies to every future dictation,
+so a run has to be a term written differently — the same sound in another script, an identifier
+spoken as separate words, or a capital inside a known term. Turn it off with **Learn from edits**
+in Key and overlay.
+
+## Edit the selection by voice
+
+Select text anywhere — an editor, a letter, a chat field — press <kbd>⌃</kbd><kbd>⌥</kbd><kbd>E</kbd>
+and say what to do with it: “перепиши короче”, “переведи на английский”, “сделай из этого список”.
+The language model on your Mac edits the fragment and it replaces the selection. Press the shortcut
+again to stop recording, <kbd>esc</kbd> to cancel. <kbd>⌘</kbd><kbd>Z</kbd> in the app puts the old
+text back.
+
+Needs a language model (**Model** → Rewrites). With nothing selected, or no model, the overlay says
+so and nothing is touched. Passwords are never read.
 
 ## Languages
 
@@ -138,6 +168,21 @@ Whisper recognizes 99 languages. Pick yours in **Text → Speech language**, in 
 | Auto | Whisper detects the language of each dictation |
 
 Speak Russian with English terms? Choose Russian: the built-in dictionary turns «юз эффект» into `useEffect`. Tried another language? Tell how it went in [Issues](https://github.com/vladislavkovalskyi/saytype/issues).
+
+## Translate everything
+
+Hover the notch or the pill and flip the switch next to **→ EN**: from then on every dictation is
+translated before it is pasted, whatever app you are in and whatever mode is running. The code next
+to the switch opens the language menu — English by default, any of Whisper's 99 languages instead.
+The same switch is in the menu bar under **Translate**.
+
+Translating is the language model's job (**Model** → Rewrites); Whisper can translate on its own,
+but only into English and only on the large-v3 models, not the turbo one that ships by default.
+With nothing that can translate, the code beside the switch turns amber and dictations go in
+unchanged.
+
+Code, paths, links, numbers and dictionary terms survive the translation — the same check runs as
+for any other rewrite.
 
 ## Style and filters
 
@@ -213,7 +258,7 @@ Commands work only as separate phrases, so «добавь новую строк�
     <td width="50%"><img src="docs/media/en/section-text.webp" alt="Text"></td>
   </tr>
   <tr>
-    <td><b>Key and overlay.</b> Record key, auto-stop after silence, island or pill, paste or card, Return after paste, your own shortcuts.</td>
+    <td><b>Key and overlay.</b> Record key, auto-stop after silence, island or pill, paste or card, learning from edits, your own shortcuts.</td>
     <td><b>Text.</b> Before and after, chat style, punctuation, filler words and your own filters, smart structure, speech language.</td>
   </tr>
   <tr>
@@ -258,6 +303,8 @@ On an M3 Pro a 5-second phrase is ready about 1.2 s after you let go. Smart stru
 
 - Audio is processed in memory and never written to disk.
 - Dictation history stays in a local JSON file; you can clear it or set how long it is kept.
+- Reading a selection asks the app through the Accessibility API; where that gives nothing, saytype
+  copies the selection and puts your clipboard back. Nothing is copied when nothing is selected.
 - No accounts, analytics or telemetry. The only network requests download models and check for updates.
 
 ## Permissions

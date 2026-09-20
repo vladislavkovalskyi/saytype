@@ -22,15 +22,41 @@ import Testing
         #expect(RewriteRequest(style: .prompt, translate: true, sourceLanguage: "Russian").systemPrompt.contains("Goal, Context, Steps, Constraints"))
     }
 
+    /// The overlay's switch translates everything, into whatever language it names.
+    @Test func translatesIntoTheChosenLanguage() {
+        let mode = DictationMode(id: DictationMode.standardID)
+        let request = RewriteRequest(mode: mode, language: .russian, translateTo: AppSettings.SpeechLanguage(rawValue: "uk"))
+        #expect(request?.translate == true)
+        #expect(request?.targetLanguage == "Ukrainian")
+        #expect(request?.answersInEnglish == false)
+        #expect(request?.systemPrompt.hasSuffix("Write the answer in Ukrainian.") == true)
+        #expect(request?.userMessage("Поправь хедер").hasPrefix("Translate this dictation into Ukrainian.") == true)
+        // English is still English, named or not.
+        #expect(RewriteRequest(mode: mode, language: .russian, translateTo: .english)?.answersInEnglish == true)
+        // Without the switch a mode that does not translate needs no model at all.
+        #expect(RewriteRequest(mode: mode, language: .russian) == nil)
+    }
+
     @Test func commitIsEnglishWithoutTranslation() {
         let request = RewriteRequest(style: .commit, sourceLanguage: "Russian")
         #expect(request.answersInEnglish)
         #expect(request.systemPrompt.hasSuffix("Write the answer in English."))
     }
 
-    @Test func everyStyleSharesThePromptPrefix() {
-        let prompts = DictationMode.Rewrite.allCases.map { RewriteRequest(style: $0, instruction: "Сделай баг-репорт").systemPrompt }
+    @Test func everyModeStyleSharesThePromptPrefix() {
+        let prompts = DictationMode.Rewrite.modeStyles.map { RewriteRequest(style: $0, instruction: "Сделай баг-репорт").systemPrompt }
         #expect(prompts.allSatisfy { $0.hasPrefix(RewriteRequest.commonRules) })
+    }
+
+    /// Editing a selection is a different job: its own rules, its own tag, and the answer's
+    /// language is the instruction's business.
+    @Test func selectionEditsTheFragment() {
+        let request = RewriteRequest(style: .selection, instruction: "перепиши короче")
+        #expect(request.systemPrompt.hasPrefix(RewriteRequest.selectionRules))
+        #expect(request.systemPrompt.contains("<instruction>\nперепиши короче\n</instruction>"))
+        #expect(request.userMessage("Длинный текст").contains("<fragment>\nДлинный текст\n</fragment>"))
+        #expect(!request.answersInEnglish)
+        #expect(RewriteRequest.clean("<fragment>\nКороче\n</fragment>", input: "Длинный текст") == "Короче")
     }
 
     @Test func customInstructionIsInThePrompt() {
@@ -63,6 +89,7 @@ import Testing
     let cleaner = RewriteRequest(style: .cleaner, sourceLanguage: "Russian")
     let commit = RewriteRequest(style: .commit, sourceLanguage: "Russian")
     let translation = RewriteRequest(style: .none, translate: true, sourceLanguage: "Russian")
+    let selection = RewriteRequest(style: .selection, instruction: "переведи на английский")
 
     let dictation = "Слушай, короче, поправь useEffect в src/components/Header.tsx, он дёргается 3 раза, и глянь https://github.com/acme/app/issues/42."
 
@@ -76,6 +103,23 @@ import Testing
         - Задача: https://github.com/acme/app/issues/42
         """
         #expect(RewriteValidator.check(original: dictation, candidate: candidate, request: prompt) == .accepted)
+    }
+
+    /// The user asked for the words to change: only an empty or runaway answer is rejected.
+    @Test func selectionIsCheckedForLengthOnly() {
+        let fragment = "Сегодня доделываю авторизацию и деплой."
+        #expect(RewriteValidator.check(original: fragment, candidate: "Finishing auth and the deploy today.", request: selection) == .accepted)
+        #expect(RewriteValidator.check(original: fragment, candidate: "  ", request: selection) == .rejected(.empty))
+        #expect(RewriteValidator.check(original: fragment, candidate: String(repeating: "слово ", count: 200), request: selection) == .rejected(.tooLong))
+    }
+
+    /// Ukrainian is Cyrillic and Polish is Latin: the script of the answer says nothing about
+    /// whether the model translated, so only English is checked.
+    @Test func languageIsCheckedForEnglishOnly() {
+        let toUkrainian = RewriteRequest(style: .none, translate: true, targetLanguage: "Ukrainian", sourceLanguage: "Russian")
+        let fragment = "Поправь хедер в компоненте, он дёргается."
+        #expect(RewriteValidator.check(original: fragment, candidate: "Виправ хедер у компоненті, він смикається.", request: toUkrainian) == .accepted)
+        #expect(RewriteValidator.check(original: fragment, candidate: "Поправь хедер в компоненте, он дёргается.", request: translation) == .rejected(.wrongLanguage))
     }
 
     @Test func rejectsDroppedCodePathsNumbersAndLinks() {

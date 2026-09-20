@@ -114,6 +114,9 @@ extension DictationController.Notice {
         case .recognitionFailed: Text("Couldn't transcribe")
         case .nothingHeard: Text("Nothing heard")
         case .copied: Text("Copied")
+        case .nothingSelected: Text("Nothing selected")
+        case .modelOff: Text("Language model is off")
+        case .editFailed: Text("Model didn't answer")
         // Already localized, or the name the user gave a custom mode.
         case .mode(let title): Text(verbatim: title)
         }
@@ -135,6 +138,8 @@ extension DictationController.Notice {
         case .microphoneUnavailable: "mic.slash.fill"
         case .recognitionFailed, .nothingHeard: "waveform.slash"
         case .copied: "doc.on.doc.fill"
+        case .nothingSelected: "selection.pin.in.out"
+        case .modelOff, .editFailed: "sparkles"
         case .mode: "square.stack.3d.up.fill"
         }
     }
@@ -149,6 +154,9 @@ extension DictationController.Notice {
         case .recognitionFailed: String(localized: "Couldn't transcribe")
         case .nothingHeard: String(localized: "Nothing heard")
         case .copied: String(localized: "Copied")
+        case .nothingSelected: String(localized: "Nothing selected")
+        case .modelOff: String(localized: "Language model is off")
+        case .editFailed: String(localized: "Model didn't answer")
         case .mode(let title): title
         }
     }

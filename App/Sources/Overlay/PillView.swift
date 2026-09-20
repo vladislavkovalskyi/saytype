@@ -50,10 +50,11 @@ struct PillView: View {
         case .peek:
             let record = TextMeasure.width(String(localized: "Record"), size: 12.5)
             let chip = ModeChip.width(dictation.currentMode().title)
-            return CGSize(width: 6 + 28 + 9 + 22 + 9 + record + 18 + chip + 7, height: 40)
+            let translate = TranslateChip.width(model.settings.value.translateTarget)
+            return CGSize(width: 6 + 28 + 9 + 22 + 9 + record + 18 + chip + 9 + translate + 7, height: 40)
         case .listening, .finishing(rewriting: false):
             // Both keep the recording width, so the spinner takes the orb's place without a jump.
-            let tag = dictation.activeMode.isStandard ? 0 : ModeTag.width(dictation.activeMode.title) + 9
+            let tag = dictation.recordingTag.map { ModeTag.width($0) + 9 } ?? 0
             let stop: CGFloat = dictation.handsFree ? 33 : 0
             return CGSize(width: max(250, 8 + Self.voiceWidth + tag + 9 + 9 + 34 + stop + 12), height: 44)
         case .finishing(rewriting: true):
@@ -77,7 +78,8 @@ struct PillView: View {
             return CGSize(width: textWidth + 32, height: bubbleHeight > 0 ? bubbleHeight : TextMeasure.lineHeight(size: 15) + 24)
         case .card(let text):
             let lineHeight: CGFloat = 20.5
-            let estimate = min(TextMeasure.height(text, width: 420, size: 14, lineHeight: lineHeight), lineHeight * 8) + 12 + 28 + 24
+            let body = model.dictation.cardEditing ? model.dictation.cardDraft : text
+            let estimate = min(TextMeasure.height(body, width: 420, size: 14, lineHeight: lineHeight), lineHeight * 8) + 12 + 28 + 24
             return CGSize(width: 452, height: bubbleHeight > 0 ? bubbleHeight : estimate)
         default:
             return nil
@@ -138,6 +140,7 @@ struct PillView: View {
                 Text("Record").font(.onest(12.5, .medium)).opacity(0.8).fixedSize()
                 Spacer(minLength: 0)
                 ModeChip(model: model, ink: ink)
+                TranslateChip(model: model, ink: ink)
             }
             .padding(.leading, 6)
             .padding(.trailing, 7)
@@ -161,8 +164,8 @@ struct PillView: View {
                     }
                 }
                 .frame(width: Self.voiceWidth, alignment: .leading)
-                if !dictation.activeMode.isStandard {
-                    ModeTag(title: dictation.activeMode.title, ink: ink).transition(.islandContent)
+                if let tag = dictation.recordingTag {
+                    ModeTag(title: tag, ink: ink).transition(.islandContent)
                 }
                 Spacer(minLength: 0)
                 if listening, let startedAt = dictation.startedAt {
@@ -281,41 +284,11 @@ private struct PillBubble: View {
         ZStack(alignment: .bottom) {
             switch mode {
             case .card(let text):
-                VStack(alignment: .leading, spacing: 12) {
-                    Text(CodeWords.attributed(text, size: 14))
-                        .font(.onest(14))
-                        .lineSpacing(3.5)
-                        .lineLimit(8)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .contentShape(Rectangle())
-                        .onDrag { NSItemProvider(object: text as NSString) }
-                    HStack(spacing: 6) {
-                        Button {
-                            dictation.copyCard()
-                        } label: {
-                            CardAction(title: "Copy", key: dictation.cardShortcutsActive ? "⌘C" : nil, ink: light ? .white : Color(hex: 0x1A1318))
-                        }
-                        .buttonStyle(CapsuleButtonStyle(prominent: true, light: light))
-                        Button {
-                            dictation.insertCard()
-                        } label: {
-                            CardAction(title: "Paste", key: dictation.cardShortcutsActive ? "V" : nil, ink: light ? Color(hex: 0x1A1318) : .white)
-                        }
-                        .buttonStyle(CapsuleButtonStyle(light: light))
-                        Spacer()
-                        Button {
-                            dictation.dismissCard()
-                        } label: {
-                            Image(systemName: "xmark")
-                        }
-                        .buttonStyle(IslandIconButtonStyle(size: 26, tint: ink))
-                        .help(Text("Close"))
-                    }
-                }
-                .frame(width: 420)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
-                .transition(.islandContent)
+                OverlayCard(model: model, text: text, style: .pill, light: light)
+                    .frame(width: 420)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                    .transition(.islandContent)
             case .listening, .finishing:
                 if showsText {
                     let finishing = mode != .listening

@@ -225,7 +225,7 @@ private struct AfterRecordingPanel: View {
                 ModeCard(icon: .returnKey, title: "Paste", detail: "into the active field", isSelected: settings.value.outputMode == .paste) {
                     settings.value.outputMode = .paste
                 }
-                ModeCard(icon: .card, title: "Card", detail: "stays in the overlay", isSelected: settings.value.outputMode == .card) {
+                ModeCard(icon: .card, title: "Card", detail: "stays in the overlay, editable", isSelected: settings.value.outputMode == .card) {
                     settings.value.outputMode = .card
                 }
                 ModeCard(icon: .clipboard, title: "Clipboard", detail: "without pasting", isSelected: settings.value.outputMode == .clipboard) {
@@ -235,19 +235,28 @@ private struct AfterRecordingPanel: View {
             .padding(.horizontal, 20)
             .padding(.top, 12)
 
-            SettingsRow("Return after paste", detail: "the command goes straight to the agent") {
-                AutoEnterApps()
+            // The row belongs to the chosen mode: Return after a paste, learning after an edit.
+            Group {
+                if settings.value.outputMode == .card {
+                    ToggleRow("Learn from edits", detail: "fixed terms go to the dictionary", isOn: $settings.value.learnFromEdits, accent: world.accent)
+                } else {
+                    SettingsRow("Return after paste", detail: "the command goes straight to the agent") {
+                        AutoEnterApps()
+                    }
+                    .opacity(settings.value.outputMode == .paste ? 1 : 0.5)
+                }
             }
-            .opacity(settings.value.outputMode == .paste ? 1 : 0.5)
             .padding(.top, 14)
 
             RowDivider()
             HStack(spacing: 0) {
                 ShortcutItem(title: "Paste again", action: .pasteAgain)
                 Rectangle().fill(.white.opacity(0.14)).frame(width: 1, height: 32)
-                ShortcutItem(title: "Copy last dictation", action: .copyLast)
+                ShortcutItem(title: "Copy last", action: .copyLast)
                 Rectangle().fill(.white.opacity(0.14)).frame(width: 1, height: 32)
                 ShortcutItem(title: "Switch mode", action: .cycleMode)
+                Rectangle().fill(.white.opacity(0.14)).frame(width: 1, height: 32)
+                ShortcutItem(title: "Edit selection", action: .editSelection)
             }
         }
         .padding(.top, 18)
@@ -267,7 +276,7 @@ private struct ShortcutItem: View {
         let settings = model.settings
         let keyPath = action.keyPath
         let others = ShortcutAction.allCases.filter { $0 != action }.compactMap { settings.value.shortcuts[keyPath: $0.keyPath] }
-        HStack(spacing: 12) {
+        HStack(spacing: 8) {
             RowTitle(title: title, detail: detail)
             Spacer(minLength: 0)
             ShortcutRecorder(
@@ -276,7 +285,7 @@ private struct ShortcutItem: View {
                 isRecording: $isRecording
             )
         }
-        .padding(.horizontal, 20)
+        .padding(.horizontal, 14)
         .padding(.vertical, 8)
         .frame(maxWidth: .infinity, minHeight: 56)
     }

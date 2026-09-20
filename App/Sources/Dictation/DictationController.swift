@@ -36,6 +36,12 @@ final class DictationController {
         case recognitionFailed
         case nothingHeard
         case copied
+        /// The Edit selection shortcut found nothing selected in the app in front.
+        case nothingSelected
+        /// The Edit selection shortcut needs a language model and there is none.
+        case modelOff
+        /// The model did not answer, or answered with nothing; the selection is untouched.
+        case editFailed
         /// The mode shortcut picked a mode; the title of the mode or of automatic selection.
         case mode(String)
     }
@@ -57,10 +63,23 @@ final class DictationController {
     }
 
     private(set) var phase = Phase.idle {
-        didSet { updateCardShortcuts() }
+        didSet {
+            // Anything but a card leaves no card to edit and no fresh entries to show.
+            if case .card = phase {} else {
+                cardEditing = false
+                hideLearned()
+            }
+            updateCardShortcuts()
+        }
     }
     /// ⌘C, V and esc act on the card from any app until the user types something else.
     private(set) var cardShortcutsActive = false
+    /// The card is open for editing; while it is, the overlay takes keyboard focus.
+    private(set) var cardEditing = false
+    /// The card's text while it is being edited.
+    var cardDraft = ""
+    /// What the last edit taught the dictionary, for the readout under the card and its undo.
+    private(set) var cardLearned: [DictionaryEntry] = []
     private(set) var modelState = ModelState.missing
     private(set) var handsFree = false
     private(set) var levels = [Float](repeating: 0, count: 28)
@@ -86,9 +105,13 @@ final class DictationController {
     @ObservationIgnored private var engine: WhisperKitEngine?
     @ObservationIgnored private var engineVariant: String?
     @ObservationIgnored private var target: TargetApp?
+    /// The text selected in another app: this dictation is an instruction over it, not text.
+    @ObservationIgnored private var selection: String?
     @ObservationIgnored private var silence = SilenceDetector(limit: 0)
     /// Resumes the final pass without the rewrite; set while the model runs.
     @ObservationIgnored private var skipRewriteAction: (() -> Void)?
+    /// The last run of the model ended because the user pressed esc, not because it failed.
+    @ObservationIgnored private var skippedRewrite = false
     @ObservationIgnored private let store = ModelStore()
     /// Preview launches get a throwaway history file, so they can never show or change the real one.
     @ObservationIgnored private let historyStore = AppModel.isPreviewLaunch
@@ -221,8 +244,11 @@ final class DictationController {
         }
     }
 
-    private func startRecording(handsFree: Bool) {
+    private func startRecording(handsFree: Bool, selection: String? = nil) {
         hideTask?.cancel()
+        self.selection = selection
+        // The next card is a new dictation's; the old one must not be what an edit learns from.
+        cardRecord = nil
         if FocusInspector.isSecureFieldFocused() {
             show(.notice(.passwordField), for: 2)
             return
@@ -262,7 +288,7 @@ final class DictationController {
         phase = .listening
         finishingStage = .transcribing
         smart.warmUp(settings: settings.value.applying(activeMode))
-        rewriter.warmUp(settings.value, mode: activeMode)
+        rewriter.warmUp(settings.value, mode: selection == nil ? activeMode : nil, translateTo: settings.value.autoTranslate ? settings.value.translateTarget : nil)
         if settings.value.sounds { Sounds.start() }
         runLiveLoop()
     }
@@ -298,6 +324,7 @@ final class DictationController {
 
     private func cancelRecording() {
         stopCapture()
+        selection = nil
         phase = .idle
         handsFree = false
     }
@@ -334,7 +361,9 @@ final class DictationController {
         let terms = DictionaryRewriter.promptTerms(entries: value.dictionary, projectTerms: projectTerms)
         // Whisper translates only when no language model will: the model keeps terms intact.
         // Turbo cannot translate at all; its modes stay in the spoken language without a model.
-        let whisperTranslates = mode.translateToEnglish && !rewriter.isReady(value) && WhisperKitEngine.supportsTranslation(value.whisperModel)
+        // The overlay's switch translates everything; without it the mode decides.
+        let translateTo = translationTarget(mode: mode, settings: value)
+        let whisperTranslates = selection == nil && translateTo == .english && !rewriter.isReady(value) && WhisperKitEngine.supportsTranslation(value.whisperModel)
         let hints = TranscriptionHints(
             language: value.language.whisperCode,
             prompt: PromptBuilder.prompt(glossary: terms),
@@ -351,7 +380,11 @@ final class DictationController {
         let style = value.applying(mode)
         let formatted = DictationPipeline.format(transcript, settings: value, mode: mode, projectTerms: projectTerms)
         var text = formatted.text
-        if mode.usesLanguageModel || (mode.translateToEnglish && !whisperTranslates), !text.isEmpty, rewriter.isReady(value) {
+        if let selection {
+            await editSelection(selection, instruction: text, settings: value, style: style)
+            return
+        }
+        if mode.usesLanguageModel || (translateTo != nil && !whisperTranslates), !text.isEmpty, rewriter.isReady(value) {
             finishingStage = .rewriting
             if let rewritten = await rewriteSkippably(text, mode: mode, settings: value), !rewritten.isEmpty {
                 text = rewritten
@@ -373,10 +406,62 @@ final class DictationController {
             return
         }
         let record = DictationRecord(text: text, raw: transcript.text, appName: target?.name, bundleID: target?.bundleID, duration: duration, date: Date())
+        cardRecord = record
         history.insert(record, at: 0)
         let retention = value.historyRetentionDays
         Task { history = await historyStore.add(record, retentionDays: retention) }
         await deliver(text, settings: style, pressReturn: formatted.send || mode.pressReturn)
+    }
+
+    /// What the overlay's tag says while recording: the selection job, or a mode that is not the
+    /// standard one. `nil` leaves the tag out.
+    var recordingTag: String? {
+        if selection != nil { return String(localized: "Selection", comment: "Overlay tag: this dictation edits the text selected in another app") }
+        return activeMode.isStandard ? nil : activeMode.title
+    }
+
+    // MARK: Translation
+
+    /// Where this dictation is translated to, or `nil` when it is not translated. The overlay's
+    /// switch covers every mode; without it only a mode that asks for English translates.
+    private func translationTarget(mode: DictationMode, settings value: AppSettings) -> AppSettings.SpeechLanguage? {
+        if value.autoTranslate { return value.translateTarget }
+        return mode.translateToEnglish ? .english : nil
+    }
+
+    /// Something can translate right now: the language model, or Whisper itself into English.
+    /// Whisper's own translation only works into English and only on the large-v3 models.
+    var canTranslate: Bool {
+        if rewriter.isReady(settings.value) { return true }
+        return settings.value.translateTarget == .english && WhisperKitEngine.supportsTranslation(settings.value.whisperModel)
+    }
+
+    /// The overlay reserves room for the rewrite stage when a model is going to run.
+    var expectsRewrite: Bool {
+        activeMode.usesLanguageModel || activeMode.translateToEnglish || settings.value.autoTranslate || finishingStage == .rewriting
+    }
+
+    // MARK: Editing a selection
+
+    /// The Edit selection shortcut: reads what is selected in the app in front, then records the
+    /// instruction. A second press ends the recording, esc cancels it.
+    func editSelection() {
+        if phase == .listening {
+            finishRecording()
+            return
+        }
+        guard phase == .idle || isTransient else { return }
+        guard rewriter.isReady(settings.value) else {
+            show(.notice(.modelOff), for: 2.5)
+            return
+        }
+        Task {
+            guard let text = await SelectionReader.read() else {
+                show(.notice(.nothingSelected), for: 2)
+                return
+            }
+            startRecording(handsFree: true, selection: text)
+        }
     }
 
     /// Esc while the model rewrites: insert the formatted text now.
@@ -387,10 +472,18 @@ final class DictationController {
     /// The rewrite, or `nil` as soon as the user skips it, even if the model keeps running.
     private func rewriteSkippably(_ text: String, mode: DictationMode, settings value: AppSettings) async -> String? {
         let rewriter = rewriter
+        let target = value.autoTranslate ? value.translateTarget : nil
+        return await skippable { await rewriter.rewrite(text, mode: mode, target: target, settings: value) }
+    }
+
+    /// Runs the model with esc as a way out: the result, or `nil` as soon as the user presses it.
+    private func skippable(_ body: @escaping () async -> String?) async -> String? {
+        skippedRewrite = false
         let result = await withCheckedContinuation { (continuation: CheckedContinuation<String?, Never>) in
             let race = FirstResult(continuation)
-            let work = Task { await rewriter.rewrite(text, mode: mode, settings: value) }
-            skipRewriteAction = {
+            let work = Task { await body() }
+            skipRewriteAction = { [weak self] in
+                self?.skippedRewrite = true
                 work.cancel()
                 race.finish(nil)
             }
@@ -398,6 +491,33 @@ final class DictationController {
         }
         skipRewriteAction = nil
         return result
+    }
+
+    /// The spoken instruction over the selected text: the model edits the fragment and the
+    /// result goes back the usual way, over the selection it came from.
+    private func editSelection(_ selection: String, instruction: String, settings value: AppSettings, style: AppSettings) async {
+        // The overlay's tag reads this until the edit is delivered; a new recording clears it.
+        defer { self.selection = nil }
+        guard !instruction.isEmpty else {
+            show(.notice(.nothingHeard), for: 1.5)
+            handsFree = false
+            return
+        }
+        finishingStage = .rewriting
+        let rewriter = rewriter
+        let edited = await skippable { await rewriter.editSelection(selection, instruction: instruction, settings: value) }
+        finishingStage = .transcribing
+        handsFree = false
+        // Esc during the rewrite: the user wanted out, and the selection stays as it was.
+        guard !skippedRewrite else {
+            phase = .idle
+            return
+        }
+        guard let edited, !edited.isEmpty else {
+            show(.notice(.editFailed), for: 2.5)
+            return
+        }
+        await deliver(edited, settings: style, pressReturn: false)
     }
 
     private func deliver(_ text: String, settings value: AppSettings, pressReturn modeReturn: Bool) async {
@@ -422,16 +542,102 @@ final class DictationController {
     }
 
     func dismissCard() {
-        if case .card = phase { phase = .idle }
+        guard case .card = phase else { return }
+        cardEditing = false
+        phase = .idle
+    }
+
+    // MARK: Editing the card
+
+    func beginCardEdit() {
+        guard case .card(let text) = phase, !cardEditing else { return }
+        cardDraft = text
+        hideLearned()
+        cardEditing = true
+        // The keys of the card go to the text field now, not to the tap that swallows them.
+        updateCardShortcuts()
+    }
+
+    func cancelCardEdit() {
+        guard cardEditing else { return }
+        cardEditing = false
+        updateCardShortcuts()
+    }
+
+    /// Keeps the edited text and teaches the dictionary what was fixed.
+    func commitCardEdit() {
+        guard cardEditing, case .card(let text) = phase else { return }
+        let edited = cardDraft.trimmingCharacters(in: .whitespacesAndNewlines)
+        cardEditing = false
+        guard !edited.isEmpty, edited != text else {
+            updateCardShortcuts()
+            return
+        }
+        phase = .card(edited)
+        guard let record = cardRecord else { return }
+        cardRecord?.text = edited
+        if let index = history.firstIndex(where: { $0.id == record.id }) { history[index].text = edited }
+        Task { history = await historyStore.update(record.id, text: edited) }
+        learn(from: record, edited: edited)
+    }
+
+    /// Dictionary entries for the spelling fixes in an edit, added to the user's dictionary.
+    private func learn(from record: DictationRecord, edited: String) {
+        guard settings.value.learnFromEdits else { return }
+        let known = settings.value.dictionary.map(\.written)
+            + projects.terms
+            + (settings.value.builtInDictionary ? BuiltInDictionary.canonicalTerms : [])
+        let corrections = EditLearning.corrections(raw: record.raw, text: record.text, edited: edited, knownTerms: known)
+        guard !corrections.isEmpty else { return }
+        var dictionary = settings.value.dictionary
+        let before = dictionary
+        var added: [DictionaryEntry] = []
+        for entry in corrections where dictionary.addCorrection(entry) {
+            added.append(entry)
+        }
+        guard !added.isEmpty else { return }
+        settings.value.dictionary = dictionary
+        dictionaryBeforeLearning = before
+        dictionaryAfterLearning = dictionary
+        cardLearned = added
+        learnedHideTask?.cancel()
+        learnedHideTask = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(4))
+            guard !Task.isCancelled else { return }
+            self?.hideLearned()
+        }
+    }
+
+    /// Takes back what the last edit taught, dictionary and readout both. A dictionary the user
+    /// has changed in the meantime is left alone.
+    func undoLearned() {
+        if let before = dictionaryBeforeLearning, settings.value.dictionary == dictionaryAfterLearning {
+            settings.value.dictionary = before
+        }
+        hideLearned()
+    }
+
+    private func hideLearned() {
+        learnedHideTask?.cancel()
+        learnedHideTask = nil
+        dictionaryBeforeLearning = nil
+        dictionaryAfterLearning = nil
+        if !cardLearned.isEmpty { cardLearned = [] }
     }
 
     // MARK: Card shortcuts
 
     @ObservationIgnored private var cardKeys: KeyInterceptor?
     @ObservationIgnored private var cardKeysStop: Task<Void, Never>?
+    /// The dictation the card holds: its raw transcript is what an edit learns from.
+    @ObservationIgnored private var cardRecord: DictationRecord?
+    /// The dictionary as it was before the last edit taught it anything, for the undo.
+    @ObservationIgnored private var dictionaryBeforeLearning: [DictionaryEntry]?
+    @ObservationIgnored private var dictionaryAfterLearning: [DictionaryEntry]?
+    @ObservationIgnored private var learnedHideTask: Task<Void, Never>?
 
     private func updateCardShortcuts() {
-        if case .card = phase {
+        if case .card = phase, !cardEditing {
             cardKeysStop?.cancel()
             // Previews and snapshots must never swallow the user's keys.
             if cardKeys == nil, !AppModel.isPreviewLaunch {
@@ -449,7 +655,7 @@ final class DictationController {
             cardKeysStop = Task { [weak self] in
                 try? await Task.sleep(for: .milliseconds(300))
                 guard let self, !Task.isCancelled else { return }
-                if case .card = self.phase { return }
+                if case .card = self.phase, !self.cardEditing { return }
                 self.cardKeys?.stop()
                 self.cardKeys = nil
             }
@@ -464,6 +670,9 @@ final class DictationController {
             return true
         case kVK_ANSI_V where !press.hasModifiers:
             if !press.isRepeat { insertCard() }
+            return true
+        case kVK_ANSI_E where !press.hasModifiers:
+            if !press.isRepeat { beginCardEdit() }
             return true
         case kVK_Escape where !press.hasModifiers:
             dismissCard()
@@ -555,6 +764,15 @@ final class DictationController {
 
     func demoCardShortcuts() {
         cardShortcutsActive = true
+    }
+
+    func demoCardEdit(_ draft: String?) {
+        cardEditing = draft != nil
+        cardDraft = draft ?? ""
+    }
+
+    func demoLearned(_ entries: [DictionaryEntry]) {
+        cardLearned = entries
     }
 
     func demoModelReady() {

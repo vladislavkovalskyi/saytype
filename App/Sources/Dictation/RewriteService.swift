@@ -155,9 +155,9 @@ final class RewriteService {
     // MARK: Warm-up
 
     /// Loads the model when a dictation that needs it starts, so the final pass does not wait.
-    func warmUp(_ settings: AppSettings, mode: DictationMode? = nil) {
+    func warmUp(_ settings: AppSettings, mode: DictationMode? = nil, translateTo target: AppSettings.SpeechLanguage? = nil) {
         guard !AppModel.isPreviewLaunch else { return }
-        let request = mode.flatMap { RewriteRequest(mode: $0, language: settings.language) }
+        let request = mode.flatMap { RewriteRequest(mode: $0, language: settings.language, translateTo: target) }
         guard mode == nil || request != nil else { return }
         switch settings.languageModel.engine {
         case .off:
@@ -192,10 +192,23 @@ final class RewriteService {
     // MARK: Rewrite
 
     /// The rewritten text, or `nil` when the engine is off, slow, failed or dropped content.
-    func rewrite(_ text: String, mode: DictationMode, settings: AppSettings) async -> String? {
-        guard !AppModel.isPreviewLaunch, isReady(settings),
-              let request = RewriteRequest(mode: mode, language: settings.language)
-        else { return nil }
+    /// - Parameter target: the language the overlay's switch translates everything into; `nil`
+    ///   leaves the mode to decide.
+    func rewrite(_ text: String, mode: DictationMode, target: AppSettings.SpeechLanguage?, settings: AppSettings) async -> String? {
+        guard let request = RewriteRequest(mode: mode, language: settings.language, translateTo: target) else { return nil }
+        return await run(text, request: request, settings: settings)
+    }
+
+    /// The text selected in another app, edited as the spoken instruction says; `nil` when the
+    /// engine is off, slow or failed, and the selection is then left alone.
+    func editSelection(_ selection: String, instruction: String, settings: AppSettings) async -> String? {
+        let instruction = instruction.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !instruction.isEmpty else { return nil }
+        return await run(selection, request: RewriteRequest(style: .selection, instruction: instruction), settings: settings)
+    }
+
+    private func run(_ text: String, request: RewriteRequest, settings: AppSettings) async -> String? {
+        guard !AppModel.isPreviewLaunch, isReady(settings) else { return nil }
 
         let engine = settings.languageModel.engine
         let timeout = settings.languageModel.timeoutSeconds

@@ -28,7 +28,8 @@ struct IslandView: View {
         case card(String)
     }
 
-    static let panelWidth: CGFloat = 504
+    // Room for the chip row: language, mode, structure, translation, microphone.
+    static let panelWidth: CGFloat = 560
     static let panelBodyHeight: CGFloat = 150
     /// The widest the island may grow inside its panel, ears included.
     private static let maxWidth = OverlayController.islandPanelSize.width - 28
@@ -113,8 +114,8 @@ struct IslandView: View {
     /// keeps the island and the wrapping of its text still from recording to insertion.
     private var dictationEars: CGFloat {
         let dictation = model.dictation
-        let tag = dictation.activeMode.isStandard ? 0 : ModeTag.width(dictation.activeMode.title) + 8
-        let rewrite = dictation.activeMode.usesLanguageModel || dictation.finishingStage == .rewriting
+        let tag = dictation.recordingTag.map { ModeTag.width($0) + 8 } ?? 0
+        let rewrite = dictation.expectsRewrite
         return max(
             Self.barsWidth + tag,
             Self.timerWidth + (dictation.handsFree ? 30 : 0),
@@ -129,7 +130,14 @@ struct IslandView: View {
 
     private func cardBodyHeight(_ text: String) -> CGFloat {
         let lineHeight: CGFloat = 20.5
-        return min(TextMeasure.height(text, width: 416, size: 14, lineHeight: lineHeight), lineHeight * 8) + 62
+        let dictation = model.dictation
+        let editing = dictation.cardEditing
+        let body = editing ? dictation.cardDraft : text
+        var height = min(TextMeasure.height(body, width: 416, size: 14, lineHeight: lineHeight), lineHeight * 8)
+        // The editor keeps room for three lines, so the card does not shrink under the caret.
+        if editing { height = max(height, lineHeight * 3) + 20 }
+        if !dictation.cardLearned.isEmpty { height += 36 }
+        return height + 62
     }
 
     var body: some View {
@@ -176,8 +184,8 @@ struct IslandView: View {
                     }
                 }
                 .frame(width: Self.barsWidth, alignment: .leading)
-                if !dictation.activeMode.isStandard {
-                    ModeTag(title: dictation.activeMode.title, maxWidth: earRoom(width) - Self.barsWidth - 8)
+                if let tag = dictation.recordingTag {
+                    ModeTag(title: tag, maxWidth: earRoom(width) - Self.barsWidth - 8)
                         .transition(.islandContent)
                 }
             }
@@ -289,7 +297,7 @@ struct IslandView: View {
             IslandPanel(model: model)
                 .transition(.asymmetric(insertion: .identity, removal: .islandContent))
         case .card(let text):
-            IslandCard(model: model, text: text)
+            OverlayCard(model: model, text: text)
                 .frame(width: 464, height: cardBodyHeight(text), alignment: .top)
                 .transition(.islandContent)
         default:
@@ -440,9 +448,12 @@ private struct IslandPanel: View {
             Spacer(minLength: 0)
 
             HStack(spacing: 6) {
-                LanguageSwitch(settings: model.settings)
+                // The row is tight with five chips: the language switch keeps its size and the
+                // chips with long names — the mode and the microphone — truncate instead.
+                LanguageSwitch(settings: model.settings).fixedSize()
                 ModeChip(model: model)
                 SmartChip(isOn: model.smartStructure)
+                TranslateChip(model: model)
                 MicrophoneChip(model: model)
                 Spacer(minLength: 0)
             }
@@ -599,7 +610,7 @@ private struct MicrophoneChip: View {
         } label: {
             HStack(spacing: 5) {
                 Image(systemName: "mic.fill").font(.system(size: 9.5, weight: .semibold))
-                CappedWidth(limit: 80) {
+                CappedWidth(limit: 64) {
                     Text(name ?? String(localized: "No microphone")).truncationMode(.tail)
                 }
             }
@@ -616,46 +627,6 @@ private struct MicrophoneChip: View {
             items.append(OverlayMenuItem(title: device.name, isOn: device.uid == current) { settings.value.microphoneUID = device.uid })
         }
         model.withMenu { anchor.pop(items) }
-    }
-}
-
-// MARK: Card
-
-private struct IslandCard: View {
-    let model: OverlayModel
-    let text: String
-
-    var body: some View {
-        let dictation = model.dictation
-        VStack(alignment: .leading, spacing: 0) {
-            Text(CodeWords.attributed(text, size: 14))
-                .font(.onest(14))
-                .lineSpacing(3.5)
-                .lineLimit(8)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 24)
-                .padding(.top, 8)
-                .contentShape(Rectangle())
-                .onDrag { NSItemProvider(object: text as NSString) }
-            Spacer(minLength: 0)
-            HStack(spacing: 6) {
-                Button {
-                    dictation.copyCard()
-                } label: {
-                    CardAction(title: "Copy", key: dictation.cardShortcutsActive ? "⌘C" : nil, ink: Color(hex: 0x1A1318))
-                }
-                .buttonStyle(CapsuleButtonStyle(prominent: true))
-                Button {
-                    dictation.insertCard()
-                } label: {
-                    CardAction(title: "Paste", key: dictation.cardShortcutsActive ? "V" : nil, ink: .white)
-                }
-                .buttonStyle(CapsuleButtonStyle())
-                Spacer()
-            }
-            .padding(.horizontal, 18)
-            .padding(.bottom, 14)
-        }
     }
 }
 

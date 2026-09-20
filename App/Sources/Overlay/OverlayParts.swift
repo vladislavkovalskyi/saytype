@@ -622,3 +622,90 @@ struct ModeChip: View {
         35 + min(TextMeasure.width(title, size: 11.5) + 4, titleLimit)
     }
 }
+
+// MARK: Translation
+
+/// Translate every dictation, and where to. A switch and the target's code under one capsule:
+/// the switch turns translation on, the code opens the language menu.
+struct TranslateChip: View {
+    let model: OverlayModel
+    var ink: Color = .white
+    @State private var anchor = OverlayMenuAnchor()
+
+    var body: some View {
+        let settings = model.settings
+        let isOn = settings.value.autoTranslate
+        let target = settings.value.translateTarget
+        // Turned on with nothing that can translate: Whisper only translates into English, and
+        // only on the large-v3 models. The code says so rather than a dictation quietly not translating.
+        let stuck = isOn && !model.dictation.canTranslate
+        HStack(spacing: 7) {
+            Button {
+                settings.value.autoTranslate.toggle()
+            } label: {
+                ZStack(alignment: isOn ? .trailing : .leading) {
+                    Capsule().fill(isOn ? OverlayPalette.ember : ink.opacity(0.22))
+                    Circle().fill(.white).padding(2)
+                }
+                .frame(width: 20, height: 12)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .animation(.snappy(duration: 0.2), value: isOn)
+
+            Button {
+                model.withMenu { anchor.pop(Self.items(model)) }
+            } label: {
+                HStack(spacing: 3) {
+                    // The arrow tells this code apart from the spoken language beside it:
+                    // that one is what saytype listens for, this one is what it writes.
+                    Text(verbatim: "→ " + Self.code(target))
+                    Image(systemName: "chevron.down").font(.system(size: 7.5, weight: .bold)).opacity(0.75)
+                }
+                .foregroundStyle(stuck ? OverlayPalette.warning : ink.opacity(isOn ? 0.92 : 0.6))
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .background(OverlayMenuAnchorView(anchor: anchor))
+        }
+        .font(.onest(11.5, .medium))
+        .foregroundStyle(ink.opacity(0.9))
+        .padding(.horizontal, 10)
+        .frame(height: 26)
+        .background(Capsule().fill(ink.opacity(0.1)))
+        .help(stuck
+            ? Text("Translation needs a language model")
+            : Text("Translate every dictation"))
+    }
+
+    /// "EN", "RU", "PL".
+    static func code(_ language: AppSettings.SpeechLanguage) -> String {
+        language.rawValue.uppercased()
+    }
+
+    /// Russian and English first, then every other language by name. Picking one turns
+    /// translation on: nobody opens this menu to leave it off.
+    @MainActor
+    static func items(_ model: OverlayModel) -> [OverlayMenuItem] {
+        let settings = model.settings
+        let current = settings.value.translateTarget
+        // Detection is a way to listen, not a language to translate into.
+        let languages = AppSettings.SpeechLanguage.all().filter { $0 != .auto }
+        var items: [OverlayMenuItem] = []
+        for (index, language) in languages.enumerated() {
+            if index == 2 { items.append(.separator) }
+            items.append(OverlayMenuItem(title: language.localizedName(), isOn: language == current) {
+                settings.value.translateTarget = language
+                settings.value.autoTranslate = true
+            })
+        }
+        return items
+    }
+
+    /// Width for the overlays that size themselves to their content.
+    static func width(_ language: AppSettings.SpeechLanguage) -> CGFloat {
+        // Switch, gap, "→ EN", gap, chevron, and the capsule's own padding. SwiftUI sets the
+        // medium face wider than AppKit measures it, so the chip gets a little more than it asks.
+        20 + 7 + TextMeasure.width("→ " + code(language), size: 11.5) + 3 + 12 + 20 + 10
+    }
+}

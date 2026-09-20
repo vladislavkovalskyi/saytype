@@ -275,7 +275,7 @@ private struct ModeEditor: View {
         let ready = rewriter.isReady(settings)
         GroupBox(title: "Language model") {
             SettingsRow("Rewrite", detailText: Text(rewriteDetail)) {
-                MenuChip(title: rewriteTitle(mode.rewrite), items: DictationMode.Rewrite.allCases.map { style in
+                MenuChip(title: rewriteTitle(mode.rewrite), items: DictationMode.Rewrite.modeStyles.map { style in
                     MenuOption(title: rewriteTitle(style), isOn: mode.rewrite == style) { mode.rewrite = style }
                 })
             }
@@ -322,6 +322,8 @@ private struct ModeEditor: View {
         case .commit: String(localized: "Conventional Commit in English", comment: "Rewrite: commit")
         case .cleaner: String(localized: "without repeats and corrections", comment: "Rewrite: cleaner")
         case .custom: String(localized: "your instruction", comment: "Rewrite: custom")
+        // Never a mode's style; the switch has to name it all the same.
+        case .selection: ""
         }
     }
 
@@ -332,6 +334,8 @@ private struct ModeEditor: View {
         case .commit: String(localized: "Commit", comment: "Rewrite style menu")
         case .cleaner: String(localized: "Cleaner", comment: "Rewrite style menu")
         case .custom: String(localized: "Own instruction", comment: "Rewrite style menu")
+        // Never in the menu: the style of the Edit selection shortcut.
+        case .selection: String(localized: "Edit selection", comment: "Global shortcut: rewrite the text selected in another app")
         }
     }
 

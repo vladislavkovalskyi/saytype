@@ -328,7 +328,7 @@ private struct RecordDetail: View {
     }
 
     private func confirm(_ entry: DictionaryEntry) {
-        let readout = entry.heard.isEmpty ? entry.written : "\(entry.heard) → \(entry.written)"
+        let readout = entry.readout
         withAnimation(.snappy(duration: 0.2)) { added = readout }
         Task { @MainActor in
             try? await Task.sleep(for: .seconds(2))

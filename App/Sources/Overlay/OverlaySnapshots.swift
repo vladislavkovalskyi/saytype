@@ -34,6 +34,7 @@ enum OverlaySnapshots {
             Shot("2-peek", .idle, hover: .peek),
             Shot("3-panel", .idle, hover: .open),
             Shot("3b-panel-mode-fixed", .idle, hover: .open, fixedMode: DictationMode.promptID),
+            Shot("3c-panel-translating", .idle, hover: .open, translate: true),
             Shot("4-listening-start", .listening),
             Shot("4b-listening-start-mode", .listening, mode: DictationMode.promptID, handsFree: true),
             Shot("5-listening", .listening, committed: committed, pending: pending),
@@ -46,7 +47,11 @@ enum OverlaySnapshots {
             Shot("7-inserted", .inserted(terminal)),
             Shot("8-notice", .notice(.passwordField)),
             Shot("8b-notice-mode", .notice(.mode(DictationMode(id: DictationMode.promptID).title))),
+            Shot("8c-notice-nothing-selected", .notice(.nothingSelected)),
+            Shot("8d-notice-model-off", .notice(.modelOff)),
             Shot("9-card", .card(card)),
+            Shot("9b-card-editing", .card(card), editing: card.replacingOccurrences(of: "Next.js", with: "некст джей эс")),
+            Shot("9c-card-learned", .card(card), learned: [DictionaryEntry(heard: "некст джей эс", written: "Next.js", source: .history)]),
         ]
         let transparent = arguments.contains("--transparent")
         for style in [AppSettings.OverlayStyle.island, .pill] {
@@ -88,8 +93,14 @@ enum OverlaySnapshots {
         var stage = DictationController.FinishingStage.transcribing
         var handsFree = false
         var fixedMode: String?
+        /// Every dictation is translated.
+        var translate = false
+        /// The card is open for editing, with this draft in its field.
+        var editing: String?
+        /// What the last edit taught the dictionary.
+        var learned: [DictionaryEntry] = []
 
-        init(_ name: String, _ phase: DictationController.Phase, hover: OverlayModel.Hover = .none, committed: String = "", pending: String = "", mode: String = DictationMode.standardID, stage: DictationController.FinishingStage = .transcribing, handsFree: Bool = false, fixedMode: String? = nil) {
+        init(_ name: String, _ phase: DictationController.Phase, hover: OverlayModel.Hover = .none, committed: String = "", pending: String = "", mode: String = DictationMode.standardID, stage: DictationController.FinishingStage = .transcribing, handsFree: Bool = false, fixedMode: String? = nil, translate: Bool = false, editing: String? = nil, learned: [DictionaryEntry] = []) {
             self.name = name
             self.phase = phase
             self.hover = hover
@@ -99,6 +110,9 @@ enum OverlaySnapshots {
             self.stage = stage
             self.handsFree = handsFree
             self.fixedMode = fixedMode
+            self.translate = translate
+            self.editing = editing
+            self.learned = learned
         }
     }
 
@@ -107,8 +121,11 @@ enum OverlaySnapshots {
         let mode = settings.value.modes.first { $0.id == shot.mode } ?? DictationMode(id: shot.mode)
         // A mode picked by hand, so the chips never depend on the app in front of this Mac.
         settings.value.fixedModeID = shot.fixedMode ?? DictationMode.standardID
+        settings.value.autoTranslate = shot.translate
         model.dictation.demoMode(mode, stage: shot.stage, handsFree: shot.handsFree)
         model.dictation.demoSet(phase: shot.phase, committed: shot.committed, pending: shot.pending)
+        model.dictation.demoCardEdit(shot.editing)
+        model.dictation.demoLearned(shot.learned)
         model.setHoverForSnapshot(shot.hover)
     }
 

@@ -152,6 +152,8 @@ final class AppModel {
             return { if let last = dictation.lastRecord { Paster.copy(last.text) } }
         case .cycleMode:
             return { dictation.cycleMode() }
+        case .editSelection:
+            return { dictation.editSelection() }
         }
     }
 
@@ -179,12 +181,14 @@ enum ShortcutAction: CaseIterable, Hashable {
     case pasteAgain
     case copyLast
     case cycleMode
+    case editSelection
 
     var keyPath: WritableKeyPath<AppSettings.Shortcuts, KeyShortcut?> {
         switch self {
         case .pasteAgain: \.pasteAgain
         case .copyLast: \.copyLast
         case .cycleMode: \.cycleMode
+        case .editSelection: \.editSelection
         }
     }
 }

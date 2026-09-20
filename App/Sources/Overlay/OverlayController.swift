@@ -41,6 +41,7 @@ final class OverlayController {
     private func observe() {
         withObservationTracking {
             _ = model.dictation.phase
+            _ = model.dictation.cardEditing
             _ = model.settings.value.overlayStyle
             _ = model.hover
         } onChange: { [weak self] in
@@ -69,8 +70,63 @@ final class OverlayController {
             place()
         }
         lastPhase = phase
+        setEditing(model.dictation.cardEditing)
         panel.orderFrontRegardless()
         updateMouse()
+    }
+
+    // MARK: Keyboard focus
+
+    /// The app that was in front when the card was opened for editing.
+    private var appBeforeEditing: NSRunningApplication?
+
+    /// While the card is edited the panel takes keyboard focus, which it never does otherwise.
+    /// A `.nonactivatingPanel` can be the key window with its own app inactive, so the app the
+    /// user dictated into stays in front; if the system refuses, saytype activates for the edit
+    /// and hands the front back afterwards.
+    private func setEditing(_ editing: Bool) {
+        guard panel.editing != editing else { return }
+        panel.editing = editing
+        guard editing else {
+            if panel.isKeyWindow {
+                // Nothing else in this app can take the key window: drop it and come back.
+                panel.orderOut(nil)
+                panel.orderFrontRegardless()
+            }
+            appBeforeEditing?.activate()
+            appBeforeEditing = nil
+            return
+        }
+        appBeforeEditing = NSWorkspace.shared.frontmostApplication
+        panel.makeKeyAndOrderFront(nil)
+        if !panel.isKeyWindow {
+            NSApp.activate(ignoringOtherApps: true)
+            panel.makeKeyAndOrderFront(nil)
+        }
+        focusEditor()
+    }
+
+    /// Puts the caret in the card's field. SwiftUI's own focus is set before the panel is the key
+    /// window and is dropped, so the field is made first responder from here, once it exists.
+    private func focusEditor() {
+        Task { @MainActor in
+            for _ in 0..<20 {
+                guard panel.editing else { return }
+                if let field = panel.contentView.flatMap(Self.firstTextView) {
+                    if panel.firstResponder !== field { panel.makeFirstResponder(field) }
+                    return
+                }
+                try? await Task.sleep(for: .milliseconds(50))
+            }
+        }
+    }
+
+    private static func firstTextView(in view: NSView) -> NSTextView? {
+        if let text = view as? NSTextView { return text }
+        for subview in view.subviews {
+            if let text = firstTextView(in: subview) { return text }
+        }
+        return nil
     }
 
     // MARK: Placement
@@ -196,7 +252,10 @@ final class OverlayPanel: NSPanel {
         isReleasedWhenClosed = false
     }
 
-    override var canBecomeKey: Bool { false }
+    /// Set while the card is being edited; see `OverlayController.setEditing`.
+    var editing = false
+
+    override var canBecomeKey: Bool { editing }
     override var canBecomeMain: Bool { false }
 }
 

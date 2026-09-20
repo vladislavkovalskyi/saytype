@@ -102,6 +102,30 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         language.submenu = languages
         menu.addItem(language)
 
+        // Translate every dictation; the same switch the overlay's chip flips.
+        let translate = NSMenuItem(title: String(localized: "Translate"), action: nil, keyEquivalent: "")
+        let targets = NSMenu()
+        targets.addItem(ClosureMenuItem(title: String(localized: "Off"), isOn: !settings.value.autoTranslate) {
+            settings.value.autoTranslate = false
+        })
+        targets.addItem(.separator())
+        // Detection is a way to listen, not a language to translate into.
+        for (index, value) in AppSettings.SpeechLanguage.all().filter({ $0 != .auto }).enumerated() {
+            let title = switch value {
+            case .russian: "Русский"
+            case .english: "English"
+            default: value.localizedName()
+            }
+            if index == 2 { targets.addItem(.separator()) }
+            let isOn = settings.value.autoTranslate && settings.value.translateTarget == value
+            targets.addItem(ClosureMenuItem(title: title, isOn: isOn) {
+                settings.value.translateTarget = value
+                settings.value.autoTranslate = true
+            })
+        }
+        translate.submenu = targets
+        menu.addItem(translate)
+
         let mode = NSMenuItem(title: String(localized: "Mode"), action: nil, keyEquivalent: "")
         let modes = NSMenu()
         let current = settings.value.fixedModeID
