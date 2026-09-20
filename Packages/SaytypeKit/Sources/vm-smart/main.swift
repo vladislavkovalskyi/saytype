@@ -5,7 +5,10 @@ import VMSmart
 // vm-smart download [repo]
 // vm-smart structure <file with texts separated by "---" lines>
 // vm-smart rewrite <file> [--repo repo] [--styles prompt,commit,cleaner,translate] [--out file]
-//                         [--no-cache] [--ollama model | --lmstudio model] [--url url]
+//                         [--no-cache] [--ollama model | --lmstudio model] [--url url] [--to code]
+//
+// A style of the form "selection:<instruction>" runs the Edit selection shortcut's prompt over
+// each text; --to names the language a translation goes into, English by default.
 //
 // rewrite runs every text through every style, validates each answer and prints load, warm-up,
 // time to first token, tokens per second and peak memory. Bench/rewrite-corpus.txt is the corpus.
@@ -55,6 +58,8 @@ case "rewrite":
     guard arguments.count > 1 else { fatalError("usage: vm-smart rewrite <file>") }
     let texts = try samples(arguments[1])
     let styles = (option("--styles") ?? "prompt,commit,cleaner,translate").split(separator: ",").map(String.init)
+    // --to uk translates into Ukrainian instead of English.
+    let target = option("--to").flatMap { Locale(identifier: "en").localizedString(forLanguageCode: $0) }
     let terms = PromptBuilder.builtInTerms + BuiltInDictionary.terms.map(\.written)
     var log = ""
 
@@ -118,8 +123,12 @@ case "rewrite":
         case "prompt": RewriteRequest(style: .prompt, sourceLanguage: "Russian")
         case "commit": RewriteRequest(style: .commit, sourceLanguage: "Russian")
         case "cleaner": RewriteRequest(style: .cleaner, sourceLanguage: "Russian")
-        case "translate": RewriteRequest(style: .none, translate: true, sourceLanguage: "Russian")
-        case "prompt-en": RewriteRequest(style: .prompt, translate: true, sourceLanguage: "Russian")
+        case "translate": RewriteRequest(style: .none, translate: true, targetLanguage: target, sourceLanguage: "Russian")
+        case "prompt-en": RewriteRequest(style: .prompt, translate: true, targetLanguage: target, sourceLanguage: "Russian")
+        // selection:<instruction> — the Edit selection shortcut: the text is a fragment and
+        // the style's instruction is what the user said over it.
+        case let style where style.hasPrefix("selection:"):
+            RewriteRequest(style: .selection, instruction: String(style.dropFirst("selection:".count)))
         default: RewriteRequest(style: .custom, instruction: style, sourceLanguage: "Russian")
         }
         for (index, text) in texts.enumerated() {

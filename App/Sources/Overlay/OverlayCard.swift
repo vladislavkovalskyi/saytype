@@ -133,9 +133,14 @@ private struct CardEditor: View {
                     .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(ink.opacity(focused ? 0.45 : 0.22), lineWidth: 1))
             }
             .task {
-                // The panel becomes the key window a moment after the editor appears.
-                try? await Task.sleep(for: .milliseconds(60))
-                focused = true
+                // The panel becomes the key window a moment after the editor appears, and a focus
+                // set before that is dropped. The controller also makes the field first responder
+                // once the panel is key; this keeps SwiftUI's own focus state in step.
+                for _ in 0..<20 {
+                    focused = true
+                    try? await Task.sleep(for: .milliseconds(50))
+                    if focused { return }
+                }
             }
     }
 }

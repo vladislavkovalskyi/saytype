@@ -448,7 +448,9 @@ private struct IslandPanel: View {
             Spacer(minLength: 0)
 
             HStack(spacing: 6) {
-                LanguageSwitch(settings: model.settings)
+                // The row is tight with five chips: the language switch keeps its size and the
+                // chips with long names — the mode and the microphone — truncate instead.
+                LanguageSwitch(settings: model.settings).fixedSize()
                 ModeChip(model: model)
                 SmartChip(isOn: model.smartStructure)
                 TranslateChip(model: model)

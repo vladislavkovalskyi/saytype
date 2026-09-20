@@ -99,9 +99,34 @@ final class OverlayController {
         }
         appBeforeEditing = NSWorkspace.shared.frontmostApplication
         panel.makeKeyAndOrderFront(nil)
-        guard !panel.isKeyWindow else { return }
-        NSApp.activate(ignoringOtherApps: true)
-        panel.makeKeyAndOrderFront(nil)
+        if !panel.isKeyWindow {
+            NSApp.activate(ignoringOtherApps: true)
+            panel.makeKeyAndOrderFront(nil)
+        }
+        focusEditor()
+    }
+
+    /// Puts the caret in the card's field. SwiftUI's own focus is set before the panel is the key
+    /// window and is dropped, so the field is made first responder from here, once it exists.
+    private func focusEditor() {
+        Task { @MainActor in
+            for _ in 0..<20 {
+                guard panel.editing else { return }
+                if let field = panel.contentView.flatMap(Self.firstTextView) {
+                    if panel.firstResponder !== field { panel.makeFirstResponder(field) }
+                    return
+                }
+                try? await Task.sleep(for: .milliseconds(50))
+            }
+        }
+    }
+
+    private static func firstTextView(in view: NSView) -> NSTextView? {
+        if let text = view as? NSTextView { return text }
+        for subview in view.subviews {
+            if let text = firstTextView(in: subview) { return text }
+        }
+        return nil
     }
 
     // MARK: Placement
