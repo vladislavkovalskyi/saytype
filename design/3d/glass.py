@@ -191,9 +191,11 @@ def obj_capsule():
     return (1600, 1000)
 
 
-def smooth_text(body, size, extrude, loc, mat):
+def smooth_text(body, size, extrude, loc, mat, font=None):
     """Text as a smooth-shaded mesh: glass shows every facet of the raw curve."""
     obj = text_mesh(body, size, extrude, loc, mat)
+    if font:
+        obj.data.font = bpy.data.fonts.load(font)
     obj.data.resolution_u = 24
     obj.data.bevel_resolution = 10
     bpy.context.view_layer.objects.active = obj
@@ -362,7 +364,30 @@ def obj_switches():
     return (1000, 1000)
 
 
+def obj_braces():
+    # Snippets: rounded glass braces around two glowing lines of saved text.
+    glass = crystal("braces", (0.92, 1.0, 0.94), (0.15, 0.85, 0.4), density=1.3, rough=0.03, dispersion=0.6)
+    neon = frosted("neon", (0.35, 1.0, 0.6), rough=0.3, glow=4.0)
+    line = emissive("line", (0.88, 1.0, 0.92), 16.0)
+    font = "/System/Library/Fonts/SFNSRounded.ttf"
+    parts = []
+    for body, x in (("{", -0.95), ("}", 0.95)):
+        outer = smooth_text(body, 3.2, 0.5, (x, 0, 0), glass, font=font)
+        inner = smooth_text(body, 3.2, 0.03, (x, 0, 0), neon, font=font)
+        for t in (outer, inner):
+            t.rotation_euler = (math.radians(90), 0, 0)
+        parts += [outer, inner]
+    for i, (w, z) in enumerate([(0.8, 0.22), (0.5, -0.22)]):
+        parts.append(capsule_mesh(f"l{i}", 0.1, w, loc=(-0.42 + w / 2, 0, z), mat=line))
+    root = parent_all(parts, "braces")
+    root.rotation_euler = (math.radians(6), 0, math.radians(-16))
+    glass_studio((0.4, 1.0, 0.6), (0.4, 0.8, 1.0))
+    camera(11, lens=70, height=0.22)
+    return (1000, 1000)
+
+
 OBJECTS = {
+    "braces": obj_braces,
     "keycap": obj_keycap,
     "textcard": obj_textcard,
     "appicon": obj_appicon,
