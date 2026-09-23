@@ -2,35 +2,35 @@ import Foundation
 
 /// Builds the text Whisper sees as "what came before" the recording.
 ///
-/// Listing terms in Latin makes Whisper spell them that way. Every prompt token
-/// is decoded one by one before the audio, so the prompt stays short: on an M3 Pro
-/// 16 terms add about half a second, a full punctuated sample adds a second.
+/// Listing terms in Latin makes Whisper spell them that way. The prompt comes out of each
+/// 30-second window's budget of 224 decoder tokens, and it is fed to the decoder one token at a
+/// time before every window. An 85-token prompt left 133 tokens for the text, less than fast
+/// Russian needs in 30 s, and the rest of the window was lost; 40 tokens leave about 180.
 public enum PromptBuilder {
     static let characterLimit = 240
-    /// Whisper keeps at most 224 prompt tokens. The character limit is usually tighter; the token
-    /// estimate guards Cyrillic entries and long camelCase names, which take more tokens per letter.
-    static let tokenLimit = 224
-    /// Project identifiers offered to the prompt, best first; the character limit decides how many stay.
+    /// Real tokens when the engine has its tokenizer, the estimate below otherwise.
+    public static let tokenLimit = 40
+    /// Project identifiers offered to the prompt, best first; the token limit decides how many stay.
     public static let projectTermLimit = 24
 
-    public static func prompt(glossary: [String]) -> String? {
+    /// Terms in the order given, most important first, as many as fit. A term that does not fit
+    /// is skipped and a shorter one after it may still get in. `countTokens` measures the whole
+    /// prompt as the decoder will see it.
+    public static func prompt(glossary: [String], tokenLimit: Int = tokenLimit, countTokens: (String) -> Int = estimatedTokens) -> String? {
         var list = ""
-        var tokens = 1
         for term in glossary {
             let term = term.trimmingCharacters(in: .whitespacesAndNewlines)
             guard !term.isEmpty else { continue }
             let next = list.isEmpty ? term : list + ", " + term
-            let nextTokens = tokens + estimatedTokens(term) + (list.isEmpty ? 0 : 1)
-            if next.count + 1 > characterLimit || nextTokens > tokenLimit { break }
+            guard next.count + 1 <= characterLimit, countTokens(next + ".") <= tokenLimit else { continue }
             list = next
-            tokens = nextTokens
         }
         return list.isEmpty ? nil : list + "."
     }
 
     /// A pessimistic count of GPT-2 byte-pair tokens: a token per camelCase part or four Latin
     /// letters, per mark, and per Cyrillic letter.
-    static func estimatedTokens(_ term: String) -> Int {
+    public static func estimatedTokens(_ term: String) -> Int {
         var count = 0
         var run = 0
         var previousLower = false

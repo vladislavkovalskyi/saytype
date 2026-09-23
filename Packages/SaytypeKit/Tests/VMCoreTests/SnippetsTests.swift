@@ -175,20 +175,19 @@ import Testing
     }
 
     @Test func paragraphTimingsAreDroppedOnlyWithASnippet() {
-        let words = [
-            TranscriptWord(text: "Первое.", start: 0, end: 0.5),
-            TranscriptWord(text: "Второе.", start: 3, end: 3.5),
+        let segments = [
+            TranscriptSegment(text: "Первое.", start: 0, end: 0.5),
+            TranscriptSegment(text: "Второе.", start: 3, end: 3.5),
         ]
         let settings = AppSettings()
-        let plain = DictationPipeline.format(Transcript(text: "Первое. Второе.", words: words), settings: settings, mode: settings.standardMode, snippets: snippets)
+        let plain = DictationPipeline.format(Transcript(text: "Первое. Второе.", segments: segments), settings: settings, mode: settings.standardMode, snippets: snippets)
         #expect(plain.text == "Первое.\n\nВторое.")
         #expect(plain.snippets.isEmpty)
         let timed = [
-            TranscriptWord(text: "Мой", start: 0, end: 0.3),
-            TranscriptWord(text: "имейл.", start: 0.3, end: 0.6),
-            TranscriptWord(text: "Второе.", start: 3, end: 3.5),
+            TranscriptSegment(text: "Мой имейл.", start: 0, end: 0.6),
+            TranscriptSegment(text: "Второе.", start: 3, end: 3.5),
         ]
-        let withSnippet = DictationPipeline.format(Transcript(text: "Мой имейл. Второе.", words: timed), settings: settings, mode: settings.standardMode, snippets: snippets)
+        let withSnippet = DictationPipeline.format(Transcript(text: "Мой имейл. Второе.", segments: timed), settings: settings, mode: settings.standardMode, snippets: snippets)
         #expect(withSnippet.text == "⟦1⟧. Второе.")
         #expect(SnippetPlacement.resolve(withSnippet.text, texts: [email.text]) == "vlad@example.com. Второе.")
     }

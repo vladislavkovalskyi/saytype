@@ -1,5 +1,6 @@
 @preconcurrency import AVFoundation
 import Foundation
+import VMCore
 
 /// Captures a microphone as 16 kHz mono Float32, the format Whisper expects.
 ///
@@ -37,7 +38,8 @@ public final class AudioCapture: @unchecked Sendable {
         stop()
     }
 
-    /// Starts capturing. The stream finishes when `stop()` is called.
+    /// Starts capturing. The stream finishes when `stop()` is called; the chunks captured before
+    /// that are still delivered, so a reader that keeps iterating gets every one of them.
     public func start() throws -> AsyncStream<Chunk> {
         stop()
         let (stream, continuation) = AsyncStream.makeStream(of: Chunk.self, bufferingPolicy: .unbounded)
@@ -123,12 +125,6 @@ public final class AudioCapture: @unchecked Sendable {
 
     /// RMS loudness mapped to 0…1 over a −60…0 dBFS range.
     public static func level(of samples: [Float]) -> Float {
-        guard !samples.isEmpty else { return 0 }
-        var sum: Float = 0
-        for s in samples { sum += s * s }
-        let rms = (sum / Float(samples.count)).squareRoot()
-        guard rms > 0 else { return 0 }
-        let db = 20 * log10(rms)
-        return min(1, max(0, (db + 60) / 60))
+        Loudness.level(rms: Loudness.rms(samples[...]))
     }
 }

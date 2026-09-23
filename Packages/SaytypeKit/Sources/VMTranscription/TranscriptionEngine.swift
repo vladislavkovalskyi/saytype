@@ -13,16 +13,15 @@ public protocol TranscriptionEngine: Sendable {
 public struct TranscriptionHints: Sendable, Equatable {
     /// ISO code such as "ru"; nil lets the engine detect the language.
     public var language: String?
-    /// Text the decoder sees as preceding context: a punctuated sample plus glossary terms.
-    public var prompt: String?
-    public var wordTimestamps: Bool
+    /// Terms the decoder sees as preceding context, most important first. The engine keeps as
+    /// many as fit `PromptBuilder.tokenLimit`, counted with its own tokenizer.
+    public var glossary: [String]
     /// English text from speech in any language, Whisper's own translation.
     public var translate: Bool
 
-    public init(language: String? = "ru", prompt: String? = nil, wordTimestamps: Bool = true, translate: Bool = false) {
+    public init(language: String? = "ru", glossary: [String] = [], translate: Bool = false) {
         self.language = language
-        self.prompt = prompt
-        self.wordTimestamps = wordTimestamps
+        self.glossary = glossary
         self.translate = translate
     }
 }

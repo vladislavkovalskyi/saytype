@@ -100,6 +100,9 @@ final class DictationController {
     @ObservationIgnored private var monitor: RecordKeyMonitor?
     @ObservationIgnored private let capture = AudioCapture()
     @ObservationIgnored private var captureTask: Task<Void, Never>?
+    /// The stop in flight: the tail grace, then the drain of the capture. The record key does
+    /// nothing until it is done, so a press can't start a recording over the one being stopped.
+    @ObservationIgnored private var stopping: Task<Void, Never>?
     @ObservationIgnored private var liveTask: Task<Void, Never>?
     @ObservationIgnored private var hideTask: Task<Void, Never>?
     @ObservationIgnored private var samples: [Float] = []
@@ -128,6 +131,9 @@ final class DictationController {
 
     /// Live passes stop above this length; the final pass still covers everything.
     private let liveLimitSeconds = 30.0
+    /// How long the microphone keeps recording after the key is released. The last word is
+    /// usually still being said, and the last buffers are still on their way from the device.
+    private let tailGrace = Duration.milliseconds(250)
 
     init(settings: SettingsStore) {
         self.settings = settings
@@ -247,6 +253,7 @@ final class DictationController {
     }
 
     private func startRecording(handsFree: Bool, selection: String? = nil) {
+        guard stopping == nil else { return }
         hideTask?.cancel()
         self.selection = selection
         // The next card is a new dictation's; the old one must not be what an edit learns from.
@@ -301,7 +308,8 @@ final class DictationController {
         levels.append(chunk.level)
         let seconds = Double(chunk.samples.count) / AudioCapture.sampleRate
         if handsFree, phase == .listening, silence.update(level: chunk.level, duration: seconds) {
-            finishRecording()
+            // The silence that ended it is already recorded.
+            finishRecording(grace: false)
         }
     }
 
@@ -315,7 +323,7 @@ final class DictationController {
                 let seconds = Double(snapshot.count) / AudioCapture.sampleRate
                 guard seconds >= 0.8, seconds <= self.liveLimitSeconds else { continue }
                 let language = self.settings.value.language.whisperCode
-                guard let transcript = try? await engine.transcribe(snapshot, hints: TranscriptionHints(language: language, prompt: nil, wordTimestamps: false)) else { continue }
+                guard let transcript = try? await engine.transcribe(snapshot, hints: TranscriptionHints(language: language)) else { continue }
                 guard self.phase == .listening, !Task.isCancelled else { return }
                 self.live.update(with: transcript.text)
                 self.committedText = self.live.committedText
@@ -325,25 +333,53 @@ final class DictationController {
     }
 
     private func cancelRecording() {
+        // Nothing to cancel when the press started nothing, e.g. one made while a stop was in
+        // flight: its quick release must not reset the dictation being finished.
+        guard phase == .listening else { return }
         stopCapture()
         selection = nil
         phase = .idle
         handsFree = false
     }
 
-    private func finishRecording() {
-        guard phase == .listening else { return }
-        stopCapture()
-        let recorded = samples
-        let duration = Double(recorded.count) / AudioCapture.sampleRate
-        guard duration >= 0.4, let engine else {
+    /// Ends the recording: after the tail grace the capture stops, every chunk it delivered is
+    /// collected, and the recording goes to the voice gate and the final pass.
+    private func finishRecording(grace: Bool = true) {
+        guard phase == .listening, stopping == nil else { return }
+        liveTask?.cancel()
+        liveTask = nil
+        phase = .finishing
+        stopping = Task { [weak self, tailGrace] in
+            if grace { try? await Task.sleep(for: tailGrace) }
+            guard let self else { return }
+            let recorded = await self.drainCapture()
+            self.stopping = nil
+            await self.transcribe(recorded)
+        }
+    }
+
+    /// Stops the microphone and waits until the stream has handed over what it buffered.
+    private func drainCapture() async -> [Float] {
+        capture.stop()
+        await captureTask?.value
+        captureTask = nil
+        return samples
+    }
+
+    /// The key gesture has already dropped holds shorter than a tap; what gets here is a
+    /// dictation unless there is no voice in it.
+    private func transcribe(_ recorded: [Float]) async {
+        guard !recorded.isEmpty, let engine else {
             phase = .idle
             return
         }
-        phase = .finishing
-        Task {
-            await finalize(recorded, duration: duration, engine: engine)
+        guard VoiceGate.hasVoice(recorded, sampleRate: AudioCapture.sampleRate) else {
+            selection = nil
+            handsFree = false
+            show(.notice(.nothingHeard), for: 1.5)
+            return
         }
+        await finalize(recorded, duration: Double(recorded.count) / AudioCapture.sampleRate, engine: engine)
     }
 
     private func stopCapture() {
@@ -368,8 +404,7 @@ final class DictationController {
         let whisperTranslates = selection == nil && translateTo == .english && !rewriter.isReady(value) && WhisperKitEngine.supportsTranslation(value.whisperModel)
         let hints = TranscriptionHints(
             language: value.language.whisperCode,
-            prompt: PromptBuilder.prompt(glossary: terms),
-            wordTimestamps: true,
+            glossary: terms,
             translate: whisperTranslates
         )
         let transcript: Transcript

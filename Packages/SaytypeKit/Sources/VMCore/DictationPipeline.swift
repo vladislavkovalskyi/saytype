@@ -32,13 +32,13 @@ public enum DictationPipeline {
             }
         }
 
-        // Without commands the formatter keeps the word timings, which place paragraph breaks.
+        // Without commands the formatter keeps the segment timings, which place paragraph breaks.
         if pieces.count == 1, case .text(let raw) = pieces[0] {
             let source = mode.developer ? DeveloperFormatter.apply(raw) : raw
-            // Paragraphs fall back to plain text when the words no longer match the timings,
-            // which a marker in place of the trigger's words always does.
-            let words = found.isEmpty ? transcript.words : []
-            return PipelineResult(text: TextFormatter.format(Transcript(text: source, words: words), settings: style, projectTerms: projectTerms), snippets: found)
+            // Paragraphs fall back to plain text when the segments no longer match the text,
+            // which a marker in place of the trigger's words always makes them do.
+            let segments = found.isEmpty ? transcript.segments : []
+            return PipelineResult(text: TextFormatter.format(Transcript(text: source, segments: segments), settings: style, projectTerms: projectTerms), snippets: found)
         }
 
         // A line collects the raw words up to the next break and is formatted as one text, so

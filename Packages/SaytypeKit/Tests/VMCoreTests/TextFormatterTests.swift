@@ -3,25 +3,30 @@ import Testing
 @testable import VMCore
 
 @Suite struct TextFormatterTests {
-    func words(_ spec: [(String, Double, Double)]) -> [TranscriptWord] {
-        spec.map { TranscriptWord(text: $0.0, start: $0.1, end: $0.2) }
+    func segments(_ spec: [(String, Double, Double)]) -> [TranscriptSegment] {
+        spec.map { TranscriptSegment(text: $0.0, start: $0.1, end: $0.2) }
     }
 
     @Test func splitsParagraphsAtLongPausesAfterSentences() {
         let transcript = Transcript(
             text: "Сборка упала. Посмотри логи. Потом задеплой",
-            words: words([("Сборка", 0, 0.4), ("упала.", 0.4, 0.9), ("Посмотри", 2.8, 3.2), ("логи.", 3.2, 3.6), ("Потом", 3.9, 4.2), ("задеплой", 4.2, 4.8)])
+            segments: segments([("Сборка упала.", 0, 0.9), ("Посмотри логи.", 2.8, 3.6), ("Потом задеплой", 3.9, 4.8)])
         )
         #expect(Paragraphs.split(transcript, pause: 1.5) == ["Сборка упала.", "Посмотри логи. Потом задеплой"])
     }
 
     @Test func noParagraphInsideASentence() {
-        let transcript = Transcript(text: "поправь хедер", words: words([("поправь", 0, 0.5), ("хедер", 3, 3.5)]))
+        let transcript = Transcript(text: "поправь хедер", segments: segments([("поправь", 0, 0.5), ("хедер", 3, 3.5)]))
         #expect(Paragraphs.split(transcript, pause: 1.5) == ["поправь хедер"])
     }
 
-    @Test func fallsBackWhenWordsDoNotMatchText() {
-        let transcript = Transcript(text: "другой текст", words: words([("поправь", 0, 0.5), ("хедер.", 0.5, 1)]))
+    @Test func aPauseInsideOneSegmentDoesNotSplitIt() {
+        let transcript = Transcript(text: "Сборка упала. Посмотри логи.", segments: segments([("Сборка упала. Посмотри логи.", 0, 6)]))
+        #expect(Paragraphs.split(transcript, pause: 1.5) == ["Сборка упала. Посмотри логи."])
+    }
+
+    @Test func fallsBackWhenSegmentsDoNotMatchText() {
+        let transcript = Transcript(text: "другой текст", segments: segments([("поправь", 0, 0.5), ("хедер.", 0.5, 1)]))
         #expect(Paragraphs.split(transcript, pause: 1.5) == ["другой текст"])
     }
 
