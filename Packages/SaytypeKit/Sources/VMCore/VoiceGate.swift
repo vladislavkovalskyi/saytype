@@ -31,23 +31,41 @@ public enum VoiceGate {
     /// Levels of consecutive 50 ms frames. Frames of digital zeros, which the microphone gives
     /// while it starts, say nothing about the room and are left out.
     public static func levels(of samples: [Float], sampleRate: Double = 16_000) -> [Float] {
-        let frame = Int(sampleRate * frameSeconds)
-        guard frame > 0 else { return [] }
-        return stride(from: 0, to: samples.count - frame + 1, by: frame).compactMap { start in
-            let rms = Loudness.rms(samples[start..<(start + frame)])
-            return rms > 0 ? Loudness.level(rms: rms) : nil
-        }
+        frames(of: samples, sampleRate: sampleRate).compactMap(\.self)
     }
 
     /// Frame levels on the 0…1 scale, each `frameSeconds` long.
     public static func hasVoice(levels: [Float]) -> Bool {
-        guard !levels.isEmpty else { return false }
-        let room = levels.sorted()[levels.count / 10]
-        let threshold = max(SilenceDetector.minimumVoice, room + SilenceDetector.voiceMargin)
+        guard let threshold = threshold(levels) else { return false }
         return levels.count(where: { $0 >= threshold }) >= Int((minimumVoiceSeconds / frameSeconds).rounded())
     }
 
     public static func hasVoice(_ samples: [Float], sampleRate: Double = 16_000) -> Bool {
         hasVoice(levels: levels(of: samples, sampleRate: sampleRate))
+    }
+
+    /// Where the last frame of voice ends, in seconds from the start; nil when there is none.
+    public static func voiceEnd(_ samples: [Float], sampleRate: Double = 16_000) -> Double? {
+        let frames = frames(of: samples, sampleRate: sampleRate)
+        guard let threshold = threshold(frames.compactMap(\.self)),
+              let last = frames.lastIndex(where: { ($0 ?? 0) >= threshold }) else { return nil }
+        return Double(last + 1) * frameSeconds
+    }
+
+    /// Levels of consecutive frames in order, nil for a frame of digital zeros.
+    static func frames(of samples: [Float], sampleRate: Double) -> [Float?] {
+        let frame = Int(sampleRate * frameSeconds)
+        guard frame > 0 else { return [] }
+        return stride(from: 0, to: samples.count - frame + 1, by: frame).map { start in
+            let rms = Loudness.rms(samples[start..<(start + frame)])
+            return rms > 0 ? Loudness.level(rms: rms) : nil
+        }
+    }
+
+    /// The level a frame needs to be voice in a recording with these frame levels.
+    static func threshold(_ levels: [Float]) -> Float? {
+        guard !levels.isEmpty else { return nil }
+        let room = levels.sorted()[levels.count / 10]
+        return max(SilenceDetector.minimumVoice, room + SilenceDetector.voiceMargin)
     }
 }

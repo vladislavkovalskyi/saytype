@@ -89,6 +89,14 @@ import Testing
         #expect(!VoiceGate.hasVoice([Float](repeating: 0, count: 1_600) + Self.noise(dBFS: -35, seconds: 1)))
     }
 
+    @Test func voiceEndsWithTheLastWord() throws {
+        let samples = Self.noise(dBFS: -58, seconds: 0.5) + Self.tone(dBFS: -30, seconds: 1) + Self.noise(dBFS: -58, seconds: 0.8)
+        let end = try #require(VoiceGate.voiceEnd(samples))
+        #expect(abs(end - 1.5) <= VoiceGate.frameSeconds)
+        #expect(VoiceGate.voiceEnd(Self.noise(dBFS: -58, seconds: 2)) == nil)
+        #expect(VoiceGate.voiceEnd([]) == nil)
+    }
+
     @Test func loudnessMatchesTheCaptureScale() {
         #expect(Loudness.level(rms: 0) == 0)
         #expect(abs(Loudness.level(rms: 0.001) - 0) < 0.0001)
