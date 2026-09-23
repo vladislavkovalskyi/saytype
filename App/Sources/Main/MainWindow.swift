@@ -1,7 +1,7 @@
 import SwiftUI
 
 enum MainSection: String, CaseIterable, Identifiable {
-    case home, keys, text, modes, dictionary, history, model, permissions, about
+    case home, keys, text, modes, dictionary, snippets, history, model, permissions, about
 
     /// Sections pinned to the bottom of the rail.
     static let footer: [MainSection] = [.permissions, .about]
@@ -15,6 +15,7 @@ enum MainSection: String, CaseIterable, Identifiable {
         case .text: String(localized: "Text", comment: "Main window section")
         case .modes: String(localized: "Modes", comment: "Main window section: text rules per app")
         case .dictionary: String(localized: "Dictionary", comment: "Main window section")
+        case .snippets: String(localized: "Snippets", comment: "Main window section: phrases that insert saved text")
         case .history: String(localized: "History", comment: "Main window section")
         case .model: String(localized: "Model", comment: "Main window section")
         case .permissions: String(localized: "Permissions", comment: "Main window section")
@@ -29,6 +30,7 @@ enum MainSection: String, CaseIterable, Identifiable {
         case .text: "ObjectTextcard"
         case .modes: "ObjectSwitches"
         case .dictionary: "ObjectAa"
+        case .snippets: "ObjectBraces"
         case .history: "ObjectStack"
         case .model: "ObjectChip"
         case .permissions: "ObjectLock"
@@ -43,6 +45,7 @@ enum MainSection: String, CaseIterable, Identifiable {
         case .text: .teal
         case .modes: .coral
         case .dictionary: .pink
+        case .snippets: .green
         case .history: .violet
         case .model: .cyan
         case .permissions: .green
@@ -128,6 +131,7 @@ private struct SectionContent: View {
         case .text: TextSection()
         case .modes: ModesSection()
         case .dictionary: DictionarySection()
+        case .snippets: SnippetsSection()
         case .history: HistorySection()
         case .model: ModelSection()
         case .permissions: PermissionsSection()
