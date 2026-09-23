@@ -83,16 +83,17 @@ was and was not checked is listed at the end.
 
 ### Re-transcription (`DictationAudio.swift`)
 
-- `retranscribe(id, change)` reads the file with `RecordingFile.samples`, then calls
-  `recognize` with the current settings and the record's mode (`modeID`, or the app's mode for
+- `retranscribe(id, change)` reads the file with `RecordingFile.samples`, then runs `hear` and
+  `compose` with the current settings and the record's mode (`modeID`, or the app's mode for
   records from before this update). One change is applied: `.model(variant)`,
   `.language(language)` or `.withoutTranslation`, which turns off both the overlay's switch and
-  the mode's translation. The voice gate is skipped. The language model runs without the esc
-  skip.
+  the mode's translation. The voice gate and the voice action check are skipped, snippets are
+  resolved with variables read at that moment, and the language model runs without the esc skip.
+  A record with `action` set is never re-transcribed (`canRetranscribe`).
 - **Engine.** When the variant is the loaded one and the model is ready, the main engine is used.
   When it is the loaded one but still loading, the run stops with "Model not ready" instead of
-  loading it twice. Otherwise a second `WhisperKitEngine` is prepared, used once and unloaded;
-  the main engine and `modelState` are never touched.
+  loading it twice. Otherwise a second `WhisperKitEngine` is prepared, used for `hear` and unloaded
+  before the language model step; the main engine and `modelState` are never touched.
 - **State.** `retranscription` holds the record id and the stage: loading (with the model's
   name), transcribing, rewriting. A failure (nothing heard, couldn't transcribe, model failed,
   model not ready, recording not found) stays for 3 s. One re-transcription runs at a time.
@@ -142,54 +143,96 @@ over.
 - `saytype --snapshot-main <section> <file.png>` renders a main window section offscreen with
   sample data. For History it also writes `-untranscribed` and `-retranscribing`.
 
-## The new shape of `finalize` (for the hand merge with 006 and 008)
+## The final pass after merging 008 and 009
 
-The refactor alone is commit `40338fa` (`refactor(dictation): split the final pass…`). It
-changes no behaviour and can go in first. Commit `3b354d5` then adds the `audio:` parameter and
-the records without text.
+`main` at `6373463` (008 voice snippets, 009 voice actions) was merged into this branch. 007's
+`recognize` did Whisper and the text in one call. 009's voice action check has to sit between
+the two, so `recognize` became two functions around a `Pass`. There is still one path: a live
+dictation and a re-transcription call the same functions, and only `finalize` adds the live
+parts.
 
 ```swift
-struct PassResult { var text: String; var raw: String; var send: Bool }
+/// What one run depends on, fixed when it starts. New inputs go here as fields with a default.
+struct Pass {
+    var settings: AppSettings
+    var mode: DictationMode
+    var selection: String?          // Edit selection: the words are an instruction over it
+    var skippable = false           // esc skips the language model (live)
+    var readsSelection = true       // {selection} in a snippet reads the app in front
+    var projectTerms: [String] = [] // taken once, for the glossary and formatting
+    var translateTo: AppSettings.SpeechLanguage?
+    var whisperTranslates = false
+}
+struct PassResult { var text: String; var raw: String; var send: Bool; var snippets: [String] = [] }
 
-/// Whisper, formatting, language model or smart structure, backticks. Reads only its arguments.
-func recognize(_ recorded: [Float], engine: WhisperKitEngine, settings value: AppSettings,
-               mode: DictationMode, instruction: Bool = false, skippable: Bool,
-               stage: (FinishingStage) -> Void) async throws -> PassResult
-
-/// Live only: recognize, then the selection edit, the empty cases, the record, the delivery.
+func makePass(settings:mode:selection:skippable:readsSelection:) -> Pass          // translation decision, project terms
+func hear(_ recorded: [Float], engine: WhisperKitEngine, pass: Pass) async throws -> Transcript
+func compose(_ transcript: Transcript, pass: Pass, stage: (FinishingStage) -> Void) async -> PassResult
 private func finalize(_ recorded: [Float], duration: Double, engine: WhisperKitEngine, audio: UUID?) async
 ```
 
-What moved where:
+**A live dictation, from the key to the text:**
 
-| Old `finalize` step | Now |
-|---|---|
-| `projectTerms`, glossary `terms`, `translateTo`, `whisperTranslates`, `TranscriptionHints` | `recognize` (`selection == nil` became `!instruction`) |
-| `engine.transcribe` | `recognize`, which throws; `finalize` catches, keeps the recording as "recognition failed" and shows the notice |
-| `DictationPipeline.format` | `recognize` |
-| `if let selection { editSelection … }` | `finalize`, after `recognize(instruction: true)` returned the formatted instruction |
-| rewrite (`finishingStage`, `rewriteSkippably`) or `smart.apply`, `Backticks.wrap` | `recognize`; the stage goes out through `stage`, and `skippable: false` calls `rewriter.rewrite` directly |
-| empty text: "отправь" / "Nothing heard" | `finalize` (+ `keepUntranscribed`) |
-| `DictationRecord`, `history.insert`, `historyStore.add` | `finalize`; the record now has `id: audio`, `audio`, `modeID`, goes into `records`, and the add is followed by `sweepAudio()` |
-| `deliver` | `finalize` |
+1. Key down, `startRecording`: the target app and the mode; the recording file opens (not for
+   Edit selection); `readSelectionForActions()` reads the selection by Accessibility in the
+   background (009).
+2. Key up, `finishRecording`: 250 ms of tail, the drain, `closeRecordingAudio()`. Then
+   `transcribe`: empty audio goes back to idle; the voice gate's "Nothing heard" keeps the
+   recording without text.
+3. `finalize`, first `makePass(settings, activeMode, selection, skippable: true)`, then
+   `hear`: Whisper with the glossary. An error keeps the recording as "recognition failed".
+4. `runVoiceAction(transcript.text, …)` on the raw transcript, with `actionSelection` from key
+   press. When the words are an action, it carries it out, writes its own record (with `action`)
+   and returns. `finalize` deletes the recording and stops.
+5. `compose`. First `DictationPipeline.format(…, snippets:)`, which turns snippet phrases into
+   markers. For Edit selection it stops here: the instruction gets the snippets' text via
+   `placingSnippets(…, selection:)` and comes back. Otherwise, when the text is only markers, the
+   model and smart structure are skipped; if not, the model (esc skips it) or smart structure
+   runs. Then backticks. Last, `placingSnippets` puts the snippets' text in place of the
+   markers, reading `{clipboard}` and `{selection}` while the target app is still in front.
+6. Back in `finalize`: Edit selection goes to `editSelection`. Only "отправь" presses Return and
+   deletes the recording. Empty text keeps the recording as "Nothing heard". Otherwise the record
+   (id = recording id, `audio`, `modeID`) goes into `records` and the store, then `sweepAudio()`
+   and `deliver(text, …, snippets:)` (the card's mark).
 
-Merge notes:
+**A re-transcription** reads the file, then runs `makePass(settings with one change, the
+record's mode, readsSelection: false)`, `hear` and `compose`. It has no voice gate, no voice
+action and no delivery; the text replaces the record's.
 
-- **006, screen context (terms read at key press).** A re-transcription has no key press, so
-  `recognize` must not read controller state. Add a parameter, e.g. `screenTerms: [String] =
-  []`, merge it into `terms` where `DictionaryRewriter.promptTerms` is called, and pass the terms
-  captured at key press from `finalize`. A re-transcription passes none. To reuse them later,
-  store them on the record.
-- **008, snippets resolved inside `finalize`.** Resolving snippet markers is formatting: put it
-  in `recognize` right after `DictationPipeline.format`, before the rewrite, reading
-  `value.snippets` from the `settings` argument. That way a re-transcription resolves them too.
-  Anything with a side effect (pressing keys) stays in `finalize`.
-- **`history` is computed now.** Code that assigned `history = …` must assign `records`. Code
-  that only reads `history` needs no change.
-- Other shared files: `AppSettings` got two fields and two decode lines after
-  `historyRetentionDays`. `Localizable.xcstrings` got new keys only. The READMEs got one section
-  before "Languages", the Privacy bullet, the reset lines and one FAQ sentence. `MainWindow.swift`
-  is untouched.
+### Decisions at the merge
+
+1. **Snippets are resolved in a re-transcription too.** Placement is the last step of `compose`,
+   so a re-transcribed dictation gets the snippet's text, not ⟦1⟧. Variables are read at the
+   moment of the re-transcription: `{date}` and `{time}` are then, `{clipboard}` is what the
+   clipboard holds then. `{selection}` stays empty (`readsSelection: false`): the app in front is
+   saytype's own window, and reading it would send a ⌘C into it. The record's `raw` keeps the
+   spoken trigger, as 008 does.
+2. **Voice actions run only live, between `hear` and `compose`.** A re-transcription never
+   checks for one, so the same words come back as a dictation. A record with `action` set can't
+   be re-transcribed: `canRetranscribe` is false, so the menu and ↻ are hidden and `retranscribe`
+   refuses. Its `text` is the model's work on a selection or clipboard the recording can't bring
+   back, and re-transcribing only its `raw` would add nothing to the history.
+3. **Recordings of voice actions are not kept**, just as Edit selection keeps none. When
+   `runVoiceAction` returns true, carried out or refused with a notice ("Nothing selected",
+   "Clipboard is empty", "Language model is off"), the recording is deleted at once. A crash
+   during what would have become an action leaves an interrupted recording, and transcribing it
+   gives the instruction as text. A dictation that is only "отправь" also deletes its recording
+   at once now, instead of at the next cleanup.
+4. **`history` stays computed.** 009's `perform` inserts into `records` and follows the store's
+   `add` with `sweepAudio()`, like `finalize`. `DictationRecord` has 009's `action` beside 007's
+   fields, and the init takes it last. `init(from:)` decodes `action` leniently too. Tests cover a
+   0.3.0 file, a 009 file with an action, and a round trip with both.
+
+### For 006 (screen context)
+
+Add `var screenTerms: [String] = []` to `Pass`. Merge it into the glossary in `hear`, where
+`DictionaryRewriter.promptTerms` is called, and into `compose`'s formatting if the terms should
+reach the dictionary step. `finalize` fills it with the terms read at key press
+(`var pass = makePass(…); pass.screenTerms = …`). A re-transcription leaves it empty, or fills it
+from the record if 006 stores the terms there. No other call site changes.
+
+Before the merge the split was one `recognize(_:engine:settings:mode:instruction:skippable:stage:)`
+(commit `40338fa`, behaviour unchanged); the merge commit turned it into `hear` and `compose`.
 
 ## Codec: how it was chosen
 
@@ -235,7 +278,8 @@ minute.
 2. **Lost dictations are history entries.** "Nothing heard", recognition errors and crashes show
    in the History section only, with their reason, and vanish with their audio after the period.
    Everything else that reads the history ignores them.
-3. **A voice edit over a selection is not recorded.** It has no history record.
+3. **A voice edit over a selection is not recorded, and a voice action's recording is deleted**
+   as soon as the words turn out to be one. Neither can be replayed from the audio alone.
 4. **The period is strict for recovered recordings too.** A crash found days later, past "a day",
    goes at the first cleanup. Relaunching within the period recovers it.
 5. **Off deletes every recording at once.** Switching back on keeps only new dictations.
@@ -272,9 +316,11 @@ minute.
 
 ## Checked
 
-- `swift test` in `Packages/SaytypeKit`: 235 tests in 45 suites pass (210 before). New:
+- `swift test` in `Packages/SaytypeKit`: 291 tests in 47 suites pass after merging `main`
+  (264 on `main`, 235 on this branch before the merge). New in 007:
   - history decoding: a 0.3.0 file through the decoder and through the store, new fields
-    round-trip, an unknown failure value is dropped;
+    round-trip, an unknown failure value is dropped, a 009 record with `action` decodes, and a
+    record with both `action` and the audio fields round-trips;
   - retention: a day, a week, the count of 20, records without audio, off, strays next to a
     recording in progress, ids from file names;
   - store: `dropAudio`, `insert` in date order without duplicates, `modify`, stats without
