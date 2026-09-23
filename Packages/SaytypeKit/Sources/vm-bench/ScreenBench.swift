@@ -135,9 +135,13 @@ enum ScreenBench {
         }
         var tallies: [String: Tally] = [:]
         let variants = ["owner prompt", "owner prompt + matcher", "screen share", "screen share + matcher"]
+        var shownScreens = Set<String>()
         for item in items {
             let screenText = (try? String(contentsOfFile: item.screen, encoding: .utf8)) ?? ""
             let terms = ScreenTerms.extract(from: ScreenText(focused: screenText))
+            if shownScreens.insert(item.screen).inserted {
+                print("screen \((item.screen as NSString).lastPathComponent): \(terms.count) terms, prompt share: \(terms.prefix(share).joined(separator: ", "))")
+            }
             let matcher = ScreenTermMatcher(terms: terms)
             let samples = try AudioFileLoader.load(URL(fileURLWithPath: item.audio))
             let name = (item.audio as NSString).lastPathComponent
