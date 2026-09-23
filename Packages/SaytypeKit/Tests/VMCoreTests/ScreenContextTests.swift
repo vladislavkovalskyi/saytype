@@ -178,7 +178,7 @@ import Testing
     static let screen = ScreenTermMatcher(terms: [
         "DictationController", "ProjectTermsService.swift", "ProjectTermsService", "useAuthSession", "ScreenContextReader",
         "TermCanonicalizer", "WhisperKitEngine", "PromptBuilder", "MAX_RETRY_COUNT", "fetchUserProfile",
-        "UserProfileCard.tsx", "UserProfileCard", "README.md", "FocusInspector", "SelectionReader", "isLoading",
+        "UserProfileCard.tsx", "UserProfileCard", "README.md", "FocusInspector", "SelectionReader", "isLoading", "getUserById",
         "@vlad_kovalskyi", "Kovalskyi",
     ])
 
@@ -197,6 +197,7 @@ import Testing
         #expect(fix("Скинь ссылку на ridme.md.") == "Скинь ссылку на README.md.")
         #expect(fix("Focus Inspector возвращает неправильное окно.") == "FocusInspector возвращает неправильное окно.")
         #expect(fix("Selection Reader копирует через буфер обмена.") == "SelectionReader копирует через буфер обмена.")
+        #expect(fix("Переименуй GetUserByID.") == "Переименуй getUserById.")
     }
 
     @Test func spokenMarksJoinTheName() {
@@ -260,7 +261,7 @@ import Testing
         let matcher = ScreenTermMatcher(terms: [
             "bestRun", "isAlnum", "systemPrompt", "isSpace", "LanguageModel", "SpeechLanguage", "addFileName", "KeyPoster",
             "HistoryStats", "WordFilter", "SaytypeKit", "inSentence", "WhisperKit", "Reason", "builtIn", "BuiltInDictionary",
-            "isCode", "isBusy", "copySettings",
+            "isCode", "isBusy", "copySettings", "ModelState",
         ])
         let sentences = [
             "Parakeet v3 быстрее и на чистом русском точнее.",
@@ -281,6 +282,8 @@ import Testing
             "Каждое третье слово — английский термин или имя из кода.",
             "Функция берёт из базы заявки.",
             "Настройки лежат в vladislavkovalskyi.github.io/saytype/com/settings.",
+            "Движок не трогает ModelStore.",
+            "«Iiшка» это ИИшка, the built-in AI.",
             "Choose Russian: the built-in dictionary turns «юз эффект» into useEffect.",
         ]
         for sentence in sentences {

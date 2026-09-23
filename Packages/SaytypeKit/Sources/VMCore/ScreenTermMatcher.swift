@@ -225,16 +225,25 @@ public struct ScreenTermMatcher: Sendable {
             // Inside Russian speech Whisper writes a name's parts capitalised, "Prompt Builder";
             // "language model" and «Copy last dictation» are English words.
             if spoken.count > 1, spoken.allSatisfy(\.latin), !spoken.allSatisfy(\.capitalized) { continue }
+            // One Latin token already written as code: Whisper spelled an identifier, perhaps in
+            // another case ("GetUserByID"), which the screen's spelling fixes.
+            let isCode = spoken.count == 1 && spoken[spoken.startIndex].isCodeToken
+            // "built-in" is an English word with a hyphen; only a kebab-case term may take it.
+            let proseHyphen = spoken.contains { $0.latin && !$0.isCodeToken && $0.core.contains("-") }
             for candidate in candidates {
                 // A mark said aloud or written by Whisper, where the term has one too.
                 let backed = !marks.isEmpty || !innerMarks.isDisjoint(with: candidate.marks)
                 guard key.count >= (backed ? Self.minimumKeyWithMark : Self.minimumKey),
                       segments >= candidate.parts, marks.isSubset(of: candidate.marks),
                       stops.allSatisfy(candidate.partKeys.contains),
+                      !proseHyphen || candidate.marks.contains("-"),
                       key[0] == candidate.key[0] || SoundKey.isNear(key[0], candidate.key[0])
                 else { continue }
                 var allowed = Double(candidate.key.count) * (backed ? Self.toleranceWithMark : Self.tolerance)
                 if candidate.key.count < Self.shortKey { allowed = min(allowed, Self.shortKeyAllowance) }
+                // An identifier Whisper wrote is off by a vowel or a voicing at most: ModelStore is
+                // not ModelState.
+                if isCode, !backed { allowed = min(allowed, Self.shortKeyAllowance) }
                 guard Double(abs(key.count - candidate.key.count)) * 0.1 <= allowed else { continue }
                 let distance = SoundKey.distance(key, candidate.key, limit: allowed)
                 guard distance <= allowed else { continue }
