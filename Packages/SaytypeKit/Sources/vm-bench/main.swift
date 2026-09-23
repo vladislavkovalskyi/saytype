@@ -85,7 +85,7 @@ default:
 ///       [--owner-prompt settings.json | --bench-prompt] [--engine [--gate]] [--no-words]
 ///       [--pad-tail s] [--clip-time s] [--max-initial s] [--no-vad]
 ///       [--chunk] [--pause s] [--max-chunk s] [--refs refs.json --sentences sentences.txt]
-///       [--runs n] [--segments] [--workers n] [--prompt-tokens n] [--reentrancy]
+///       [--runs n] [--segments] [--workers n] [--prompt-tokens n] [--no-first-token-check] [--log] [--reentrancy]
 ///
 /// Without options it decodes the way the app's final pass did up to 0.3.0 (the prompt aside):
 /// word timings on, no tail padding, WhisperKit's VAD chunks above 30 s. `--chunk` splits the
@@ -111,12 +111,15 @@ enum Lab {
         /// Keeps only the first n prompt tokens; WhisperKit itself keeps the last 111.
         var promptTokenCap: Int?
         var glossary: [String] = []
+        /// WhisperKit re-decodes at a higher temperature when the first token is unlikely.
+        var firstTokenCheck = true
     }
 
     struct Outcome {
         var text: String
         var outputTokens: Int
         var windows: Int
+        var fallbacks: Int
         var seconds: Double
     }
 
@@ -145,6 +148,7 @@ enum Lab {
         config.showSegments = arguments.contains("--segments")
         config.workers = option("--workers").flatMap(Int.init)
         config.promptTokenCap = option("--prompt-tokens").flatMap(Int.init)
+        config.firstTokenCheck = !arguments.contains("--no-first-token-check")
         let runs = option("--runs").flatMap(Int.init) ?? 1
         let references = try loadReferences(refs: option("--refs"), sentences: option("--sentences"))
 
@@ -152,9 +156,15 @@ enum Lab {
         let start = ContinuousClock.now
         let pipe = try await WhisperKit(WhisperKitConfig(
             modelFolder: store.folder(for: variant).path, tokenizerFolder: store.base,
-            verbose: false, logLevel: .error, prewarm: true, load: true, download: false
+            verbose: arguments.contains("--log"), logLevel: arguments.contains("--log") ? .info : .error, prewarm: true, load: true, download: false
         ))
         print("model \(variant) loaded in \(format(ContinuousClock.now - start)) s")
+        if arguments.contains("--log") {
+            // WhisperKit's fallbacks and chunk boundaries, to standard output instead of os_log.
+            Logging.shared.loggingCallback = { message in
+                if message.contains("Fallback") || message.contains("Found chunk") || message.contains("Decoding Temperature") { print("    · " + message) }
+            }
+        }
         if let prompt = config.prompt, let tokenizer = pipe.tokenizer {
             let tokens = promptTokens(prompt, tokenizer: tokenizer)
             let kept = min(tokens.count, Constants.maxTokenContext / 2 - 1)
@@ -179,7 +189,7 @@ enum Lab {
             let name = (file as NSString).lastPathComponent
             for _ in 0..<runs {
                 let outcome = try await transcribe(samples, pipe: pipe, config: config)
-                var line = String(format: "%@  %.1f s  decode %.2f s  windows %d  tokens %d", name, Double(samples.count) / 16_000, outcome.seconds, outcome.windows, outcome.outputTokens)
+                var line = String(format: "%@  %.1f s  decode %.2f s  windows %d  tokens %d  fallbacks %d", name, Double(samples.count) / 16_000, outcome.seconds, outcome.windows, outcome.outputTokens, outcome.fallbacks)
                 if let reference = references[name] {
                     line += "  " + coverage(outcome.text, sentences: reference)
                 }
@@ -197,6 +207,7 @@ enum Lab {
         var texts: [String] = []
         var tokens = 0
         var windows = 0
+        var fallbacks = 0
         for piece in pieces {
             let padded = piece + [Float](repeating: 0, count: Int(config.padTail * 16_000))
             var options = DecodingOptions(
@@ -211,6 +222,7 @@ enum Lab {
                 wordTimestamps: config.wordTimestamps,
                 maxInitialTimestamp: config.maxInitial,
                 windowClipTime: config.clipTime,
+                firstTokenLogProbThreshold: config.firstTokenCheck ? -1.5 : nil,
                 concurrentWorkerCount: config.workers,
                 chunkingStrategy: config.vad && padded.count > 30 * 16_000 ? .vad : ChunkingStrategy.none
             )
@@ -227,10 +239,11 @@ enum Lab {
             }
             tokens += segments.reduce(0) { $0 + $1.tokens.count }
             windows += results.reduce(0) { $0 + Int($1.timings.totalDecodingWindows) }
+            fallbacks += results.reduce(0) { $0 + Int($1.timings.totalDecodingFallbacks) }
             texts.append(segments.map { $0.text.trimmingCharacters(in: .whitespaces) }.joined(separator: " "))
         }
         let text = HallucinationFilter.clean(texts.joined(separator: " "))
-        return Outcome(text: text, outputTokens: tokens, windows: windows, seconds: seconds(ContinuousClock.now - start))
+        return Outcome(text: text, outputTokens: tokens, windows: windows, fallbacks: fallbacks, seconds: seconds(ContinuousClock.now - start))
     }
 
     static func promptTokens(_ prompt: String, tokenizer: any WhisperTokenizer) -> [Int] {
