@@ -2382,6 +2382,70 @@
         }
       }
     },
+    "Last: %@" : {
+      "comment" : "Readout under Screen context: terms the last dictation took from the screen",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Последняя: %@"
+          }
+        }
+      }
+    },
+    "Last: %lld terms, none used" : {
+      "comment" : "Readout under Screen context: terms were read, none went into the text",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Last: %lld term, not used"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Last: %lld terms, none used"
+                }
+              }
+            }
+          }
+        },
+        "ru" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Последняя: %lld термина, не использованы"
+                }
+              },
+              "many" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Последняя: %lld терминов, не использованы"
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Последняя: %lld термин, не использован"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Последняя: %lld термина, не использованы"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Later" : {
       "localizations" : {
         "ru" : {
@@ -3783,6 +3847,17 @@
         }
       }
     },
+    "Screen context" : {
+      "comment" : "Dictionary section: switch that reads terms from the active window",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Контекст экрана"
+          }
+        }
+      }
+    },
     "Search" : {
       "localizations" : {
         "ru" : {
@@ -4110,6 +4185,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Термины"
+          }
+        }
+      }
+    },
+    "Terms from the active window" : {
+      "comment" : "Detail of the Screen context switch",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Термины из активного окна"
           }
         }
       }

@@ -262,6 +262,22 @@ In Agent prompt and Commit modes, and in any mode where you turn it on:
 
 Add a code folder in **Dictionary → Projects**: saytype reads function, component and file names from it and teaches them to Whisper, so `useUserData` is spelled the way your code spells it.
 
+## Screen context
+
+When you press the record key, saytype reads the window in front: its title, the field you are typing in, the text in view. Identifiers, file names, @handles and rare Latin names from it fix the spelling of this one dictation.
+
+| On screen | Whisper hears | You get |
+|---|---|---|
+| `DictationController` | диктишн контроллер | `DictationController` |
+| `ScreenContextReader` | ScreenContextRider | `ScreenContextReader` |
+| `README.md` | ridme.md | `README.md` |
+| `MAX_RETRY_COUNT` | MaxRetroAccount | `MAX_RETRY_COUNT` |
+
+- A term needs all of its parts said: «контроллер» alone stays a Russian word, and so does «Иван Петров».
+- Your dictionary comes first. Whisper's prompt stays yours.
+- Cursor, VS Code and other Electron apps give their window title only, usually the file and the project. Terminal gives the text in view.
+- The switch is in **Dictionary → Screen context**, with the terms the last dictation took from the screen.
+
 ## Language model
 
 Optional rewrites run on your Mac with Qwen3 4B (2.3 GB, downloaded by saytype), or with your own [Ollama](https://ollama.com) or [LM Studio](https://lmstudio.ai).
@@ -360,6 +376,7 @@ On an M3 Pro a 5-second phrase is ready about 1.2 s after you let go. Smart stru
 - Dictation history stays in a local JSON file; you can clear it or set how long it is kept.
 - Reading a selection asks the app through the Accessibility API; where that gives nothing, saytype
   copies the selection and puts your clipboard back. Nothing is copied when nothing is selected.
+- Screen context reads the window in front when a dictation starts. The text stays in memory for that dictation and is never stored or logged; password fields are skipped.
 - No accounts, analytics or telemetry. The only network requests download models and check for updates.
 
 ## Permissions
@@ -368,7 +385,7 @@ On an M3 Pro a 5-second phrase is ready about 1.2 s after you let go. Smart stru
 |---|---|
 | Microphone | to hear you while the record key is held |
 | Input Monitoring | to notice the record key in any app |
-| Accessibility | to paste into the focused field |
+| Accessibility | to paste into the focused field and read the window in front |
 
 saytype pastes through the clipboard and restores what was there, skipping password fields.
 

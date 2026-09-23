@@ -42,10 +42,16 @@ struct DictionarySection: View {
                         .frame(width: 712, height: 458, alignment: .top)
                         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
                         .frost()
-                    ProjectsPanel(service: model.dictation.projects)
-                        .frame(width: 340, height: 458, alignment: .top)
-                        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-                        .frost()
+                    // Where terms come from besides the dictionaries: the screen, then code folders.
+                    VStack(spacing: 16) {
+                        ScreenContextRow(screen: model.dictation.screen, isOn: $settings.value.screenContext, accent: world.accent)
+                            .frame(width: 340, height: 60)
+                            .frost()
+                        ProjectsPanel(service: model.dictation.projects)
+                            .frame(width: 340, height: 382, alignment: .top)
+                            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                            .frost()
+                    }
                 }
                 .padding(.top, 16)
             }
@@ -482,6 +488,45 @@ private struct ProjectRow: View {
         .foregroundStyle(.white.opacity(0.7))
         .lineLimit(1)
         .fixedSize()
+    }
+}
+
+// MARK: Screen context
+
+/// The screen context switch. Its detail reads the terms the last dictation took from the screen.
+private struct ScreenContextRow: View {
+    let screen: ScreenContextService
+    @Binding var isOn: Bool
+    let accent: Color
+
+    var body: some View {
+        ToggleRow("Screen context", detailText: detail, isOn: $isOn, accent: accent)
+    }
+
+    private var detail: Text {
+        if isOn, !screen.lastUsed.isEmpty {
+            let list = Self.list(screen.lastUsed)
+            return Text(CodeWords.attributed(String(localized: "Last: \(list)", comment: "Readout under Screen context: terms the last dictation took from the screen"), size: 12.5))
+        }
+        if isOn, screen.lastRead > 0 {
+            return Text("Last: \(screen.lastRead) terms, none used", comment: "Readout under Screen context: terms were read, none went into the text")
+        }
+        return Text("Terms from the active window", comment: "Detail of the Screen context switch")
+    }
+
+    /// "DictationController +1": as many terms as fit one line of the row.
+    static func list(_ terms: [String], budget: Int = 22) -> String {
+        var shown: [String] = []
+        var length = 0
+        for term in terms {
+            let cost = term.count + (shown.isEmpty ? 0 : 2)
+            guard length + cost <= budget else { break }
+            shown.append(term)
+            length += cost
+        }
+        if shown.isEmpty, let first = terms.first { shown = [String(first.prefix(budget - 1)) + "…"] }
+        let rest = terms.count - shown.count
+        return shown.joined(separator: ", ") + (rest > 0 ? " +\(rest)" : "")
     }
 }
 

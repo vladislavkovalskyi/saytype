@@ -151,6 +151,8 @@ final class DictationController {
     let rewriter = RewriteService()
     /// Identifiers from the user's code folders.
     let projects: ProjectTermsService
+    /// Terms from the window in front, read when a dictation starts.
+    let screen = ScreenContextService()
 
     /// Live passes stop above this length; the final pass still covers everything.
     private let liveLimitSeconds = 30.0
@@ -307,6 +309,7 @@ final class DictationController {
             return
         }
         target = Self.frontmostTarget()
+        screen.begin(enabled: settings.value.screenContext && selection == nil)
         activeMode = settings.value.mode(for: target?.bundleID)
         silence = SilenceDetector(limit: handsFree ? settings.value.autoStopSilenceSeconds : 0)
         samples = []
@@ -375,6 +378,7 @@ final class DictationController {
         guard phase == .listening else { return }
         stopCapture()
         discardRecordingAudio()
+        screen.cancel()
         selection = nil
         actionSelection = nil
         phase = .idle
@@ -458,6 +462,9 @@ final class DictationController {
         var translateTo: AppSettings.SpeechLanguage?
         /// Whisper translates on its own, because no language model will.
         var whisperTranslates = false
+        /// Terms read from the window in front when the dictation started. A re-transcription has
+        /// no screen and gets none.
+        var screenTerms: [String] = []
     }
 
     /// What formatting and the model made of a transcript, before it goes anywhere.
@@ -503,9 +510,11 @@ final class DictationController {
         let value = pass.settings
         let mode = pass.mode
         let style = value.applying(mode)
+        // Words that sound like a term on the screen take its spelling, after the dictionary.
+        let matcher = pass.screenTerms.isEmpty ? nil : ScreenTermMatcher(terms: pass.screenTerms)
         // Snippet phrases become markers ⟦1⟧, ⟦2⟧…; the snippets' text replaces them at the end, so
         // no formatter or model ever touches it.
-        let formatted = DictationPipeline.format(transcript, settings: value, mode: mode, projectTerms: pass.projectTerms, snippets: value.snippets)
+        let formatted = DictationPipeline.format(transcript, settings: value, mode: mode, projectTerms: pass.projectTerms, snippets: value.snippets, screen: matcher)
         var text = formatted.text
         if let selection = pass.selection {
             // The instruction gets the snippets' text; `{selection}` is the text it is about.
@@ -528,7 +537,7 @@ final class DictationController {
             text = await smart.apply(to: text, settings: style)
         }
         // Markers have no letters, so backticks never wrap one.
-        if mode.backticks { text = Backticks.wrap(text, terms: pass.projectTerms + value.dictionary.map(\.written)) }
+        if mode.backticks { text = Backticks.wrap(text, terms: pass.projectTerms + value.dictionary.map(\.written) + pass.screenTerms) }
         // Variables are read now: for a live dictation while its app is still in front, for a
         // re-transcription at that moment ({clipboard} as it is then, {selection} empty).
         let placed = await placingSnippets(formatted.snippets, in: text, selection: pass.readsSelection ? nil : "")
@@ -541,7 +550,7 @@ final class DictationController {
     private func finalize(_ recorded: [Float], duration: Double, engine: WhisperKitEngine, audio: UUID?) async {
         let value = settings.value
         let mode = activeMode
-        let pass = makePass(settings: value, mode: mode, selection: selection, skippable: true)
+        var pass = makePass(settings: value, mode: mode, selection: selection, skippable: true)
         let transcript: Transcript
         do {
             transcript = try await hear(recorded, engine: engine, pass: pass)
@@ -557,7 +566,10 @@ final class DictationController {
             dropRecordingAudio(audio)
             return
         }
+        // Read at key press; long done by now. They apply to this dictation only.
+        pass.screenTerms = await screen.take()
         let result = await compose(transcript, pass: pass) { finishingStage = $0 }
+        screen.record(terms: pass.screenTerms, raw: result.raw, text: result.text)
         let style = value.applying(mode)
         if let selection {
             await editSelection(selection, instruction: result.text, settings: value, style: style)
