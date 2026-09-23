@@ -70,6 +70,14 @@ struct TextSection: View {
                             .disabled(settings.value.punctuationStyle != .full)
                         RowDivider()
                         ToggleRow("Voice commands", detail: "“new line”, “new paragraph”, “delete last sentence”, “open quote … close quote”, “send it” at the end", isOn: $settings.value.voiceCommands, accent: world.accent)
+                        RowDivider()
+                        ToggleRow(
+                            "Voice actions",
+                            detail: settings.value.languageModel.engine == .off ? "language model is off" : "“translate the selection to Spanish”, “shorten the clipboard text”",
+                            isOn: $settings.value.voiceActions,
+                            accent: world.accent
+                        )
+                        .opacity(settings.value.languageModel.engine == .off ? 0.5 : 1)
                     }
                     .frame(width: 1068)
                     .frost()

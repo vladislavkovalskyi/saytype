@@ -54,8 +54,16 @@ extension DictationController {
             ("Добавь в Supabase таблицу users с полями id, email и created_at.", "добавь в супабейс таблицу юзерс с полями айди имейл и криэйтед эт", "Cursor", 12, 6_900),
             ("localhost:3000/settings", "локалхост три тысячи слэш сеттингс", "Safari", 2, 9_000),
         ]
-        return samples.map { text, raw, app, duration, ago in
-            DictationRecord(text: text, raw: raw, appName: app, bundleID: nil, duration: duration, date: now.addingTimeInterval(-ago))
+        var records = samples.enumerated().map { index, sample in
+            let (text, raw, app, duration, ago) = sample
+            let id = UUID()
+            // The two newest keep their recordings, as with audio kept for a day.
+            return DictationRecord(id: id, text: text, raw: raw, appName: app, bundleID: nil, duration: duration, date: now.addingTimeInterval(-ago), audio: index < 2 ? "\(id.uuidString).caf" : nil)
         }
+        records[0].previous = DictationRecord.Version(text: "Вынеси загрузку пользователя в хук юз юзер.", raw: "вынеси загрузку пользователя в хук юз юзер")
+        // A dictation the app lost to a crash, found on the next launch.
+        let lost = UUID()
+        records.insert(DictationRecord(id: lost, text: "", raw: "", appName: "Notes", bundleID: nil, duration: 94, date: now.addingTimeInterval(-1_800), audio: "\(lost.uuidString).caf", failure: .interrupted), at: 2)
+        return records
     }
 }
