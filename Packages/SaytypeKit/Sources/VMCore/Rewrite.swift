@@ -76,9 +76,15 @@ public struct RewriteRequest: Equatable, Sendable {
 
     /// The task again right before the dictation: small models otherwise answer a question in
     /// the dictation or repeat the system prompt instead of translating.
+    ///
+    /// A dictation with snippet markers gets the marker rule here rather than in the system
+    /// prompt, so the built-in model's cached system prompt still applies.
     public func userMessage(_ text: String) -> String {
-        "\(taskReminder)\n<\(tag)>\n\(text)\n</\(tag)>"
+        let markers = SnippetMarker.contains(text) ? "\n" + Self.markerRule : ""
+        return "\(taskReminder)\(markers)\n<\(tag)>\n\(text)\n</\(tag)>"
     }
+
+    static let markerRule = "⟦1⟧, ⟦2⟧ and so on mark text that is inserted later. Keep every marker exactly once and exactly as written, where it belongs in the sentence."
 
     var taskReminder: String {
         let language = translate ? target : (answersInEnglish ? "English" : sourceLanguage ?? "the language of the dictation")

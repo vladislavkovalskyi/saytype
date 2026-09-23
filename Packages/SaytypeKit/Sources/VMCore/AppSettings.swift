@@ -90,6 +90,8 @@ public struct AppSettings: Codable, Equatable, Sendable {
     public var dropTrailingPeriodInShortPhrases = false
     /// "новая строка", "удали последнее предложение", "отправь" act instead of being typed.
     public var voiceCommands = true
+    /// Phrases that insert saved text. Earlier snippets win a shared phrase.
+    public var snippets: [Snippet] = []
 
     /// Modes in the order they are listed and cycled.
     public var modes = DictationMode.defaults
@@ -145,6 +147,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
         censorProfanity = try c.decodeIfPresent(Bool.self, forKey: .censorProfanity) ?? defaults.censorProfanity
         dropTrailingPeriodInShortPhrases = try c.decodeIfPresent(Bool.self, forKey: .dropTrailingPeriodInShortPhrases) ?? defaults.dropTrailingPeriodInShortPhrases
         voiceCommands = try c.decodeIfPresent(Bool.self, forKey: .voiceCommands) ?? defaults.voiceCommands
+        snippets = try c.decodeIfPresent([Snippet].self, forKey: .snippets) ?? defaults.snippets
         modes = try c.decodeIfPresent([DictationMode].self, forKey: .modes) ?? defaults.modes
         if !modes.contains(where: \.isStandard) { modes.insert(DictationMode(id: DictationMode.standardID), at: 0) }
         fixedModeID = try c.decodeIfPresent(String.self, forKey: .fixedModeID)
