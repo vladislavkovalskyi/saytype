@@ -52,26 +52,36 @@ snippet is not code. `Snippet.insertion(_:)` is expansion plus trimming of the e
 
 ### Delivery (`DictationController`)
 
-- `finalize` got one line, right after the transcript:
-  `if await finishWithSnippets(transcript, duration:, mode:, settings:, projectTerms:, modelTranslates:) { return }`.
-- `finishWithSnippets` (an extension at the end of the file) returns `false` when the matcher
-  finds nothing in the raw transcript, or when every phrase turned out to be a voice command.
-  Otherwise it runs its own copy of the tail of `finalize`:
-  1. format with markers;
-  2. Edit selection: the instruction gets the snippets' text in place, `{selection}` is the
-     selection the shortcut already read;
-  3. nothing but markers: no model, no smart structure, no backticks;
-  4. otherwise the model (with the marker rule and check) or smart structure, then backticks;
-  5. variables are read, only for snippets whose marker is still in the text (a snippet removed
-     by "удали последнее предложение" reads nothing) and only for variables they use: the
-     clipboard first, then `SelectionReader.read()`;
-  6. placement, history (`text` is the final text, `raw` keeps the spoken trigger), delivery.
-- `deliver` takes the snippet texts and keeps them in `cardSnippets` for the card.
+Dictations with and without snippets go through the one `finalize`:
 
-**Keep in step with `finalize`.** The copy mirrors lines 380–413 of `finalize` at 0.3.0: the
-selection branch, the model/smart-structure branch, backticks, the empty-text branch (Return
-alone after "отправь"), the history record, and `deliver`. When 005 changes any of those, the
-same change belongs in `finishWithSnippets`.
+```swift
+let formatted = DictationPipeline.format(transcript, …, snippets: value.snippets)   // markers
+if let selection { /* instruction = placingSnippets(…, selection:) → editSelection */ }
+let onlySnippets = SnippetMarker.isOnlyMarkers(text)
+if !onlySnippets, <mode or translation needs the model>, … { rewrite }               // marker rule + check
+else if !onlySnippets { smart structure }
+if mode.backticks { Backticks.wrap }                                                 // markers have no letters
+let placed = await placingSnippets(formatted.snippets, in: text)                     // variables + placement
+… history record with placed.text …
+await deliver(text, …, snippets: placed.snippets)                                    // card mark
+```
+
+1. `format` gets `value.snippets`; a dictation that says no phrase comes out exactly as before
+   (tested).
+2. Edit selection: the instruction gets the snippets' text in place, `{selection}` is the
+   selection the shortcut already read.
+3. Nothing but markers: no model, no smart structure; backticks have nothing to wrap.
+4. Otherwise the model (with the marker rule and check) or smart structure, then backticks.
+5. `placingSnippets` returns the text unchanged, reading nothing, when there are no snippets.
+   Otherwise it reads variables only for snippets whose marker is still in the text (a snippet
+   removed by "удали последнее предложение" reads nothing) and only the variables they use: the
+   clipboard first, then `SelectionReader.read()`.
+6. History keeps the final text in `text` and the spoken trigger in `raw`; `deliver` keeps the
+   snippet texts in `cardSnippets` for the card.
+
+The first version ran snippet dictations through a copy of the tail of `finalize`
+(`finishWithSnippets`) to leave `finalize` alone while 005 rewrote it. After 005 landed, the copy
+was folded back: one path, so 006 and 007 have one place to change.
 
 ### Card mark
 
@@ -115,14 +125,16 @@ the compiler extracted from every source file: none missing.
 | Backticks around a marker are dropped | Prompt-style rewrites put identifiers in backticks and may treat the marker as one |
 | Variables read only for snippets still in the text | "удали последнее предложение" can remove a marker; reading the selection for it would send a ⌘C for nothing |
 | List preview skips lines without words | The first line of a fenced snippet is "```" |
+| No copy of the tail of `finalize`; snippets run through `finalize` itself | 005 landed first, so the one-line hook was no longer needed to keep its merge clean, and a copy would drift |
 
 ## Checked
 
-- `swift test`: 224 tests pass (187 before; 37 new in `SnippetsTests`): matching (case,
+- `swift test` after merging 005: 247 tests pass (37 of them in `SnippetsTests`): matching (case,
   punctuation, hyphens, joined and split words, ё, word boundaries, sentence ends, `Next.js`,
   longest trigger, list order, short triggers, repeats), pipeline and placement (alone, inside a
   sentence, period after a sentence-ending snippet, empty snippet, trimmed edges, several in a
-  line, every punctuation style and letter case, spoken code and backticks, paragraph timings),
+  line, every punctuation style and letter case, spoken code and backticks, paragraphs from
+  segment gaps),
   verbatim text through chat style, fillers, word filters, dictionary and censoring, voice
   command precedence and "отправь", variables (values, locale, unknown braces, case), markers
   (only-markers, mismatches), the model prompt and the validator, editor tags, and settings
@@ -141,8 +153,9 @@ the compiler extracted from every source file: none missing.
   Translate everything, the owner's setting, is the case that matters, and it held. Each
   rejection falls back to the text without the model, with the snippet in place. Speed did not
   change: 0.5–1.5 s per dictation, the system prompt stayed cached.
-- `xcodebuild clean build` (Debug, `build/dev`): builds; the warnings are exactly the ones the
-  project had before (AudioCapture, AudioFileLoader, ProjectScanner, MLX's Metal headers).
+- `xcodebuild build` (Debug, `build/dev`, after merging 005 and folding the path): builds; the
+  warnings are exactly the ones main has (AudioCapture, AudioFileLoader, ProjectScanner, MLX's
+  Metal headers).
 - `--snapshot-overlays build/dev/snapshots`: `island-9d-card-snippet.png` and
   `pill-9d-card-snippet.png` show the mark; nothing is put on screen.
 - `--show-main snippets` in English and Russian, captured with `screencapture -l`: layout
@@ -152,8 +165,8 @@ the compiler extracted from every source file: none missing.
 
 1. **A real dictation.** A plain launch of the dev build would read and write the owner's
    settings and history, and preview launches do not record. The path from transcript to final
-   text is covered by the pipeline tests; `finishWithSnippets` itself (the service calls around
-   them) was only built and read against `finalize`.
+   text is covered by the pipeline tests; the calls around them in `finalize` were only built
+   and read.
 2. **`{selection}` and `{clipboard}` in other apps.** `SelectionReader` is the one the Edit
    selection shortcut uses and was checked live in 003; here it is only called.
 3. **Clicks in the editor.** Preview windows were only captured, not clicked: adding and
@@ -164,7 +177,8 @@ the compiler extracted from every source file: none missing.
 - Whisper translating on its own (no language model, translate everything into English on a
   large-v3 model) hands over English text, so a Russian phrase cannot match. The README says to
   add an English phrase.
-- A single-piece dictation with a snippet loses paragraph breaks by pause.
+- A dictation with a snippet and no voice command loses paragraph breaks by pause: the segments
+  no longer match the text with a marker in it.
 - With a model and a snippet inside longer speech, a lost marker means the whole dictation goes
   in without the model, untranslated when translate everything is on.
 - Editing the snippet part of a card can teach the dictionary only if the edit looks like a
