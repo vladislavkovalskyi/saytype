@@ -260,8 +260,15 @@ struct MenuOption {
     let isOn: Bool
     let action: @MainActor () -> Void
     var isSeparator = false
+    var isEnabled = true
+    /// Items of a submenu; the item itself then does nothing.
+    var submenu: [MenuOption]?
 
     static let separator = MenuOption(title: "", isOn: false, action: {}, isSeparator: true)
+
+    static func submenu(_ title: String, _ items: [MenuOption]) -> MenuOption {
+        MenuOption(title: title, isOn: false, action: {}, submenu: items)
+    }
 }
 
 /// A control that opens a native menu under itself.
@@ -312,12 +319,28 @@ final class MenuAnchor {
 
     func pop(items: [MenuOption]) {
         guard let view else { return }
+        Self.menu(items).popUp(positioning: nil, at: NSPoint(x: 0, y: view.bounds.height + 6), in: view)
+    }
+
+    private static func menu(_ items: [MenuOption]) -> NSMenu {
         let menu = NSMenu()
         menu.autoenablesItems = false
         for item in items {
-            menu.addItem(item.isSeparator ? .separator() : ActionMenuItem(title: item.title, isOn: item.isOn, action: item.action))
+            if item.isSeparator {
+                menu.addItem(.separator())
+                continue
+            }
+            let entry: NSMenuItem
+            if let submenu = item.submenu {
+                entry = NSMenuItem(title: item.title, action: nil, keyEquivalent: "")
+                entry.submenu = Self.menu(submenu)
+            } else {
+                entry = ActionMenuItem(title: item.title, isOn: item.isOn, action: item.action)
+            }
+            entry.isEnabled = item.isEnabled
+            menu.addItem(entry)
         }
-        menu.popUp(positioning: nil, at: NSPoint(x: 0, y: view.bounds.height + 6), in: view)
+        return menu
     }
 }
 

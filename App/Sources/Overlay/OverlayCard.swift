@@ -94,6 +94,9 @@ struct OverlayCard: View {
                 .buttonStyle(CapsuleButtonStyle(light: light))
             }
             Spacer(minLength: 0)
+            if !editing, let record = dictation.cardHistoryRecord, record.audio != nil {
+                CardAudio(model: model, record: record, ink: ink, light: light)
+            }
             if style == .pill, !editing {
                 // The island closes the card from its ear, where the ✕ sits in every state.
                 Button {
@@ -107,6 +110,48 @@ struct OverlayCard: View {
         }
         .padding(.horizontal, actionInset)
         .padding(.bottom, style == .island ? 14 : 0)
+    }
+}
+
+/// Play and transcribe-again for the dictation on the card, two icons beside its actions.
+private struct CardAudio: View {
+    let model: OverlayModel
+    let record: DictationRecord
+    let ink: Color
+    /// On light glass.
+    let light: Bool
+
+    var body: some View {
+        let dictation = model.dictation
+        let playing = dictation.player.isPlaying(record.id)
+        HStack(spacing: 2) {
+            Button {
+                dictation.togglePlayback(record)
+            } label: {
+                Image(systemName: playing ? "pause.fill" : "play.fill")
+            }
+            .buttonStyle(IslandIconButtonStyle(size: 26, filled: false, tint: ink))
+            .help(playing ? Text("Pause", comment: "Tooltip of the button that pauses a recording") : Text("Play", comment: "Tooltip of the button that plays a recording"))
+
+            if dictation.retranscription?.recordID == record.id, dictation.retranscription?.isRunning == true {
+                ProgressView()
+                    .controlSize(.mini)
+                    // The system spinner takes its colour from the appearance, not the tint.
+                    .environment(\.colorScheme, light ? .light : .dark)
+                    .frame(width: 26, height: 26)
+                    .help(Text(dictation.retranscription?.state.readout ?? ""))
+            } else {
+                PopupMenu(items: RetranscribeMenu.items(for: record, dictation: dictation)) {
+                    Image(systemName: "arrow.clockwise")
+                        .font(.system(size: 26 * 0.44, weight: .semibold))
+                        .foregroundStyle(ink.opacity(0.92))
+                        .frame(width: 26, height: 26)
+                        .contentShape(Circle())
+                }
+                .help(Text("Transcribe Again", comment: "Menu with the ways to transcribe a kept recording again"))
+                .disabled(dictation.retranscription?.isRunning == true)
+            }
+        }
     }
 }
 

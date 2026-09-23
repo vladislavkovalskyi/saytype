@@ -931,12 +931,34 @@
         }
       }
     },
+    "audio" : {
+      "comment" : "After the history's retention menu, before the audio's: \"· audio not kept\"",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "аудио"
+          }
+        }
+      }
+    },
     "Audio and text never leave this Mac. The network is used only to download models and check for updates." : {
       "localizations" : {
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Звук и текст не покидают этот Mac. Сеть нужна только для загрузки моделей и проверки обновлений."
+          }
+        }
+      }
+    },
+    "audio for" : {
+      "comment" : "After the history's retention menu, before the audio's: \"· audio for 1 day\"",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "аудио"
           }
         }
       }
@@ -1421,6 +1443,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Словарь"
+          }
+        }
+      }
+    },
+    "Don't Keep" : {
+      "comment" : "Audio retention menu: no recordings are kept",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не хранить"
           }
         }
       }
@@ -2407,6 +2440,17 @@
         }
       }
     },
+    "Loading %@" : {
+      "comment" : "Re-transcription stage: another Whisper model loads; the argument is its name",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Загружается %@"
+          }
+        }
+      }
+    },
     "lowercase, commas only" : {
       "localizations" : {
         "ru" : {
@@ -2594,6 +2638,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Модель не скачана"
+          }
+        }
+      }
+    },
+    "Model not ready" : {
+      "comment" : "Re-transcription failed: the current model is still loading",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Модель не готова"
           }
         }
       }
@@ -2810,6 +2865,17 @@
         }
       }
     },
+    "not kept" : {
+      "comment" : "Audio retention readout: no recordings are kept",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "не хранится"
+          }
+        }
+      }
+    },
     "not loaded" : {
       "localizations" : {
         "ru" : {
@@ -2846,6 +2912,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "не настроена"
+          }
+        }
+      }
+    },
+    "Not transcribed" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не распознано"
           }
         }
       }
@@ -3110,6 +3186,17 @@
         }
       }
     },
+    "Pause" : {
+      "comment" : "Tooltip of the button that pauses a recording",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пауза"
+          }
+        }
+      }
+    },
     "Permissions" : {
       "comment" : "Main window section",
       "localizations" : {
@@ -3138,6 +3225,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Пилюля над Dock"
+          }
+        }
+      }
+    },
+    "Play" : {
+      "comment" : "Tooltip of the button that plays a recording",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Воспроизвести"
           }
         }
       }
@@ -3305,6 +3403,17 @@
         }
       }
     },
+    "Recording not found" : {
+      "comment" : "Re-transcription failed: the audio file is gone",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Запись не найдена"
+          }
+        }
+      }
+    },
     "recording speech" : {
       "localizations" : {
         "ru" : {
@@ -3361,6 +3470,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Сбросить"
+          }
+        }
+      }
+    },
+    "Restore the previous text" : {
+      "comment" : "Tooltip of Undo next to a recording: the text before the last transcription comes back",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вернуть прежний текст"
           }
         }
       }
@@ -3999,6 +4119,39 @@
         }
       }
     },
+    "Transcribe" : {
+      "comment" : "Menu that transcribes a recording that has no text yet",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Распознать"
+          }
+        }
+      }
+    },
+    "Transcribe Again" : {
+      "comment" : "Menu with the ways to transcribe a kept recording again",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Распознать заново"
+          }
+        }
+      }
+    },
+    "Transcribing" : {
+      "comment" : "Re-transcription stage",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Распознавание"
+          }
+        }
+      }
+    },
     "Translate" : {
       "comment" : "Menu bar submenu: translate every dictation",
       "localizations" : {
@@ -4134,6 +4287,59 @@
         }
       }
     },
+    "Up to %lld recordings" : {
+      "comment" : "Audio retention menu, a disabled line: the newest recordings kept at most",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Up to %lld recording"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Up to %lld recordings"
+                }
+              }
+            }
+          }
+        },
+        "ru" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Не больше %lld записей"
+                }
+              },
+              "many" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Не больше %lld записей"
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Не больше %lld записи"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Не больше %lld записи"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Updates are off in this build" : {
       "localizations" : {
         "ru" : {
@@ -4253,6 +4459,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "без повторов и оговорок"
+          }
+        }
+      }
+    },
+    "Without Translation" : {
+      "comment" : "Re-transcription menu: the same recording, left in the spoken language",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Без перевода"
           }
         }
       }
