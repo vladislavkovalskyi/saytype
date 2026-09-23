@@ -208,6 +208,10 @@ import Testing
         #expect(insert("Мой имейл, ссылка на репо.") == "vlad@example.com https://github.com/vladislavkovalskyi/saytype")
     }
 
+    @Test func backticksAroundAMarkerGo() {
+        #expect(SnippetPlacement.resolve("Check `⟦1⟧` in `src/app.tsx`.", texts: ["the review template"]) == "Check the review template in `src/app.tsx`.")
+    }
+
     @Test func placementLeavesTextWithoutMarkersAlone() {
         #expect(SnippetPlacement.resolve("Привет, мир.", texts: ["x"]) == "Привет, мир.")
         // A marker without a snippet disappears; a lone bracket stays.

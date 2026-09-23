@@ -261,6 +261,7 @@ public enum SnippetPlacement {
     /// - Inside a sentence, a mark right after a snippet that already ends a sentence is dropped:
     ///   no "bugs.." or "bugs.,".
     /// - An empty snippet takes the space next to it.
+    /// - Backticks a model put around a marker go.
     public static func resolve(_ text: String, texts: [String]) -> String {
         guard SnippetMarker.contains(text) else { return text }
         let texts = texts.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
@@ -293,6 +294,11 @@ public enum SnippetPlacement {
                 continue
             }
             rest = rest[rest.index(after: close)...]
+            // A model that took the marker for code put it in backticks; the snippet is not code.
+            if result.last == "`", rest.first == "`" {
+                result.removeLast()
+                rest = rest.dropFirst()
+            }
             let insert = text(for: number, in: texts)
             if insert.isEmpty {
                 // "Вставь ⟦1⟧, пожалуйста" with nothing to insert: "Вставь, пожалуйста".
