@@ -10,7 +10,7 @@ import WhisperKit
 //   vm-bench transcribe <audio>... [--variant v] [--language ru|auto] [--prompt] [--live] [--translate]
 //   vm-bench lab <audio>... [lab options, see `Lab`]
 //
-// --prompt adds the punctuated sample and glossary; --live replays the file in
+// --prompt adds a developer glossary; --live replays the file in
 // one-second steps through LiveAgreement, the way the app does while fn is held;
 // --translate asks Whisper for English text.
 
@@ -82,7 +82,7 @@ default:
 /// Experiments on WhisperKit's decoding options, outside the app's engine.
 ///
 ///   vm-bench lab <audio>... [--variant v] [--language ru|auto]
-///       [--owner-prompt settings.json | --bench-prompt] [--no-words]
+///       [--owner-prompt settings.json | --bench-prompt] [--engine [--gate]] [--no-words]
 ///       [--pad-tail s] [--clip-time s] [--max-initial s] [--no-vad]
 ///       [--chunk] [--pause s] [--max-chunk s] [--refs refs.json --sentences sentences.txt]
 ///       [--runs n] [--segments] [--workers n] [--prompt-tokens n] [--reentrancy]
@@ -90,7 +90,9 @@ default:
 /// Without options it decodes the way the app's final pass did up to 0.3.0 (the prompt aside):
 /// word timings on, no tail padding, WhisperKit's VAD chunks above 30 s. `--chunk` splits the
 /// recording at pauses and decodes each piece on its own; `--refs` with `--sentences` marks each
-/// reference sentence found (+) or missing (·).
+/// reference sentence found (+) or missing (·). `--engine` runs the app's current
+/// `WhisperKitEngine` instead, with the owner's glossary as hints; `--gate` puts `VoiceGate` in
+/// front of it the way the controller does.
 enum Lab {
     struct Config {
         var language: String?
@@ -165,6 +167,10 @@ enum Lab {
 
         if arguments.contains("--reentrancy") {
             try await reentrancy(files: files, variant: variant, config: config)
+            return
+        }
+        if arguments.contains("--engine") {
+            try await engine(files: files, variant: variant, config: config, gate: arguments.contains("--gate"), runs: runs, references: references)
             return
         }
 
@@ -268,6 +274,38 @@ enum Lab {
         }
         pieces.append(Array(samples[start...]))
         return pieces
+    }
+
+    // MARK: The app's engine
+
+    /// The final pass as the app runs it now: the voice gate, then `WhisperKitEngine`.
+    static func engine(files: [String], variant: String, config: Config, gate: Bool, runs: Int, references: [String: [String]]) async throws {
+        let engine = WhisperKitEngine(variant: variant)
+        try await engine.prepare()
+        let hints = TranscriptionHints(language: config.language, glossary: config.glossary)
+        for file in files {
+            let samples = try AudioFileLoader.load(URL(fileURLWithPath: file))
+            let name = (file as NSString).lastPathComponent
+            for _ in 0..<runs {
+                let start = ContinuousClock.now
+                var text = "∅ (gated)"
+                if !gate || VoiceGate.hasVoice(samples) {
+                    let transcript = try await engine.transcribe(samples, hints: hints)
+                    text = transcript.text.isEmpty ? "∅" : transcript.text
+                    if config.showSegments {
+                        for segment in transcript.segments {
+                            print(String(format: "    [%6.2f → %6.2f]  %@", segment.start, segment.end, segment.text))
+                        }
+                    }
+                }
+                var line = String(format: "%@  %.1f s  decode %.2f s", name, Double(samples.count) / 16_000, seconds(ContinuousClock.now - start))
+                if let reference = references[name] {
+                    line += "  " + coverage(text, sentences: reference)
+                }
+                print(line)
+                print("  " + text)
+            }
+        }
     }
 
     // MARK: Reentrancy
