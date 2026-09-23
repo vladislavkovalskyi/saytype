@@ -35,6 +35,19 @@ public struct ModelStore: Sendable {
         return Self.requiredParts.allSatisfy { FileManager.default.fileExists(atPath: folder.appending(path: $0).path) }
     }
 
+    /// Every variant on disk with all its Core ML parts, sorted by name: what a re-transcription
+    /// can use besides the current model.
+    public func downloadedVariants() -> [String] {
+        let repoFolder = base.appending(path: "models/\(Self.repo)", directoryHint: .isDirectory)
+        let names = (try? FileManager.default.contentsOfDirectory(atPath: repoFolder.path)) ?? []
+        return names
+            .filter { name in
+                Self.requiredParts.allSatisfy { FileManager.default.fileExists(atPath: repoFolder.appending(path: "\(name)/\($0)").path) }
+            }
+            .map { $0.hasPrefix("openai_whisper-") ? String($0.dropFirst("openai_whisper-".count)) : $0 }
+            .sorted()
+    }
+
     /// Downloads the model and its tokenizer. Resumes partial downloads.
     public func download(_ variant: String, progress: @escaping @Sendable (Double) -> Void) async throws -> URL {
         try FileManager.default.createDirectory(at: base, withIntermediateDirectories: true)
