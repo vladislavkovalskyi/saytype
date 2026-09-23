@@ -122,6 +122,21 @@ import Testing
         #expect(RewriteValidator.check(original: fragment, candidate: "Поправь хедер в компоненте, он дёргается.", request: translation) == .rejected(.wrongLanguage))
     }
 
+    /// Chinese and Japanese take a fraction of the characters: a translation into or out of them
+    /// is not "too short" or "too long" by a Latin measure.
+    @Test func denseScriptsAreMeasuredLoosely() {
+        let english = "The release moves to Friday because the payment provider needs two more days to approve the new account."
+        let chinese = "发布推迟到星期五，因为支付服务商还需要两天时间来批准新账户。"
+        let toChinese = RewriteRequest.translation(into: AppSettings.SpeechLanguage(rawValue: "zh"))
+        #expect(RewriteValidator.check(original: english, candidate: chinese, request: toChinese) == .accepted)
+        #expect(RewriteValidator.check(original: chinese, candidate: english, request: RewriteRequest.translation(into: .english)) == .accepted)
+        // A Latin translation still has to keep most of the text.
+        let toSpanish = RewriteRequest.translation(into: AppSettings.SpeechLanguage(rawValue: "es"))
+        #expect(RewriteValidator.check(original: english, candidate: "El lanzamiento se mueve.", request: toSpanish) == .rejected(.tooShort))
+        // Not a translation: the usual limits.
+        #expect(RewriteValidator.check(original: english, candidate: chinese, request: RewriteRequest(style: .cleaner, sourceLanguage: "English")) != .accepted)
+    }
+
     @Test func rejectsDroppedCodePathsNumbersAndLinks() {
         let noPath = "Поправь useEffect в хедере, он дёргается 3 раза, и глянь https://github.com/acme/app/issues/42."
         #expect(RewriteValidator.check(original: dictation, candidate: noPath, request: prompt) == .rejected(.dropped("src/components/Header.tsx")))
