@@ -113,8 +113,8 @@ public struct SnippetMatcher: Sendable {
         let afterBreak: Bool
     }
 
-    /// Folded letters of a phrase: "Шаблон-ревью!" → "шаблонревью".
-    static func key(_ phrase: String) -> String {
+    /// Folded letters of a phrase, the form triggers are compared in: "Шаблон-ревью!" → "шаблонревью".
+    public static func key(_ phrase: String) -> String {
         words(in: phrase).map(\.key).joined()
     }
 
@@ -163,6 +163,34 @@ public struct SnippetMatcher: Sendable {
             if joined == key { return index }
             guard joined.count < key.count, key.hasPrefix(joined) else { return nil }
             index += 1
+        }
+        return nil
+    }
+}
+
+/// Why a trigger phrase never fires.
+public enum SnippetTriggerIssue: Equatable, Sendable {
+    /// Fewer than `SnippetMatcher.minimumLetters` letters.
+    case tooShort
+    /// A voice command takes these words first.
+    case voiceCommand
+    /// A snippet higher in the list, or an earlier phrase of this one, has the same words.
+    case duplicate
+}
+
+extension Snippet {
+    /// Why phrase `trigger` of `snippets[index]` would never fire, or `nil` when it can.
+    public static func issue(trigger: Int, of index: Int, in snippets: [Snippet], voiceCommands: Bool) -> SnippetTriggerIssue? {
+        let phrase = snippets[index].triggers[trigger]
+        let key = SnippetMatcher.key(phrase)
+        guard key.count >= SnippetMatcher.minimumLetters else { return .tooShort }
+        if voiceCommands, VoiceCommands.parse(phrase).contains(where: { if case .command = $0 { true } else { false } }) {
+            return .voiceCommand
+        }
+        for other in 0...index {
+            // In this snippet, only the phrases before this one count.
+            let phrases = other < index ? snippets[other].triggers : Array(snippets[other].triggers.prefix(trigger))
+            if phrases.contains(where: { SnippetMatcher.key($0) == key }) { return .duplicate }
         }
         return nil
     }

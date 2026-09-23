@@ -99,6 +99,26 @@ import Testing
         #expect(matcher.matches(in: "я тут").isEmpty)
     }
 
+    @Test func triggerIssuesForTheEditor() {
+        let list = [
+            Snippet(triggers: ["мой имейл", "новая строка", "я"], text: "a"),
+            Snippet(triggers: ["Мой-имейл", "шаблон новая строка", "ссылка"], text: "b"),
+            Snippet(triggers: ["ссылка", "ССЫЛКА!"], text: "c"),
+        ]
+        func issue(_ trigger: Int, _ index: Int, commands: Bool = true) -> SnippetTriggerIssue? {
+            Snippet.issue(trigger: trigger, of: index, in: list, voiceCommands: commands)
+        }
+        #expect(issue(0, 0) == nil)
+        #expect(issue(1, 0) == .voiceCommand)
+        #expect(issue(1, 0, commands: false) == nil)
+        #expect(issue(2, 0) == .tooShort)
+        #expect(issue(0, 1) == .duplicate)
+        #expect(issue(1, 1) == .voiceCommand)
+        #expect(issue(2, 1) == nil)
+        #expect(issue(0, 2) == .duplicate)
+        #expect(issue(1, 2) == .duplicate)
+    }
+
     @Test func everyOccurrenceMatches() {
         #expect(matchedTexts("мой имейл и ещё раз мой имейл") == ["мой имейл", "мой имейл"])
     }
