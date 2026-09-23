@@ -41,6 +41,8 @@ let package = Package(
         ),
         .executableTarget(name: "vm-smart", dependencies: ["VMCore", "VMSmart"]),
         .executableTarget(name: "vm-bench", dependencies: ["VMCore", "VMAudio", "VMTranscription"]),
+        // Reads marked test windows through the screen context reader; see its header.
+        .executableTarget(name: "vm-context", dependencies: ["VMCore", "VMSystem"]),
         .testTarget(name: "VMCoreTests", dependencies: ["VMCore"]),
         .testTarget(name: "VMTranscriptionTests", dependencies: ["VMTranscription"]),
         .testTarget(name: "VMSystemTests", dependencies: ["VMSystem"]),
