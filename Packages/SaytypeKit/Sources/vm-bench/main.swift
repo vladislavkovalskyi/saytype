@@ -174,6 +174,11 @@ enum Lab {
         } else {
             print("prompt: none; output budget per window \(Constants.maxTokenContext - 1 - 4) tokens")
         }
+        if let tokenizer = pipe.tokenizer, let current = PromptBuilder.prompt(glossary: config.glossary, countTokens: { promptTokens($0, tokenizer: tokenizer).count }) {
+            let kept = current.dropLast().components(separatedBy: ", ")
+            let positions = kept.compactMap { term in config.glossary.firstIndex(of: term).map { String($0 + 1) } }
+            print("engine prompt: \(kept.count) of \(config.glossary.count) terms (positions \(positions.joined(separator: " "))), \(promptTokens(current, tokenizer: tokenizer).count) tokens")
+        }
 
         if arguments.contains("--reentrancy") {
             try await reentrancy(files: files, variant: variant, config: config)
