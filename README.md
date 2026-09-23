@@ -180,6 +180,19 @@ never translates the instruction itself. Only short instructions over text count
 
 Needs a language model (**Model** → Rewrites). The switch is **Text → Voice actions**.
 
+## Recordings of recent dictations
+
+The audio of each dictation stays on your Mac for a day, the 20 newest recordings at most. In
+**History** a recording plays from its row, and **Transcribe Again** runs it through Whisper and
+formatting once more: as it is, with another Whisper model you have downloaded, in another
+language, or without translation. The new text replaces the old one, **Undo** brings the old one
+back. The card has the same two buttons, ▶ and ↻.
+
+Audio reaches the disk while you speak. If saytype quits or crashes mid-dictation, the next launch
+lists the recording in History as **Not transcribed**. A dictation that ended in “Nothing heard”
+keeps its audio too; voice actions and edits of the selection keep none. A week, or no recordings
+at all, is set next to the history's own period at the top of **History**.
+
 ## Languages
 
 Whisper recognizes 99 languages. Pick yours in **Text → Speech language**, in the menu bar or on the island.
@@ -341,7 +354,9 @@ On an M3 Pro a 5-second phrase is ready about 1.2 s after you let go. Smart stru
 
 ## Privacy
 
-- Audio is processed in memory and never written to disk.
+- The audio of recent dictations is kept in `~/Library/Application Support/dev.kovalskyi.saytype/Audio`
+  for the time you choose, a day by default and the 20 newest recordings at most. It is deleted
+  with its history entry, when the history is cleared and when recordings are turned off.
 - Dictation history stays in a local JSON file; you can clear it or set how long it is kept.
 - Reading a selection asks the app through the Accessibility API; where that gives nothing, saytype
   copies the selection and puts your clipboard back. Nothing is copied when nothing is selected.
@@ -376,11 +391,11 @@ Then open saytype and allow them again.
 ```sh
 tccutil reset All dev.kovalskyi.saytype                           # permissions
 defaults delete dev.kovalskyi.saytype                             # settings and dictionary
-rm -rf ~/Library/Application\ Support/dev.kovalskyi.saytype       # history and models, up to 1.6 GB
+rm -rf ~/Library/Application\ Support/dev.kovalskyi.saytype       # history, recordings and models, up to 1.6 GB
 rm -rf ~/Library/Caches/dev.kovalskyi.saytype
 ```
 
-The next launch starts setup from step 1 and downloads Whisper again. To keep the models, skip the `rm -rf …Application Support…` line and delete only `history.json` inside it.
+The next launch starts setup from step 1 and downloads Whisper again. To keep the models, skip the `rm -rf …Application Support…` line and delete only `history.json` and the `Audio` folder inside it.
 
 **Uninstall.**
 
@@ -398,7 +413,7 @@ Without Homebrew: quit saytype, move it from Applications to the Trash and run t
 
 **The first launch takes minutes.** Core ML compiles Whisper for your chip once, about 2–3 minutes. Later launches take seconds.
 
-**“Nothing heard”.** The recording had no voice in it: nothing louder than −45 dBFS and 9 dB above the room. Check the microphone in the island's panel. A dictation of only “thank you” in English ends the same way, because that is the phrase Whisper invents on silence.
+**“Nothing heard”.** The recording had no voice in it: nothing louder than −45 dBFS and 9 dB above the room. Check the microphone in the island's panel. A dictation of only “thank you” in English ends the same way, because that is the phrase Whisper invents on silence. The recording stays in History for a day: play it, or **Transcribe** runs Whisper on it anyway.
 
 **Translation doesn't work.** Whisper turbo can't translate, so translation needs a language model: turn on Qwen3 4B, Ollama or LM Studio in **Model**.
 

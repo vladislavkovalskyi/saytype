@@ -93,11 +93,19 @@ final class DictationController {
     private(set) var finishingStage = FinishingStage.transcribing
     /// The mode of the current or last dictation.
     private(set) var activeMode = DictationMode(id: DictationMode.standardID)
-    private(set) var history: [DictationRecord] = []
+    /// Every entry of the history, newest first, recordings still without text included. Only the
+    /// History section lists those; set by the controller and its audio extension only.
+    var records: [DictationRecord] = []
+    /// Finished dictations, newest first: what Home, the menus, the shortcuts and the stats see.
+    var history: [DictationRecord] { records.filter(\.isTranscribed) }
     var stats: HistoryStats { HistoryStats(records: history) }
     private(set) var keyMonitorActive = false
+    /// The re-transcription running now, for the History section and the card.
+    var retranscription: Retranscription?
+    /// Plays kept recordings, one at a time.
+    let player = RecordingPlayer()
 
-    @ObservationIgnored private let settings: SettingsStore
+    @ObservationIgnored let settings: SettingsStore
     @ObservationIgnored private var gesture = RecordKeyGesture()
     @ObservationIgnored private var monitor: RecordKeyMonitor?
     @ObservationIgnored private let capture = AudioCapture()
@@ -109,11 +117,11 @@ final class DictationController {
     @ObservationIgnored private var hideTask: Task<Void, Never>?
     @ObservationIgnored private var samples: [Float] = []
     @ObservationIgnored private var live = LiveAgreement()
-    @ObservationIgnored private var engine: WhisperKitEngine?
-    @ObservationIgnored private var engineVariant: String?
-    @ObservationIgnored private var target: TargetApp?
+    @ObservationIgnored private(set) var engine: WhisperKitEngine?
+    @ObservationIgnored private(set) var engineVariant: String?
+    @ObservationIgnored private(set) var target: TargetApp?
     /// The text selected in another app: this dictation is an instruction over it, not text.
-    @ObservationIgnored private var selection: String?
+    @ObservationIgnored private(set) var selection: String?
     /// The voice action this dictation turned out to be, while the model carries it out.
     private(set) var action: VoiceAction?
     /// What Accessibility found selected at key press, for a voice action.
@@ -123,11 +131,20 @@ final class DictationController {
     @ObservationIgnored private var skipRewriteAction: (() -> Void)?
     /// The last run of the model ended because the user pressed esc, not because it failed.
     @ObservationIgnored private var skippedRewrite = false
-    @ObservationIgnored private let store = ModelStore()
+    @ObservationIgnored let store = ModelStore()
     /// Preview launches get a throwaway history file, so they can never show or change the real one.
-    @ObservationIgnored private let historyStore = AppModel.isPreviewLaunch
+    @ObservationIgnored let historyStore = AppModel.isPreviewLaunch
         ? HistoryStore(url: FileManager.default.temporaryDirectory.appending(path: "saytype-preview-history-\(UUID().uuidString).json"))
         : HistoryStore()
+    /// Recordings of recent dictations; a throwaway folder for preview launches, like the history.
+    @ObservationIgnored let archive = AppModel.isPreviewLaunch
+        ? RecordingArchive(folder: FileManager.default.temporaryDirectory.appending(path: "saytype-preview-audio-\(UUID().uuidString)", directoryHint: .isDirectory))
+        : RecordingArchive()
+    /// The recording being written while the microphone runs.
+    @ObservationIgnored var recording: RecordingWriter?
+    /// Recordings whose final pass runs now: no record points to them yet, and no cleanup may take them.
+    @ObservationIgnored var closingAudio: Set<UUID> = []
+    @ObservationIgnored var audioSweepTask: Task<Void, Never>?
     /// Optional local LLM that adds lists and paragraphs to long dictations.
     let smart = SmartStructureService()
     /// Optional local LLM for modes that rewrite or translate.
@@ -154,11 +171,15 @@ final class DictationController {
         projects.activate()
         if AppModel.isPreviewLaunch {
             // Previews draw a set-up app with sample data and never load a model.
-            history = Self.sampleHistory()
+            records = Self.sampleHistory()
             modelState = .ready
         } else {
             loadModelIfPresent()
-            Task { history = await historyStore.all() }
+            Task {
+                records = await historyStore.all()
+                // Recordings a crash left behind become entries before the first cleanup runs.
+                await recoverRecordings()
+            }
         }
     }
 
@@ -187,13 +208,20 @@ final class DictationController {
     }
 
     func removeFromHistory(_ id: UUID) {
-        Task { history = await historyStore.remove(id) }
+        if player.recordID == id { player.stop() }
+        Task {
+            records = await historyStore.remove(id)
+            archive.delete([id])
+        }
     }
 
     func clearHistory() {
+        player.stop()
         Task {
             await historyStore.clear()
-            history = []
+            records = []
+            // Every file is a stray now, except the recording being made.
+            await sweepAudio()
         }
     }
 
@@ -300,6 +328,7 @@ final class DictationController {
             show(.notice(.microphoneUnavailable), for: 2.5)
             return
         }
+        beginRecordingAudio()
         phase = .listening
         finishingStage = .transcribing
         smart.warmUp(settings: settings.value.applying(activeMode))
@@ -311,6 +340,7 @@ final class DictationController {
 
     private func consume(_ chunk: AudioCapture.Chunk) {
         samples.append(contentsOf: chunk.samples)
+        recording?.append(chunk.samples)
         levels.removeFirst()
         levels.append(chunk.level)
         let seconds = Double(chunk.samples.count) / AudioCapture.sampleRate
@@ -344,6 +374,7 @@ final class DictationController {
         // flight: its quick release must not reset the dictation being finished.
         guard phase == .listening else { return }
         stopCapture()
+        discardRecordingAudio()
         selection = nil
         actionSelection = nil
         phase = .idle
@@ -361,8 +392,10 @@ final class DictationController {
             if grace { try? await Task.sleep(for: tailGrace) }
             guard let self else { return }
             let recorded = await self.drainCapture()
+            // Every chunk is in the file's queue now; the next recording may start any moment.
+            let audio = self.closeRecordingAudio()
             self.stopping = nil
-            await self.transcribe(recorded)
+            await self.transcribe(recorded, audio: audio)
         }
     }
 
@@ -375,19 +408,23 @@ final class DictationController {
     }
 
     /// The key gesture has already dropped holds shorter than a tap; what gets here is a
-    /// dictation unless there is no voice in it.
-    private func transcribe(_ recorded: [Float]) async {
+    /// dictation unless there is no voice in it. `audio` is the id of its kept recording.
+    private func transcribe(_ recorded: [Float], audio: UUID?) async {
+        // By the end the recording has its record, or it has none and the next cleanup takes it.
+        defer { if let audio { closingAudio.remove(audio) } }
         guard !recorded.isEmpty, let engine else {
             phase = .idle
             return
         }
+        let duration = Double(recorded.count) / AudioCapture.sampleRate
         guard VoiceGate.hasVoice(recorded, sampleRate: AudioCapture.sampleRate) else {
             selection = nil
             handsFree = false
+            keepUntranscribed(audio, duration: duration, failure: .nothingHeard)
             show(.notice(.nothingHeard), for: 1.5)
             return
         }
-        await finalize(recorded, duration: Double(recorded.count) / AudioCapture.sampleRate, engine: engine)
+        await finalize(recorded, duration: duration, engine: engine, audio: audio)
     }
 
     private func stopCapture() {
@@ -400,73 +437,154 @@ final class DictationController {
 
     // MARK: Final pass and delivery
 
-    private func finalize(_ recorded: [Float], duration: Double, engine: WhisperKitEngine) async {
-        let value = settings.value
-        let mode = activeMode
-        let projectTerms = projects.terms
-        let terms = DictionaryRewriter.promptTerms(entries: value.dictionary, projectTerms: projectTerms)
+    /// One run of recognition and formatting over a recording, with what it depends on fixed when
+    /// it starts. A live dictation takes the settings and the mode of the moment; a
+    /// re-transcription of a kept recording passes its own. New inputs (the screen's terms, say)
+    /// go here as fields with a default, so no call site has to change.
+    struct Pass {
+        var settings: AppSettings
+        var mode: DictationMode
+        /// Edit selection: the dictation is an instruction over this text. Formatting is its last
+        /// step; the language model runs on the selection afterwards.
+        var selection: String?
+        /// Esc skips the language model and the formatted text is used (live dictations).
+        var skippable = false
+        /// `{selection}` in a snippet reads the app in front. A re-transcription runs from
+        /// saytype's own window, where that would read nothing of use, so it fills in nothing.
+        var readsSelection = true
+        /// Identifiers from the user's code folders, taken once for the glossary and formatting.
+        var projectTerms: [String] = []
+        /// Where the text is translated to; `nil` leaves it in the spoken language.
+        var translateTo: AppSettings.SpeechLanguage?
+        /// Whisper translates on its own, because no language model will.
+        var whisperTranslates = false
+    }
+
+    /// What formatting and the model made of a transcript, before it goes anywhere.
+    struct PassResult {
+        /// Formatted, rewritten or translated where the mode asks, snippets in place.
+        var text: String
+        /// What Whisper heard.
+        var raw: String
+        /// "отправь" was said: Return goes after the text.
+        var send: Bool
+        /// The snippets' texts inside `text`, for the card's mark.
+        var snippets: [String] = []
+    }
+
+    /// A pass over these settings and this mode; the project terms and the translation decision
+    /// are taken now.
+    func makePass(settings value: AppSettings, mode: DictationMode, selection: String? = nil, skippable: Bool = false, readsSelection: Bool = true) -> Pass {
+        let translateTo = translationTarget(mode: mode, settings: value)
         // Whisper translates only when no language model will: the model keeps terms intact.
         // Turbo cannot translate at all; its modes stay in the spoken language without a model.
         // The overlay's switch translates everything; without it the mode decides.
-        let translateTo = translationTarget(mode: mode, settings: value)
         let whisperTranslates = selection == nil && translateTo == .english && !rewriter.isReady(value) && WhisperKitEngine.supportsTranslation(value.whisperModel)
+        return Pass(settings: value, mode: mode, selection: selection, skippable: skippable, readsSelection: readsSelection, projectTerms: projects.terms, translateTo: translateTo, whisperTranslates: whisperTranslates)
+    }
+
+    /// Whisper over the recording, with the glossary prompt and the translation the pass decided.
+    func hear(_ recorded: [Float], engine: WhisperKitEngine, pass: Pass) async throws -> Transcript {
+        let value = pass.settings
+        let terms = DictionaryRewriter.promptTerms(entries: value.dictionary, projectTerms: pass.projectTerms)
         let hints = TranscriptionHints(
             language: value.language.whisperCode,
             glossary: terms,
-            translate: whisperTranslates
+            translate: pass.whisperTranslates
         )
-        let transcript: Transcript
-        do {
-            transcript = try await engine.transcribe(recorded, hints: hints)
-        } catch {
-            show(.notice(.recognitionFailed), for: 2.5)
-            return
-        }
-        // An instruction over the selection or the clipboard runs on the model instead of being typed.
-        if await runVoiceAction(transcript.text, duration: duration, settings: value) { return }
+        return try await engine.transcribe(recorded, hints: hints)
+    }
+
+    /// The text of a transcript: formatting, with snippet phrases as markers; then the language
+    /// model or smart structure; then backticks; then the snippets' text in place of the markers.
+    /// It delivers nothing and saves nothing, so a live dictation and a re-transcription share it.
+    /// - Parameter stage: told when the language model starts and ends.
+    func compose(_ transcript: Transcript, pass: Pass, stage: (FinishingStage) -> Void) async -> PassResult {
+        let value = pass.settings
+        let mode = pass.mode
         let style = value.applying(mode)
-        // Snippet phrases become markers ⟦1⟧, ⟦2⟧…; the snippets' text replaces them right before
-        // history and delivery, so no formatter or model ever touches it.
-        let formatted = DictationPipeline.format(transcript, settings: value, mode: mode, projectTerms: projectTerms, snippets: value.snippets)
+        // Snippet phrases become markers ⟦1⟧, ⟦2⟧…; the snippets' text replaces them at the end, so
+        // no formatter or model ever touches it.
+        let formatted = DictationPipeline.format(transcript, settings: value, mode: mode, projectTerms: pass.projectTerms, snippets: value.snippets)
         var text = formatted.text
-        if let selection {
+        if let selection = pass.selection {
+            // The instruction gets the snippets' text; `{selection}` is the text it is about.
             let instruction = await placingSnippets(formatted.snippets, in: text, selection: selection)
-            await editSelection(selection, instruction: instruction.text, settings: value, style: style)
-            return
+            return PassResult(text: instruction.text, raw: transcript.text, send: formatted.send, snippets: instruction.snippets)
         }
         // Nothing but snippets: no model may see the trigger, and there are no words to rewrite or
         // structure. A model answer that loses a marker is rejected and the text stays as formatted.
         let onlySnippets = SnippetMarker.isOnlyMarkers(text)
-        if !onlySnippets, mode.usesLanguageModel || (translateTo != nil && !whisperTranslates), !text.isEmpty, rewriter.isReady(value) {
-            finishingStage = .rewriting
-            if let rewritten = await rewriteSkippably(text, mode: mode, settings: value), !rewritten.isEmpty {
+        if !onlySnippets, mode.usesLanguageModel || (pass.translateTo != nil && !pass.whisperTranslates), !text.isEmpty, rewriter.isReady(value) {
+            stage(.rewriting)
+            let rewritten = pass.skippable
+                ? await rewriteSkippably(text, mode: mode, settings: value)
+                : await rewriter.rewrite(text, mode: mode, target: value.autoTranslate ? value.translateTarget : nil, settings: value)
+            if let rewritten, !rewritten.isEmpty {
                 text = rewritten
             }
-            finishingStage = .transcribing
+            stage(.transcribing)
         } else if !onlySnippets {
             text = await smart.apply(to: text, settings: style)
         }
         // Markers have no letters, so backticks never wrap one.
-        if mode.backticks { text = Backticks.wrap(text, terms: projectTerms + value.dictionary.map(\.written)) }
-        let placed = await placingSnippets(formatted.snippets, in: text)
-        text = placed.text
-        guard !text.isEmpty else {
-            if formatted.send, style.outputMode == .paste {
+        if mode.backticks { text = Backticks.wrap(text, terms: pass.projectTerms + value.dictionary.map(\.written)) }
+        // Variables are read now: for a live dictation while its app is still in front, for a
+        // re-transcription at that moment ({clipboard} as it is then, {selection} empty).
+        let placed = await placingSnippets(formatted.snippets, in: text, selection: pass.readsSelection ? nil : "")
+        return PassResult(text: placed.text, raw: transcript.text, send: formatted.send, snippets: placed.snippets)
+    }
+
+    /// A live dictation's final pass: Whisper, then a voice action if the words are one, then the
+    /// text; then the edit of a selection, or the history record and the delivery into the app.
+    /// `audio` is the id of its kept recording.
+    private func finalize(_ recorded: [Float], duration: Double, engine: WhisperKitEngine, audio: UUID?) async {
+        let value = settings.value
+        let mode = activeMode
+        let pass = makePass(settings: value, mode: mode, selection: selection, skippable: true)
+        let transcript: Transcript
+        do {
+            transcript = try await hear(recorded, engine: engine, pass: pass)
+        } catch {
+            keepUntranscribed(audio, duration: duration, failure: .recognitionFailed)
+            show(.notice(.recognitionFailed), for: 2.5)
+            return
+        }
+        // An instruction over the selection or the clipboard runs on the model instead of being
+        // typed. It keeps no recording: its source can't be replayed, and the words alone would
+        // only come back as the instruction.
+        if await runVoiceAction(transcript.text, duration: duration, settings: value) {
+            dropRecordingAudio(audio)
+            return
+        }
+        let result = await compose(transcript, pass: pass) { finishingStage = $0 }
+        let style = value.applying(mode)
+        if let selection {
+            await editSelection(selection, instruction: result.text, settings: value, style: style)
+            return
+        }
+        guard !result.text.isEmpty else {
+            if result.send, style.outputMode == .paste {
                 // Only "отправь": send what is already typed in the field.
                 Paster.pressReturn()
                 show(.inserted(target), for: 1.2)
+                dropRecordingAudio(audio)
             } else {
+                keepUntranscribed(audio, duration: duration, failure: .nothingHeard)
                 show(.notice(.nothingHeard), for: 1.5)
             }
             handsFree = false
             return
         }
-        let record = DictationRecord(text: text, raw: transcript.text, appName: target?.name, bundleID: target?.bundleID, duration: duration, date: Date())
+        let record = DictationRecord(id: audio ?? UUID(), text: result.text, raw: result.raw, appName: target?.name, bundleID: target?.bundleID, duration: duration, date: Date(), audio: audio.map(RecordingArchive.fileName(for:)), modeID: mode.id)
         cardRecord = record
-        history.insert(record, at: 0)
+        records.insert(record, at: 0)
         let retention = value.historyRetentionDays
-        Task { history = await historyStore.add(record, retentionDays: retention) }
-        await deliver(text, settings: style, pressReturn: formatted.send || mode.pressReturn, snippets: placed.snippets)
+        Task {
+            records = await historyStore.add(record, retentionDays: retention)
+            await sweepAudio()
+        }
+        await deliver(result.text, settings: style, pressReturn: result.send || mode.pressReturn, snippets: result.snippets)
     }
 
     /// What the overlay's tag says while recording: the selection job, or a mode that is not the
@@ -480,7 +598,7 @@ final class DictationController {
 
     /// Where this dictation is translated to, or `nil` when it is not translated. The overlay's
     /// switch covers every mode; without it only a mode that asks for English translates.
-    private func translationTarget(mode: DictationMode, settings value: AppSettings) -> AppSettings.SpeechLanguage? {
+    func translationTarget(mode: DictationMode, settings value: AppSettings) -> AppSettings.SpeechLanguage? {
         if value.autoTranslate { return value.translateTarget }
         return mode.translateToEnglish ? .english : nil
     }
@@ -605,6 +723,21 @@ final class DictationController {
         phase = .idle
     }
 
+    /// The history entry of the dictation on the card, for its audio controls.
+    var cardHistoryRecord: DictationRecord? {
+        guard case .card = phase, let id = cardRecord?.id else { return nil }
+        return records.first { $0.id == id }
+    }
+
+    /// A re-transcription replaced the text of the dictation the card shows. `snippets` are the
+    /// snippet texts in the new text, for the card's mark.
+    func cardRecordChanged(_ record: DictationRecord, snippets: [String] = []) {
+        guard cardRecord?.id == record.id, case .card = phase, !cardEditing else { return }
+        cardRecord = record
+        cardSnippets = snippets
+        phase = .card(record.text)
+    }
+
     // MARK: Editing the card
 
     func beginCardEdit() {
@@ -634,8 +767,8 @@ final class DictationController {
         phase = .card(edited)
         guard let record = cardRecord else { return }
         cardRecord?.text = edited
-        if let index = history.firstIndex(where: { $0.id == record.id }) { history[index].text = edited }
-        Task { history = await historyStore.update(record.id, text: edited) }
+        if let index = records.firstIndex(where: { $0.id == record.id }) { records[index].text = edited }
+        Task { records = await historyStore.update(record.id, text: edited) }
         learn(from: record, edited: edited)
     }
 
@@ -799,7 +932,7 @@ final class DictationController {
     /// Voice level of the latest audio chunk, 0…1.
     var currentLevel: Float { levels.last ?? 0 }
 
-    var lastRecord: DictationRecord? { history.first }
+    var lastRecord: DictationRecord? { records.first(where: \.isTranscribed) }
 
     private var isTransient: Bool {
         switch phase {
@@ -846,7 +979,12 @@ final class DictationController {
     }
 
     func demoHistory(_ records: [DictationRecord]) {
-        history = records
+        self.records = records
+    }
+
+    /// The dictation the card shows, for snapshots of its audio controls.
+    func demoCardRecord(_ record: DictationRecord?) {
+        cardRecord = record
     }
 
     func demoLevels() {
@@ -1005,9 +1143,12 @@ extension DictationController {
             action: DictationRecord.Action(source: found.source, target: language?.rawValue)
         )
         cardRecord = record
-        history.insert(record, at: 0)
+        records.insert(record, at: 0)
         let retention = value.historyRetentionDays
-        Task { history = await historyStore.add(record, retentionDays: retention) }
+        Task {
+            records = await historyStore.add(record, retentionDays: retention)
+            await sweepAudio()
+        }
         await deliver(result, settings: value.applying(activeMode), pressReturn: found.send)
     }
 
