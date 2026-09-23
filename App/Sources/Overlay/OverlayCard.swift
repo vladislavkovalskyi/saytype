@@ -31,7 +31,7 @@ struct OverlayCard: View {
                     .padding(.top, style == .island ? 8 : 0)
                     .frame(maxHeight: style == .island ? .infinity : nil)
             } else {
-                Text(CodeWords.attributed(text, size: 14))
+                Text(Self.marking(dictation.cardSnippets, in: CodeWords.attributed(text, size: 14), tint: ink))
                     .font(.onest(14))
                     .lineSpacing(3.5)
                     .lineLimit(8)
@@ -107,6 +107,21 @@ struct OverlayCard: View {
         }
         .padding(.horizontal, actionInset)
         .padding(.bottom, style == .island ? 14 : 0)
+    }
+}
+
+extension OverlayCard {
+    /// A faint background behind the text that came from snippets. Found by search, so an edit
+    /// that changes a snippet's text drops its mark.
+    static func marking(_ snippets: [String], in text: AttributedString, tint: Color) -> AttributedString {
+        var result = text
+        var start = result.startIndex
+        for snippet in snippets where !snippet.isEmpty {
+            guard let range = result[start...].range(of: snippet) else { continue }
+            result[range].backgroundColor = tint.opacity(0.16)
+            start = range.upperBound
+        }
+        return result
     }
 }
 

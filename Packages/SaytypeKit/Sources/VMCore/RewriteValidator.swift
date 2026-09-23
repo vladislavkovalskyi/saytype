@@ -39,6 +39,10 @@ public enum RewriteValidator {
     public static func check(original: String, candidate: String, request: RewriteRequest, terms: [String] = []) -> Verdict {
         let candidate = candidate.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !candidate.isEmpty else { return .rejected(.empty) }
+        // A snippet's marker lost, doubled or changed would lose or repeat the saved text.
+        if let marker = SnippetMarker.mismatch(original: original, candidate: candidate) {
+            return .rejected(marker.missing ? .dropped(marker.marker) : .invented(marker.marker))
+        }
 
         let length = Double(original.count)
         let (ratio, slack) = lengthLimit(request.style)
