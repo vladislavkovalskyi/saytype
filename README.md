@@ -250,6 +250,23 @@ saytype checks every rewrite: if a file name, identifier, number or link from yo
 
 Commands work only as separate phrases, so «добавь новую строку в таблицу» and «отправь письмо Васе» stay text.
 
+## Snippets
+
+Save a text once and say its phrase: «мой имейл» pastes your address, «ссылка на репо» the link,
+«шаблон ревью» a ready prompt for Claude Code. Add them in **Snippets**.
+
+| Say | Get |
+|---|---|
+| мой имейл | vlad@example.com |
+| напиши на мой имейл, как будет готово | Напиши на vlad@example.com, как будет готово. |
+| шаблон ревью | the saved prompt, word for word |
+
+- The phrase works alone or inside a sentence. Case, punctuation and hyphens don't matter. Give a snippet several phrases for the ways Whisper hears you: «шаблон ревью», «шаблон review».
+- The saved text goes in exactly as written: no punctuation fixes, no dictionary, no translation. The words around it are formatted, rewritten and translated as usual; if the language model loses the snippet's place, the dictation goes in without the model.
+- `{clipboard}`, `{selection}`, `{date}` and `{time}` are filled in as the text goes in. Anything else in braces stays.
+- Voice commands come first: a snippet can't take «новая строка» or «отправь».
+- With **Translate everything** on and no language model, Whisper translates before saytype sees the words. Add an English phrase too: «review template».
+
 ## Settings
 
 <table>
