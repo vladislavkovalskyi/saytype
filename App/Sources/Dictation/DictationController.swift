@@ -856,7 +856,6 @@ final class DictationController {
     }
 }
 
-
 // MARK: Snippets
 
 extension DictationController {
@@ -893,8 +892,6 @@ extension DictationController {
         return snippets.map { $0.insertion(values) }
     }
 }
-
-
 
 
 enum Sounds {
