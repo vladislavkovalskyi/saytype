@@ -2372,18 +2372,28 @@
         }
       }
     },
-    "Last dictation: %@" : {
+    "last rewrite %@" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "последний запуск %@"
+          }
+        }
+      }
+    },
+    "Last: %@" : {
       "comment" : "Readout under Screen context: terms the last dictation took from the screen",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Последняя диктовка: %@"
+            "value" : "Последняя: %@"
           }
         }
       }
     },
-    "Last dictation: %lld terms, none used" : {
+    "Last: %lld terms, none used" : {
       "comment" : "Readout under Screen context: terms were read, none went into the text",
       "localizations" : {
         "en" : {
@@ -2392,13 +2402,13 @@
               "one" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "Last dictation: %lld term, not used"
+                  "value" : "Last: %lld term, not used"
                 }
               },
               "other" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "Last dictation: %lld terms, none used"
+                  "value" : "Last: %lld terms, none used"
                 }
               }
             }
@@ -2410,38 +2420,28 @@
               "few" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "Последняя диктовка: %lld термина, не использованы"
+                  "value" : "Последняя: %lld термина, не использованы"
                 }
               },
               "many" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "Последняя диктовка: %lld терминов, не использованы"
+                  "value" : "Последняя: %lld терминов, не использованы"
                 }
               },
               "one" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "Последняя диктовка: %lld термин, не использован"
+                  "value" : "Последняя: %lld термин, не использован"
                 }
               },
               "other" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "Последняя диктовка: %lld термина, не использованы"
+                  "value" : "Последняя: %lld термина, не использованы"
                 }
               }
             }
-          }
-        }
-      }
-    },
-    "last rewrite %@" : {
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "последний запуск %@"
           }
         }
       }

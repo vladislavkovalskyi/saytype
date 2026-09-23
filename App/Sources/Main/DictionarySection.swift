@@ -21,14 +21,9 @@ struct DictionarySection: View {
                 SectionHeader("Dictionary", subtitle: "How spoken terms are written")
                     .frame(height: 84, alignment: .topLeading)
 
-                HStack(spacing: 16) {
-                    ToggleRow("Built-in dictionary", detailText: Text(verbatim: BuiltInCatalog.summary), isOn: $settings.value.builtInDictionary, accent: world.accent)
-                        .frame(width: 620)
-                        .frost()
-                    ScreenContextRow(screen: model.dictation.screen, isOn: $settings.value.screenContext, accent: world.accent)
-                        .frame(width: 432)
-                        .frost()
-                }
+                ToggleRow("Built-in dictionary", detailText: Text(verbatim: BuiltInCatalog.summary), isOn: $settings.value.builtInDictionary, accent: world.accent)
+                    .frame(width: 620)
+                    .frost()
 
                 HStack(spacing: 10) {
                     SearchField(prompt: "Find term", text: $query)
@@ -47,10 +42,16 @@ struct DictionarySection: View {
                         .frame(width: 712, height: 458, alignment: .top)
                         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
                         .frost()
-                    ProjectsPanel(service: model.dictation.projects)
-                        .frame(width: 340, height: 458, alignment: .top)
-                        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-                        .frost()
+                    // Where terms come from besides the dictionaries: the screen, then code folders.
+                    VStack(spacing: 16) {
+                        ScreenContextRow(screen: model.dictation.screen, isOn: $settings.value.screenContext, accent: world.accent)
+                            .frame(width: 340, height: 60)
+                            .frost()
+                        ProjectsPanel(service: model.dictation.projects)
+                            .frame(width: 340, height: 382, alignment: .top)
+                            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                            .frost()
+                    }
                 }
                 .padding(.top, 16)
             }
@@ -505,16 +506,16 @@ private struct ScreenContextRow: View {
     private var detail: Text {
         if isOn, !screen.lastUsed.isEmpty {
             let list = Self.list(screen.lastUsed)
-            return Text(CodeWords.attributed(String(localized: "Last dictation: \(list)", comment: "Readout under Screen context: terms the last dictation took from the screen"), size: 12.5))
+            return Text(CodeWords.attributed(String(localized: "Last: \(list)", comment: "Readout under Screen context: terms the last dictation took from the screen"), size: 12.5))
         }
         if isOn, screen.lastRead > 0 {
-            return Text("Last dictation: \(screen.lastRead) terms, none used", comment: "Readout under Screen context: terms were read, none went into the text")
+            return Text("Last: \(screen.lastRead) terms, none used", comment: "Readout under Screen context: terms were read, none went into the text")
         }
         return Text("Terms from the active window", comment: "Detail of the Screen context switch")
     }
 
-    /// "DictationController, PromptBuilder +2": as many terms as fit one line of the row.
-    static func list(_ terms: [String], budget: Int = 30) -> String {
+    /// "DictationController +1": as many terms as fit one line of the row.
+    static func list(_ terms: [String], budget: Int = 22) -> String {
         var shown: [String] = []
         var length = 0
         for term in terms {
