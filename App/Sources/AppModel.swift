@@ -35,6 +35,11 @@ final class AppModel {
             OverlaySnapshots.run(into: URL(fileURLWithPath: launchArguments[i + 1]), model: self)
             exit(0)
         }
+        if let i = launchArguments.firstIndex(of: "--snapshot-main"), i + 2 < launchArguments.count,
+           let section = MainSection(rawValue: launchArguments[i + 1]) {
+            MainSnapshots.run(section: section, into: URL(fileURLWithPath: launchArguments[i + 2]), model: self)
+            exit(0)
+        }
         refreshPermissions()
         let overlayModel = OverlayModel(
             dictation: dictation,

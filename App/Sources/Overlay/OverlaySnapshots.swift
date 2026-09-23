@@ -52,6 +52,8 @@ enum OverlaySnapshots {
             Shot("9-card", .card(card)),
             Shot("9b-card-editing", .card(card), editing: card.replacingOccurrences(of: "Next.js", with: "некст джей эс")),
             Shot("9c-card-learned", .card(card), learned: [DictionaryEntry(heard: "некст джей эс", written: "Next.js", source: .history)]),
+            Shot("9d-card-audio", .card(card), audio: true),
+            Shot("9e-card-retranscribing", .card(card), audio: true, retranscribing: true),
         ]
         let transparent = arguments.contains("--transparent")
         for style in [AppSettings.OverlayStyle.island, .pill] {
@@ -99,8 +101,12 @@ enum OverlaySnapshots {
         var editing: String?
         /// What the last edit taught the dictionary.
         var learned: [DictionaryEntry] = []
+        /// The card's dictation has a kept recording.
+        var audio = false
+        /// It is being transcribed again.
+        var retranscribing = false
 
-        init(_ name: String, _ phase: DictationController.Phase, hover: OverlayModel.Hover = .none, committed: String = "", pending: String = "", mode: String = DictationMode.standardID, stage: DictationController.FinishingStage = .transcribing, handsFree: Bool = false, fixedMode: String? = nil, translate: Bool = false, editing: String? = nil, learned: [DictionaryEntry] = []) {
+        init(_ name: String, _ phase: DictationController.Phase, hover: OverlayModel.Hover = .none, committed: String = "", pending: String = "", mode: String = DictationMode.standardID, stage: DictationController.FinishingStage = .transcribing, handsFree: Bool = false, fixedMode: String? = nil, translate: Bool = false, editing: String? = nil, learned: [DictionaryEntry] = [], audio: Bool = false, retranscribing: Bool = false) {
             self.name = name
             self.phase = phase
             self.hover = hover
@@ -113,6 +119,8 @@ enum OverlaySnapshots {
             self.translate = translate
             self.editing = editing
             self.learned = learned
+            self.audio = audio
+            self.retranscribing = retranscribing
         }
     }
 
@@ -126,6 +134,9 @@ enum OverlaySnapshots {
         model.dictation.demoSet(phase: shot.phase, committed: shot.committed, pending: shot.pending)
         model.dictation.demoCardEdit(shot.editing)
         model.dictation.demoLearned(shot.learned)
+        let kept = model.dictation.records.first { $0.audio != nil && $0.isTranscribed }
+        model.dictation.demoCardRecord(shot.audio ? kept : nil)
+        model.dictation.retranscription = shot.retranscribing ? kept.map { Retranscription(recordID: $0.id, state: .transcribing) } : nil
         model.setHoverForSnapshot(shot.hover)
     }
 
