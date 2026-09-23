@@ -75,8 +75,11 @@ case "transcribe":
 case "lab":
     try await Lab.run(arguments: Array(arguments.dropFirst()))
 
+case "context":
+    try await ScreenBench.run(arguments: Array(arguments.dropFirst()))
+
 default:
-    print("usage: vm-bench download [variant] | vm-bench transcribe <audio>... [--variant v] [--language ru|auto] [--prompt] [--live] [--translate] | vm-bench lab <audio>... [options]")
+    print("usage: vm-bench download [variant] | vm-bench transcribe <audio>... [--variant v] [--language ru|auto] [--prompt] [--live] [--translate] | vm-bench lab <audio>... [options] | vm-bench context text|speech …")
 }
 
 /// Experiments on WhisperKit's decoding options, outside the app's engine.
