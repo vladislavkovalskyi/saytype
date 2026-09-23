@@ -19,11 +19,11 @@ public enum DictationPipeline {
         let style = settings.applying(mode)
         let pieces = settings.voiceCommands ? VoiceCommands.parse(transcript.text) : [.text(transcript.text)]
 
-        // Without commands the formatter keeps the word timings, which place paragraph breaks.
+        // Without commands the formatter keeps the segment timings, which place paragraph breaks.
         if pieces.count == 1, case .text(let raw) = pieces[0] {
             let source = mode.developer ? DeveloperFormatter.apply(raw) : raw
-            // Paragraphs fall back to plain text when the words no longer match the timings.
-            return PipelineResult(text: TextFormatter.format(Transcript(text: source, words: transcript.words), settings: style, projectTerms: projectTerms))
+            // Paragraphs fall back to plain text when the segments no longer match the text.
+            return PipelineResult(text: TextFormatter.format(Transcript(text: source, segments: transcript.segments), settings: style, projectTerms: projectTerms))
         }
 
         // A line collects the raw words up to the next break and is formatted as one text, so

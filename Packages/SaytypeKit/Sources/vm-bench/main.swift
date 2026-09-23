@@ -47,7 +47,7 @@ case "transcribe":
     try await engine.prepare()
     print("model \(variant) loaded in \(String(format: "%.1f", seconds(loadStart))) s\n")
     let glossary = ["useEffect", "useState", "Header", "Vercel", "Supabase", "Next.js", "TypeScript", "Prisma", "Zod", "GitHub Actions", "React Query", "Docker Compose", "Postgres", "Redis", "SwiftUI", "Telegram"]
-    let hints = TranscriptionHints(language: language, prompt: arguments.contains("--prompt") ? PromptBuilder.prompt(glossary: glossary) : (arguments.contains("--terms") ? glossary.joined(separator: ", ") + "." : nil), wordTimestamps: !arguments.contains("--no-words"), translate: arguments.contains("--translate"))
+    let hints = TranscriptionHints(language: language, glossary: arguments.contains("--prompt") ? glossary : [], translate: arguments.contains("--translate"))
     for file in files {
         let samples = try AudioFileLoader.load(URL(fileURLWithPath: file))
         let duration = Double(samples.count) / AudioCapture.sampleRate
@@ -67,7 +67,7 @@ case "transcribe":
         let elapsed = seconds(start)
         print(String(format: "%@  %.1f s audio, %.2f s decode, RTF %.3f", (file as NSString).lastPathComponent, duration, elapsed, elapsed / duration))
         if arguments.contains("--timings"), let t = await engine.lastTimings {
-            print(String(format: "  encode %.2f · decode %.2f · words %.2f · pipeline %.2f", t.encoding, t.decodingLoop, t.wordTimestamps, t.total))
+            print(String(format: "  encode %.2f · decode %.2f · pipeline %.2f", t.encoding, t.decodingLoop, t.total))
         }
         print("  \(transcript.text)\n")
     }
@@ -108,6 +108,7 @@ enum Lab {
         var workers: Int?
         /// Keeps only the first n prompt tokens; WhisperKit itself keeps the last 111.
         var promptTokenCap: Int?
+        var glossary: [String] = []
     }
 
     struct Outcome {
@@ -129,7 +130,8 @@ enum Lab {
         let variant = option("--variant") ?? "large-v3-v20240930_turbo_632MB"
         var config = Config()
         config.language = option("--language").map { $0 == "auto" ? nil : $0 } ?? nil
-        config.prompt = try option("--owner-prompt").map(ownerPrompt) ?? (arguments.contains("--bench-prompt") ? PromptBuilder.prompt(glossary: PromptBuilder.builtInTerms) : nil)
+        config.glossary = try option("--owner-prompt").map(ownerGlossary) ?? (arguments.contains("--bench-prompt") ? PromptBuilder.builtInTerms : [])
+        config.prompt = legacyPrompt(config.glossary)
         config.wordTimestamps = !arguments.contains("--no-words")
         config.padTail = option("--pad-tail").flatMap(Double.init) ?? 0
         config.clipTime = option("--clip-time").flatMap(Float.init) ?? 1.0
@@ -276,12 +278,12 @@ enum Lab {
         try await engine.prepare()
         for file in files {
             let samples = try AudioFileLoader.load(URL(fileURLWithPath: file))
-            let hints = TranscriptionHints(language: config.language, prompt: config.prompt, wordTimestamps: config.wordTimestamps)
+            let hints = TranscriptionHints(language: config.language, glossary: config.glossary)
             let clean = try await engine.transcribe(samples, hints: hints).text
             var same = 0
             let trials = 3
             for _ in 0..<trials {
-                let live = Task { try? await engine.transcribe(Array(samples.prefix(29 * 16_000)), hints: TranscriptionHints(language: config.language, prompt: nil, wordTimestamps: false)) }
+                let live = Task { try? await engine.transcribe(Array(samples.prefix(29 * 16_000)), hints: TranscriptionHints(language: config.language)) }
                 try await Task.sleep(for: .milliseconds(200))
                 live.cancel()
                 let final = try await engine.transcribe(samples, hints: hints).text
@@ -293,10 +295,25 @@ enum Lab {
 
     // MARK: Scoring
 
-    static func ownerPrompt(_ path: String) throws -> String? {
+    /// The owner's dictionary, then the built-in terms, in the app's priority order.
+    static func ownerGlossary(_ path: String) throws -> [String] {
         struct Settings: Decodable { let dictionary: [DictionaryEntry] }
         let settings = try JSONDecoder().decode(Settings.self, from: Data(contentsOf: URL(fileURLWithPath: path)))
-        return PromptBuilder.prompt(glossary: DictionaryRewriter.promptTerms(entries: settings.dictionary, projectTerms: []))
+        return DictionaryRewriter.promptTerms(entries: settings.dictionary, projectTerms: [])
+    }
+
+    /// The prompt as the app built it up to 0.3.0: terms up to 240 characters or 224 estimated
+    /// tokens, whichever came first, without the tokenizer.
+    static func legacyPrompt(_ glossary: [String]) -> String? {
+        var list = ""
+        for term in glossary {
+            let term = term.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !term.isEmpty else { continue }
+            let next = list.isEmpty ? term : list + ", " + term
+            if next.count + 1 > 240 || PromptBuilder.estimatedTokens(next + ".") > 224 { break }
+            list = next
+        }
+        return list.isEmpty ? nil : list + "."
     }
 
     static func loadReferences(refs: String?, sentences: String?) throws -> [String: [String]] {

@@ -66,6 +66,30 @@ import Testing
         #expect(PromptBuilder.prompt(glossary: []) == nil)
         let long = PromptBuilder.prompt(glossary: Array(repeating: "VeryLongTermName", count: 200))!
         #expect(long.count <= PromptBuilder.characterLimit)
+        #expect(PromptBuilder.estimatedTokens(long) <= PromptBuilder.tokenLimit)
+    }
+
+    /// A word per token plus one per mark, like a byte-pair tokenizer on short Latin terms.
+    static func tokens(_ text: String) -> Int {
+        text.split(separator: " ").count + text.filter { ",.".contains($0) }.count
+    }
+
+    @Test func keepsTheFirstTermsWhenTheBudgetRunsOut() {
+        let glossary = ["first", "second", "third", "fourth", "fifth"]
+        // "first, second, third." is 3 words and 3 marks.
+        #expect(PromptBuilder.prompt(glossary: glossary, tokenLimit: 6, countTokens: Self.tokens) == "first, second, third.")
+    }
+
+    @Test func skipsATermThatDoesNotFitAndTriesTheNext() {
+        let glossary = ["useEffect", "Docker Compose Watch Mode", "Vercel"]
+        #expect(PromptBuilder.prompt(glossary: glossary, tokenLimit: 4, countTokens: Self.tokens) == "useEffect, Vercel.")
+    }
+
+    @Test func ownerSizedGlossaryStaysUnderTheLimit() {
+        let terms = DictionaryRewriter.promptTerms(entries: (1...14).map { DictionaryEntry(heard: "", written: "Термин\($0)") })
+        let prompt = PromptBuilder.prompt(glossary: terms)!
+        #expect(PromptBuilder.estimatedTokens(prompt) <= PromptBuilder.tokenLimit)
+        #expect(prompt.hasPrefix("Термин1, "))
     }
 }
 
