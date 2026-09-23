@@ -137,6 +137,26 @@ import Testing
         #expect(RewriteValidator.check(original: english, candidate: chinese, request: RewriteRequest(style: .cleaner, sourceLanguage: "English")) != .accepted)
     }
 
+    /// Found by the voice actions bench: two answers that were right and were rejected.
+    @Test func translationMaySpellNumbersAndTranslateHyphenatedWords() {
+        let russian = "Поправил useEffect в Header: он срабатывал 3 раза при каждом рендере."
+        let english = "Fixed the useEffect in Header: it was triggering three times on each render."
+        #expect(RewriteValidator.check(original: russian, candidate: english, request: translation) == .accepted)
+        let source = "Can you double-check the preview and send a follow-up before we merge?"
+        let spanish = "¿Puedes verificar nuevamente la vista previa y enviar un seguimiento antes de fusionar?"
+        #expect(RewriteValidator.check(original: source, candidate: spanish, request: RewriteRequest.translation(into: AppSettings.SpeechLanguage(rawValue: "es"))) == .accepted)
+        let deploy = "I bumped the limit to 4 GB in vercel.json and restarted the API."
+        let toRussian = RewriteRequest.translation(into: .russian)
+        #expect(RewriteValidator.check(original: deploy, candidate: "Я увеличил лимит до 4 ГБ в vercel.json и перезапустил API.", request: toRussian) == .accepted)
+        #expect(RewriteValidator.check(original: deploy, candidate: "Я увеличил лимит до 4 ГБ в vercel.json и перезапустил сервис.", request: toRussian) == .rejected(.dropped("API")))
+        // In Russian text a hyphenated Latin word is an identifier and must stay.
+        let flag = "Включи feature-flag для новой формы оплаты."
+        #expect(RewriteValidator.check(original: flag, candidate: "Turn on the flag for the new payment form.", request: translation) == .rejected(.dropped("feature-flag")))
+        // Outside a translation "3" still has to stay a digit.
+        let cleaner = RewriteRequest(style: .cleaner, sourceLanguage: "Russian")
+        #expect(RewriteValidator.check(original: russian, candidate: "Поправил useEffect в Header: он срабатывал три раза при каждом рендере.", request: cleaner) != .accepted)
+    }
+
     @Test func rejectsDroppedCodePathsNumbersAndLinks() {
         let noPath = "Поправь useEffect в хедере, он дёргается 3 раза, и глянь https://github.com/acme/app/issues/42."
         #expect(RewriteValidator.check(original: dictation, candidate: noPath, request: prompt) == .rejected(.dropped("src/components/Header.tsx")))

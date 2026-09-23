@@ -69,10 +69,19 @@ public enum RewriteValidator {
         // Everything but a plain translation may resolve "не X, а Y" to Y.
         let correctionsAllowed = request.style != .none
 
-        let protected = protectedTokens(in: original, terms: latinTerms)
+        var protected = protectedTokens(in: original, terms: latinTerms)
+        // Translating Latin-script text: "double-check" and "follow-up" are words, not kebab-case.
+        if request.translate, Script.of(original) == .latin {
+            protected.removeAll { $0.kind == .code && $0.key.range(of: #"^[a-z]+(-[a-z]+)+$"#, options: .regularExpression) != nil }
+        }
+        // Units are translated like words: "4 GB" is "4 ГБ" in Russian.
+        if request.translate { protected.removeAll { $0.kind == .acronym && translatedUnits.contains($0.key) } }
+        // A translation may spell a number out: "3 раза" → "three times".
+        let spelledNumbers = request.translate ? NumberWords.values(in: candidateText) : []
         var dropped: [Token] = []
         for token in protected where !token.keys.contains(where: { contains(candidateText, $0) }) {
             if correctionsAllowed, token.wordIndices.allSatisfy({ isNearCorrection(originalWords, at: $0) }) { continue }
+            if token.kind == .number, let value = Double(token.key), spelledNumbers.contains(value) { continue }
             dropped.append(token)
         }
         // A commit message summarizes: it may leave out context such as "SwiftUI" or an old port,
@@ -91,6 +100,8 @@ public enum RewriteValidator {
         }
         return .accepted
     }
+
+    static let translatedUnits: Set<String> = ["kb", "mb", "gb", "tb", "kbps", "mbps", "gbps", "hz", "khz", "mhz", "ghz"]
 
     /// Share of the dictation's code, paths, numbers and terms a commit message may leave out.
     static let commitDroppableShare = 0.5
