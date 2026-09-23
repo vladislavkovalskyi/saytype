@@ -80,6 +80,8 @@ final class DictationController {
     var cardDraft = ""
     /// What the last edit taught the dictionary, for the readout under the card and its undo.
     private(set) var cardLearned: [DictionaryEntry] = []
+    /// Snippet texts in the card, which it marks.
+    private(set) var cardSnippets: [String] = []
     private(set) var modelState = ModelState.missing
     private(set) var handsFree = false
     private(set) var levels = [Float](repeating: 0, count: 28)
@@ -377,6 +379,7 @@ final class DictationController {
             show(.notice(.recognitionFailed), for: 2.5)
             return
         }
+        if await finishWithSnippets(transcript, duration: duration, mode: mode, settings: value, projectTerms: projectTerms, modelTranslates: translateTo != nil && !whisperTranslates) { return }
         let style = value.applying(mode)
         let formatted = DictationPipeline.format(transcript, settings: value, mode: mode, projectTerms: projectTerms)
         var text = formatted.text
@@ -520,7 +523,9 @@ final class DictationController {
         await deliver(edited, settings: style, pressReturn: false)
     }
 
-    private func deliver(_ text: String, settings value: AppSettings, pressReturn modeReturn: Bool) async {
+    /// - Parameter snippets: snippet texts inside `text`, for the card's mark.
+    private func deliver(_ text: String, settings value: AppSettings, pressReturn modeReturn: Bool, snippets: [String] = []) async {
+        cardSnippets = snippets
         switch value.outputMode {
         case .paste:
             let pressReturn = modeReturn || (target?.bundleID.map(value.autoEnterApps.contains) ?? false)
@@ -775,6 +780,10 @@ final class DictationController {
         cardLearned = entries
     }
 
+    func demoCardSnippets(_ texts: [String]) {
+        cardSnippets = texts
+    }
+
     func demoModelReady() {
         modelState = .ready
     }
@@ -801,6 +810,88 @@ final class DictationController {
             guard !Task.isCancelled, let self, self.phase == phase else { return }
             self.phase = .idle
         }
+    }
+}
+
+// MARK: Snippets
+
+extension DictationController {
+    /// A dictation that says a snippet phrase, from the transcript to delivery; `false` when it
+    /// says none, and `finalize` goes on as before.
+    ///
+    /// This is the tail of `finalize` with snippet markers in the text, and has to stay in step
+    /// with it. The differences: a dictation of nothing but snippets skips every model, the
+    /// markers become the snippets' text right before history and delivery, and the Edit
+    /// selection instruction gets the snippets' text in place.
+    ///
+    /// - Parameter modelTranslates: a language model, not Whisper, translates this dictation.
+    private func finishWithSnippets(_ transcript: Transcript, duration: Double, mode: DictationMode, settings value: AppSettings, projectTerms: [String], modelTranslates: Bool) async -> Bool {
+        guard !value.snippets.isEmpty, !SnippetMatcher(value.snippets).matches(in: transcript.text).isEmpty else { return false }
+        let formatted = DictationPipeline.format(transcript, settings: value, mode: mode, projectTerms: projectTerms, snippets: value.snippets)
+        // Every phrase was a voice command's words: nothing for this path to do.
+        guard !formatted.snippets.isEmpty else { return false }
+        let style = value.applying(mode)
+        var text = formatted.text
+        if let selection {
+            let texts = await snippetTexts(formatted.snippets, selection: selection)
+            await editSelection(selection, instruction: SnippetPlacement.resolve(text, texts: texts), settings: value, style: style)
+            return true
+        }
+        // Only snippets: the model would have nothing to rewrite, and must not see the trigger.
+        if !SnippetMarker.isOnlyMarkers(text) {
+            if mode.usesLanguageModel || modelTranslates, rewriter.isReady(value) {
+                finishingStage = .rewriting
+                // An answer without every marker is rejected, and the text stays as formatted.
+                if let rewritten = await rewriteSkippably(text, mode: mode, settings: value), !rewritten.isEmpty {
+                    text = rewritten
+                }
+                finishingStage = .transcribing
+            } else {
+                text = await smart.apply(to: text, settings: style)
+            }
+            if mode.backticks { text = Backticks.wrap(text, terms: projectTerms + value.dictionary.map(\.written)) }
+        }
+        let texts = await snippetTexts(formatted.snippets, selection: nil)
+        text = SnippetPlacement.resolve(text, texts: texts)
+        guard !text.isEmpty else {
+            if formatted.send, style.outputMode == .paste {
+                Paster.pressReturn()
+                show(.inserted(target), for: 1.2)
+            } else {
+                show(.notice(.nothingHeard), for: 1.5)
+            }
+            handsFree = false
+            return true
+        }
+        let record = DictationRecord(text: text, raw: transcript.text, appName: target?.name, bundleID: target?.bundleID, duration: duration, date: Date())
+        cardRecord = record
+        history.insert(record, at: 0)
+        let retention = value.historyRetentionDays
+        Task { history = await historyStore.add(record, retentionDays: retention) }
+        await deliver(text, settings: style, pressReturn: formatted.send || mode.pressReturn, snippets: texts.filter { !$0.isEmpty })
+        return true
+    }
+
+    /// The snippets' text as it goes in, variables filled. Values are read only for variables the
+    /// snippets use, and while the target app is still in front: the clipboard first, since
+    /// delivery pastes through it, then the selection, whose fallback is a ⌘C that puts the
+    /// clipboard back.
+    ///
+    /// - Parameter known: the selection an Edit selection dictation already read.
+    private func snippetTexts(_ snippets: [Snippet], selection known: String?) async -> [String] {
+        let used = snippets.reduce(into: Set<SnippetVariable>()) { $0.formUnion(SnippetVariables.used(in: $1.text)) }
+        var values = SnippetValues()
+        if used.contains(.clipboard) {
+            values.clipboard = NSPasteboard.general.string(forType: .string)
+        }
+        if used.contains(.selection) {
+            if let known {
+                values.selection = known
+            } else if !AppModel.isPreviewLaunch {
+                values.selection = await SelectionReader.read()
+            }
+        }
+        return snippets.map { $0.insertion(values) }
     }
 }
 
