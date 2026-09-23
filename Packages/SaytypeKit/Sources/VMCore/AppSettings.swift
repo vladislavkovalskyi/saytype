@@ -110,6 +110,10 @@ public struct AppSettings: Codable, Equatable, Sendable {
     public var whisperModel = "large-v3-v20240930_turbo_632MB"
     public var systemEngineFallback = true
     public var historyRetentionDays = 30
+    /// How long the recordings of dictations are kept, next to the history's own period.
+    public var audioRetention = AudioRetention.day
+    /// At most this many recordings are kept, the newest ones.
+    public var audioLimit = AudioKeeping.defaultLimit
 
     public init() {}
 
@@ -157,6 +161,8 @@ public struct AppSettings: Codable, Equatable, Sendable {
         whisperModel = try c.decodeIfPresent(String.self, forKey: .whisperModel) ?? defaults.whisperModel
         systemEngineFallback = try c.decodeIfPresent(Bool.self, forKey: .systemEngineFallback) ?? defaults.systemEngineFallback
         historyRetentionDays = try c.decodeIfPresent(Int.self, forKey: .historyRetentionDays) ?? defaults.historyRetentionDays
+        audioRetention = (try? c.decodeIfPresent(AudioRetention.self, forKey: .audioRetention)) ?? defaults.audioRetention
+        audioLimit = try c.decodeIfPresent(Int.self, forKey: .audioLimit) ?? defaults.audioLimit
     }
 
     private enum LegacyKeys: String, CodingKey {

@@ -1,7 +1,28 @@
 import Foundation
 
-/// One finished dictation.
+/// One finished dictation, or a kept recording that has no text yet.
 public struct DictationRecord: Codable, Equatable, Identifiable, Sendable {
+    /// Why a kept recording has no text.
+    public enum Failure: String, Codable, Sendable {
+        /// The app quit or crashed while recording; the recording was found on the next launch.
+        case interrupted
+        /// No voice in the recording, or nothing left of the text after formatting.
+        case nothingHeard
+        /// Whisper failed on the recording.
+        case recognitionFailed
+    }
+
+    /// Text and transcript as they were before a re-transcription replaced them.
+    public struct Version: Codable, Equatable, Sendable {
+        public var text: String
+        public var raw: String
+
+        public init(text: String, raw: String) {
+            self.text = text
+            self.raw = raw
+        }
+    }
+
     public var id: UUID
     /// What was inserted.
     public var text: String
@@ -12,8 +33,16 @@ public struct DictationRecord: Codable, Equatable, Identifiable, Sendable {
     /// Seconds of speech.
     public var duration: Double
     public var date: Date
+    /// File name of the recording in the audio folder, while it is kept.
+    public var audio: String?
+    /// The mode the dictation ran in; a re-transcription runs in it again.
+    public var modeID: String?
+    /// Set while the recording has no text.
+    public var failure: Failure?
+    /// What the last re-transcription replaced, for its undo.
+    public var previous: Version?
 
-    public init(id: UUID = UUID(), text: String, raw: String, appName: String?, bundleID: String?, duration: Double, date: Date) {
+    public init(id: UUID = UUID(), text: String, raw: String, appName: String?, bundleID: String?, duration: Double, date: Date, audio: String? = nil, modeID: String? = nil, failure: Failure? = nil) {
         self.id = id
         self.text = text
         self.raw = raw
@@ -21,9 +50,32 @@ public struct DictationRecord: Codable, Equatable, Identifiable, Sendable {
         self.bundleID = bundleID
         self.duration = duration
         self.date = date
+        self.audio = audio
+        self.modeID = modeID
+        self.failure = failure
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(UUID.self, forKey: .id)
+        text = try c.decode(String.self, forKey: .text)
+        raw = try c.decode(String.self, forKey: .raw)
+        appName = try c.decodeIfPresent(String.self, forKey: .appName)
+        bundleID = try c.decodeIfPresent(String.self, forKey: .bundleID)
+        duration = try c.decode(Double.self, forKey: .duration)
+        date = try c.decode(Date.self, forKey: .date)
+        // Added with kept audio. A value this build doesn't know, written by a newer one, is
+        // dropped instead of failing the whole history.
+        audio = try? c.decodeIfPresent(String.self, forKey: .audio)
+        modeID = try? c.decodeIfPresent(String.self, forKey: .modeID)
+        failure = try? c.decodeIfPresent(Failure.self, forKey: .failure)
+        previous = try? c.decodeIfPresent(Version.self, forKey: .previous)
     }
 
     public var wordCount: Int { Words.split(text).count }
+
+    /// A dictation with text, not a recording waiting for one.
+    public var isTranscribed: Bool { failure == nil }
 }
 
 /// Dictation history kept as a JSON file on this Mac.
@@ -66,8 +118,45 @@ public actor HistoryStore {
     }
 
     public func remove(_ id: UUID) -> [DictationRecord] {
+        remove([id])
+    }
+
+    public func remove(_ ids: Set<UUID>) -> [DictationRecord] {
         loadIfNeeded()
-        records.removeAll { $0.id == id }
+        guard records.contains(where: { ids.contains($0.id) }) else { return records }
+        records.removeAll { ids.contains($0.id) }
+        save()
+        return records
+    }
+
+    /// Changes one record in place, e.g. its text after a re-transcription.
+    public func modify(_ id: UUID, _ change: @Sendable (inout DictationRecord) -> Void) -> [DictationRecord] {
+        loadIfNeeded()
+        guard let index = records.firstIndex(where: { $0.id == id }) else { return records }
+        change(&records[index])
+        save()
+        return records
+    }
+
+    /// Adds records found after the fact, such as recordings a crash interrupted, in date order.
+    public func insert(_ found: [DictationRecord]) -> [DictationRecord] {
+        loadIfNeeded()
+        var known = Set(records.map(\.id))
+        let new = found.filter { known.insert($0.id).inserted }
+        guard !new.isEmpty else { return records }
+        records = (records + new).sorted { $0.date > $1.date }
+        save()
+        return records
+    }
+
+    /// Unlinks the audio of these records. A record that had nothing but its audio goes with it.
+    public func dropAudio(_ ids: Set<UUID>) -> [DictationRecord] {
+        loadIfNeeded()
+        guard !ids.isEmpty else { return records }
+        records.removeAll { ids.contains($0.id) && !$0.isTranscribed }
+        for index in records.indices where ids.contains(records[index].id) {
+            records[index].audio = nil
+        }
         save()
         return records
     }
@@ -117,7 +206,8 @@ public struct HistoryStats: Equatable, Sendable {
         var secondsToday = 0.0
         var savedToday = 0.0
         var savedThisWeek = 0.0
-        for record in records {
+        // Recordings without text say nothing about words or pace.
+        for record in records where record.isTranscribed {
             let isToday = calendar.isDate(record.date, inSameDayAs: now)
             guard isToday || record.date >= weekStart else { continue }
             let words = record.wordCount
