@@ -9,6 +9,7 @@ import WhisperKit
 //   vm-bench download [variant]
 //   vm-bench transcribe <audio>... [--variant v] [--language ru|auto] [--prompt] [--live] [--translate]
 //   vm-bench lab <audio>... [lab options, see `Lab`]
+//   vm-bench codec <audio>... [--variant v] [--language ru|auto] (see `Codec`)
 //
 // --prompt adds a developer glossary; --live replays the file in
 // one-second steps through LiveAgreement, the way the app does while fn is held;
@@ -16,6 +17,7 @@ import WhisperKit
 
 let arguments = Array(CommandLine.arguments.dropFirst())
 let defaultVariant = AppSettings().whisperModel
+let benchGlossary = ["useEffect", "useState", "Header", "Vercel", "Supabase", "Next.js", "TypeScript", "Prisma", "Zod", "GitHub Actions", "React Query", "Docker Compose", "Postgres", "Redis", "SwiftUI", "Telegram"]
 
 func option(_ name: String) -> String? {
     guard let i = arguments.firstIndex(of: name), i + 1 < arguments.count else { return nil }
@@ -46,8 +48,7 @@ case "transcribe":
     let loadStart = ContinuousClock.now
     try await engine.prepare()
     print("model \(variant) loaded in \(String(format: "%.1f", seconds(loadStart))) s\n")
-    let glossary = ["useEffect", "useState", "Header", "Vercel", "Supabase", "Next.js", "TypeScript", "Prisma", "Zod", "GitHub Actions", "React Query", "Docker Compose", "Postgres", "Redis", "SwiftUI", "Telegram"]
-    let hints = TranscriptionHints(language: language, glossary: arguments.contains("--prompt") ? glossary : [], translate: arguments.contains("--translate"))
+    let hints = TranscriptionHints(language: language, glossary: arguments.contains("--prompt") ? benchGlossary : [], translate: arguments.contains("--translate"))
     for file in files {
         let samples = try AudioFileLoader.load(URL(fileURLWithPath: file))
         let duration = Double(samples.count) / AudioCapture.sampleRate
@@ -75,8 +76,114 @@ case "transcribe":
 case "lab":
     try await Lab.run(arguments: Array(arguments.dropFirst()))
 
+case "codec":
+    try await Codec.run(arguments: Array(arguments.dropFirst()))
+
+case "record":
+    // vm-bench record <audio> <folder>: writes the file through the app's recorder at the
+    // microphone's pace, 0.1 s chunks in real time, and never finishes it. Kill it to see what
+    // a crash leaves behind.
+    let file = arguments[1]
+    let archive = RecordingArchive(folder: URL(fileURLWithPath: arguments[2]))
+    let samples = try AudioFileLoader.load(URL(fileURLWithPath: file))
+    let id = UUID()
+    let writer = archive.start(id: id, info: RecordingInfo(date: Date(), appName: "vm-bench", bundleID: nil, modeID: "standard"))
+    print("recording \(id.uuidString) into \(archive.folder.path)")
+    for start in stride(from: 0, to: samples.count, by: 1_600) {
+        writer.append(Array(samples[start..<min(start + 1_600, samples.count)]))
+        try await Task.sleep(for: .milliseconds(100))
+    }
+    print("reached the end without being killed")
+
+case "recover":
+    // vm-bench recover <folder> [--original audio]: what the next launch finds, and what Whisper
+    // makes of it; with --original, the same length of the original file for comparison.
+    let archive = RecordingArchive(folder: URL(fileURLWithPath: arguments[1]))
+    let (found, junk) = archive.recover(known: [])
+    print("found \(found.count), junk \(junk.count)")
+    let engine = WhisperKitEngine(store: store, variant: defaultVariant)
+    let hints = TranscriptionHints(language: nil, glossary: benchGlossary)
+    for record in found {
+        let url = archive.url(for: record.audio ?? "")
+        let samples = try RecordingFile.samples(at: url)
+        print(String(format: "%@ · %@ · %.2f s · %@", record.id.uuidString, record.appName ?? "-", record.duration, record.failure.map { "\($0)" } ?? "-"))
+        print("  recovered: \(try await engine.transcribe(samples, hints: hints).text)")
+        if let original = option("--original") {
+            let full = try AudioFileLoader.load(URL(fileURLWithPath: original))
+            let prefix = Array(full.prefix(samples.count))
+            print("  same samples as the original's first \(samples.count): \(prefix.map(\.bitPattern) == samples.map(\.bitPattern))")
+            print("  original:  \(try await engine.transcribe(prefix, hints: hints).text)")
+        }
+    }
+
 default:
-    print("usage: vm-bench download [variant] | vm-bench transcribe <audio>... [--variant v] [--language ru|auto] [--prompt] [--live] [--translate] | vm-bench lab <audio>... [options]")
+    print("usage: vm-bench download [variant] | vm-bench transcribe <audio>... [--variant v] [--language ru|auto] [--prompt] [--live] [--translate] | vm-bench lab <audio>... [options] | vm-bench codec <audio>... [--variant v] [--language ru|auto]")
+}
+
+/// The storage check for kept recordings (update 007).
+///
+///   vm-bench codec <audio>... [--variant v] [--language ru|auto]
+///
+/// Each file goes through the app's recorder in 0.1 s chunks into a scratch folder, is read back
+/// and compared bit for bit, and is transcribed next to the original with the bench glossary.
+/// Integer copies at 24 and 16 bits, which is what ALAC or FLAC would keep losslessly, are
+/// transcribed as well. Prints which copies give the original's text and the recorder's size per
+/// minute. Automatic language unless `--language` says otherwise.
+enum Codec {
+    static func run(arguments: [String]) async throws {
+        func option(_ name: String) -> String? {
+            guard let i = arguments.firstIndex(of: name), i + 1 < arguments.count else { return nil }
+            return arguments[i + 1]
+        }
+        let values = Set(["--variant", "--language"].compactMap(option))
+        let files = arguments.filter { !$0.hasPrefix("--") && !values.contains($0) }
+        let variant = option("--variant") ?? defaultVariant
+        let language = option("--language").flatMap { $0 == "auto" ? nil : $0 }
+        let engine = WhisperKitEngine(store: store, variant: variant)
+        try await engine.prepare()
+        let hints = TranscriptionHints(language: language, glossary: benchGlossary)
+        let archive = RecordingArchive(folder: FileManager.default.temporaryDirectory.appending(path: "vm-bench-codec-\(UUID().uuidString)", directoryHint: .isDirectory))
+        defer { archive.deleteAll() }
+
+        var same: [String: Int] = [:]
+        var bytes: Int64 = 0
+        var audioSeconds = 0.0
+        for file in files {
+            let original = try AudioFileLoader.load(URL(fileURLWithPath: file))
+            let id = UUID()
+            let writer = archive.start(id: id, info: RecordingInfo(date: Date()))
+            for start in stride(from: 0, to: original.count, by: 1_600) {
+                writer.append(Array(original[start..<min(start + 1_600, original.count)]))
+            }
+            await writer.finish()
+            let url = archive.url(for: RecordingArchive.fileName(for: id))
+            let stored = try RecordingFile.samples(at: url)
+            let exact = stored.map(\.bitPattern) == original.map(\.bitPattern)
+            bytes += (try FileManager.default.attributesOfItem(atPath: url.path)[.size] as? Int64) ?? 0
+            audioSeconds += Double(original.count) / AudioCapture.sampleRate
+
+            let reference = try await engine.transcribe(original, hints: hints).text
+            var line = "\((file as NSString).lastPathComponent): stored \(exact ? "bit-exact" : "NOT EXACT")"
+            for (name, copy) in [("stored", stored), ("24-bit", quantize(original, bits: 24)), ("16-bit", quantize(original, bits: 16))] {
+                let text = try await engine.transcribe(copy, hints: hints).text
+                let match = text == reference
+                same[name, default: 0] += match ? 1 : 0
+                line += " · \(name) \(match ? "same" : "differs")"
+                if !match { line += "\n    original: \(reference)\n    \(name): \(text)" }
+            }
+            print(line)
+        }
+        print("\nsame text as the original, of \(files.count): " + ["stored", "24-bit", "16-bit"].map { "\($0) \(same[$0, default: 0])" }.joined(separator: ", "))
+        if audioSeconds > 0 {
+            print(String(format: "recorder: %.2f MB per minute", Double(bytes) / audioSeconds * 60 / 1e6))
+        }
+    }
+
+    /// The samples as an integer format of `bits` keeps them.
+    static func quantize(_ samples: [Float], bits: Int) -> [Float] {
+        let scale = Float(1 << (bits - 1))
+        return samples.map { max(-scale, min(scale - 1, ($0 * scale).rounded())) / scale }
+    }
 }
 
 /// Experiments on WhisperKit's decoding options, outside the app's engine.
