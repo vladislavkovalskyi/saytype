@@ -18,8 +18,28 @@ import Testing
         #expect(records[0].modeID == nil)
         #expect(records[0].failure == nil)
         #expect(records[0].previous == nil)
+        #expect(records[0].action == nil)
         #expect(records[0].isTranscribed)
         #expect(records[1].appName == nil)
+    }
+
+    @Test func aVoiceActionAndARecordingRoundTripSideBySide() throws {
+        var record = DictationRecord(text: "Hola", raw: "переведи выделенное на испанский", appName: "Notes", bundleID: nil, duration: 2, date: Date(timeIntervalSince1970: 1_790_000_000), audio: "A.caf", modeID: "standard", action: DictationRecord.Action(source: .selection, target: "es"))
+        record.previous = DictationRecord.Version(text: "было", raw: "было")
+        let decoded = try JSONDecoder.history.decode([DictationRecord].self, from: JSONEncoder.history.encode([record]))
+        #expect(decoded == [record])
+        #expect(decoded[0].action?.target == "es")
+        #expect(decoded[0].spokenWordCount == 4)
+    }
+
+    @Test func a009HistoryWithAnActionDecodes() throws {
+        let json = """
+        [{"id":"6F9619FF-8B86-D011-B42D-00C04FC964FF","text":"Hola","raw":"переведи выделенное на испанский","duration":2,"date":"2026-09-20T10:15:00Z","action":{"source":"selection","target":"es"}}]
+        """
+        let records = try JSONDecoder.history.decode([DictationRecord].self, from: Data(json.utf8))
+        #expect(records[0].action == DictationRecord.Action(source: .selection, target: "es"))
+        #expect(records[0].audio == nil)
+        #expect(records[0].isTranscribed)
     }
 
     @Test func oldHistoryFileLoadsThroughTheStore() async throws {
