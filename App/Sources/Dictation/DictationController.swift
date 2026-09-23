@@ -390,47 +390,78 @@ final class DictationController {
 
     // MARK: Final pass and delivery
 
-    private func finalize(_ recorded: [Float], duration: Double, engine: WhisperKitEngine) async {
-        let value = settings.value
-        let mode = activeMode
+    /// What recognition and formatting made of one recording, before it goes anywhere.
+    struct PassResult {
+        /// Formatted and, where the mode asks, rewritten or translated.
+        var text: String
+        /// What Whisper heard.
+        var raw: String
+        /// "отправь" was said: Return goes after the text.
+        var send: Bool
+    }
+
+    /// Recognition and formatting of one recording: Whisper with the glossary, the formatting
+    /// pipeline, then the language model or smart structure, then backticks. It delivers nothing,
+    /// saves nothing and reads only its arguments, so a live dictation and a re-transcription of a
+    /// kept recording share it.
+    /// - Parameters:
+    ///   - instruction: the dictation is a spoken instruction over a selection; formatting is the
+    ///     last step, the language model runs on the selection afterwards.
+    ///   - skippable: esc skips the language model and the formatted text is used (live only).
+    ///   - stage: told when the language model starts and ends.
+    func recognize(_ recorded: [Float], engine: WhisperKitEngine, settings value: AppSettings, mode: DictationMode, instruction: Bool = false, skippable: Bool, stage: (FinishingStage) -> Void) async throws -> PassResult {
         let projectTerms = projects.terms
         let terms = DictionaryRewriter.promptTerms(entries: value.dictionary, projectTerms: projectTerms)
         // Whisper translates only when no language model will: the model keeps terms intact.
         // Turbo cannot translate at all; its modes stay in the spoken language without a model.
         // The overlay's switch translates everything; without it the mode decides.
         let translateTo = translationTarget(mode: mode, settings: value)
-        let whisperTranslates = selection == nil && translateTo == .english && !rewriter.isReady(value) && WhisperKitEngine.supportsTranslation(value.whisperModel)
+        let whisperTranslates = !instruction && translateTo == .english && !rewriter.isReady(value) && WhisperKitEngine.supportsTranslation(value.whisperModel)
         let hints = TranscriptionHints(
             language: value.language.whisperCode,
             glossary: terms,
             translate: whisperTranslates
         )
-        let transcript: Transcript
+        let transcript = try await engine.transcribe(recorded, hints: hints)
+        let style = value.applying(mode)
+        let formatted = DictationPipeline.format(transcript, settings: value, mode: mode, projectTerms: projectTerms)
+        var text = formatted.text
+        guard !instruction else { return PassResult(text: text, raw: transcript.text, send: formatted.send) }
+        if mode.usesLanguageModel || (translateTo != nil && !whisperTranslates), !text.isEmpty, rewriter.isReady(value) {
+            stage(.rewriting)
+            let rewritten = skippable
+                ? await rewriteSkippably(text, mode: mode, settings: value)
+                : await rewriter.rewrite(text, mode: mode, target: value.autoTranslate ? value.translateTarget : nil, settings: value)
+            if let rewritten, !rewritten.isEmpty {
+                text = rewritten
+            }
+            stage(.transcribing)
+        } else {
+            text = await smart.apply(to: text, settings: style)
+        }
+        if mode.backticks { text = Backticks.wrap(text, terms: projectTerms + value.dictionary.map(\.written)) }
+        return PassResult(text: text, raw: transcript.text, send: formatted.send)
+    }
+
+    /// A live dictation's final pass: recognition and formatting, then the edit of a selection, or
+    /// the history record and the delivery into the app.
+    private func finalize(_ recorded: [Float], duration: Double, engine: WhisperKitEngine) async {
+        let value = settings.value
+        let mode = activeMode
+        let result: PassResult
         do {
-            transcript = try await engine.transcribe(recorded, hints: hints)
+            result = try await recognize(recorded, engine: engine, settings: value, mode: mode, instruction: selection != nil, skippable: true) { finishingStage = $0 }
         } catch {
             show(.notice(.recognitionFailed), for: 2.5)
             return
         }
         let style = value.applying(mode)
-        let formatted = DictationPipeline.format(transcript, settings: value, mode: mode, projectTerms: projectTerms)
-        var text = formatted.text
         if let selection {
-            await editSelection(selection, instruction: text, settings: value, style: style)
+            await editSelection(selection, instruction: result.text, settings: value, style: style)
             return
         }
-        if mode.usesLanguageModel || (translateTo != nil && !whisperTranslates), !text.isEmpty, rewriter.isReady(value) {
-            finishingStage = .rewriting
-            if let rewritten = await rewriteSkippably(text, mode: mode, settings: value), !rewritten.isEmpty {
-                text = rewritten
-            }
-            finishingStage = .transcribing
-        } else {
-            text = await smart.apply(to: text, settings: style)
-        }
-        if mode.backticks { text = Backticks.wrap(text, terms: projectTerms + value.dictionary.map(\.written)) }
-        guard !text.isEmpty else {
-            if formatted.send, style.outputMode == .paste {
+        guard !result.text.isEmpty else {
+            if result.send, style.outputMode == .paste {
                 // Only "отправь": send what is already typed in the field.
                 Paster.pressReturn()
                 show(.inserted(target), for: 1.2)
@@ -440,12 +471,12 @@ final class DictationController {
             handsFree = false
             return
         }
-        let record = DictationRecord(text: text, raw: transcript.text, appName: target?.name, bundleID: target?.bundleID, duration: duration, date: Date())
+        let record = DictationRecord(text: result.text, raw: result.raw, appName: target?.name, bundleID: target?.bundleID, duration: duration, date: Date())
         cardRecord = record
         history.insert(record, at: 0)
         let retention = value.historyRetentionDays
         Task { history = await historyStore.add(record, retentionDays: retention) }
-        await deliver(text, settings: style, pressReturn: formatted.send || mode.pressReturn)
+        await deliver(result.text, settings: style, pressReturn: result.send || mode.pressReturn)
     }
 
     /// What the overlay's tag says while recording: the selection job, or a mode that is not the
