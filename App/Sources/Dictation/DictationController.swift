@@ -128,6 +128,8 @@ final class DictationController {
     let rewriter = RewriteService()
     /// Identifiers from the user's code folders.
     let projects: ProjectTermsService
+    /// Terms from the window in front, read when a dictation starts.
+    let screen = ScreenContextService()
 
     /// Live passes stop above this length; the final pass still covers everything.
     private let liveLimitSeconds = 30.0
@@ -273,6 +275,7 @@ final class DictationController {
             return
         }
         target = Self.frontmostTarget()
+        screen.begin(enabled: settings.value.screenContext && selection == nil)
         activeMode = settings.value.mode(for: target?.bundleID)
         silence = SilenceDetector(limit: handsFree ? settings.value.autoStopSilenceSeconds : 0)
         samples = []
@@ -337,6 +340,7 @@ final class DictationController {
         // flight: its quick release must not reset the dictation being finished.
         guard phase == .listening else { return }
         stopCapture()
+        screen.cancel()
         selection = nil
         phase = .idle
         handsFree = false
@@ -415,9 +419,13 @@ final class DictationController {
             return
         }
         let style = value.applying(mode)
+        // Terms read from the screen at key press apply to this dictation only.
+        let screenTerms = await screen.take()
         // Snippet phrases become markers ⟦1⟧, ⟦2⟧…; the snippets' text replaces them right before
         // history and delivery, so no formatter or model ever touches it.
-        let formatted = DictationPipeline.format(transcript, settings: value, mode: mode, projectTerms: projectTerms, snippets: value.snippets)
+        let formatted = DictationPipeline.format(transcript, settings: value, mode: mode, projectTerms: projectTerms, snippets: value.snippets,
+                                                 screen: screenTerms.isEmpty ? nil : ScreenTermMatcher(terms: screenTerms))
+        screen.record(terms: screenTerms, raw: transcript.text, text: formatted.text)
         var text = formatted.text
         if let selection {
             let instruction = await placingSnippets(formatted.snippets, in: text, selection: selection)
@@ -437,7 +445,7 @@ final class DictationController {
             text = await smart.apply(to: text, settings: style)
         }
         // Markers have no letters, so backticks never wrap one.
-        if mode.backticks { text = Backticks.wrap(text, terms: projectTerms + value.dictionary.map(\.written)) }
+        if mode.backticks { text = Backticks.wrap(text, terms: projectTerms + value.dictionary.map(\.written) + screenTerms) }
         let placed = await placingSnippets(formatted.snippets, in: text)
         text = placed.text
         guard !text.isEmpty else {
