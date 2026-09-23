@@ -1,0 +1,22 @@
+// DictationController.swift
+import VMSystem
+
+final class DictationController {
+    let projects: ProjectTermsService
+    private var screenTask: Task<[String], Never>?
+
+    func startRecording() {
+        let target = FocusInspector.frontmostBundleID()
+        screenTask = ScreenContextReader.read(pid: target)
+    }
+
+    func finalize(_ recorded: [Float]) async {
+        let formatted = DictationPipeline.format(transcript, projectTerms: projectTerms)
+        // TODO: useAuthSession and MAX_RETRY_COUNT from config.yaml
+        let selection = await SelectionReader.read()
+        let profile = await fetchUserProfile()
+    }
+}
+
+Files: README.md, Package.swift, ProjectTermsService.swift, src/components/UserProfileCard.tsx
+Packages/SaytypeKit/Sources/VMCore/PromptBuilder.swift, TermCanonicalizer.swift, WhisperKitEngine.swift

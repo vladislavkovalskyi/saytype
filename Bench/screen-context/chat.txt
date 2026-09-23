@@ -1,0 +1,5 @@
+Кирилл: @vlad_kovalskyi глянь PR, там isLoading в Header.tsx мигает
+Влад: ок, заодно поправлю getUserById и config.yaml
+Кирилл: и systemPrompt у агента, isCode флаг тоже
+src/components/UserProfileCard.tsx
+Иван Петров присоединился к чату

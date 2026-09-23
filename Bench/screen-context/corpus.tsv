@@ -1,0 +1,24 @@
+# audio	screen	expected terms
+../synthetic/screen-context/01.wav	code.txt	DictationController
+../synthetic/screen-context/02.wav	code.txt	ProjectTermsService.swift
+../synthetic/screen-context/03.wav	code.txt	useAuthSession
+../synthetic/screen-context/04.wav	code.txt	ScreenContextReader
+../synthetic/screen-context/05.wav	code.txt	TermCanonicalizer
+../synthetic/screen-context/06.wav	code.txt	WhisperKitEngine,PromptBuilder
+../synthetic/screen-context/07.wav	code.txt	MAX_RETRY_COUNT
+../synthetic/screen-context/08.wav	code.txt	fetchUserProfile
+../synthetic/screen-context/09.wav	code.txt	UserProfileCard.tsx
+../synthetic/screen-context/10.wav	code.txt	README.md
+../synthetic/screen-context/11.wav	screen.txt
+../synthetic/screen-context/12.wav	screen.txt
+../synthetic/screen-context/13.wav	screen.txt
+../synthetic/screen-context/14.wav	code.txt	FocusInspector
+../synthetic/screen-context/15.wav	code.txt	SelectionReader
+../synthetic/screen-context/16.wav	chat.txt	isLoading
+../synthetic/screen-context/17.wav	chat.txt	@vlad_kovalskyi
+../synthetic/screen-context/18.wav	chat.txt	UserProfileCard
+../synthetic/screen-context/19.wav	chat.txt	getUserById
+../synthetic/screen-context/20.wav	chat.txt	config.yaml
+../synthetic/screen-context/21.wav	chat.txt
+../synthetic/screen-context/22.wav	chat.txt
+../synthetic/screen-context/23.wav	chat.txt

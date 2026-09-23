@@ -12,10 +12,11 @@ import VMTranscription
 ///
 ///   vm-bench context speech <corpus.tsv> [--language ru|auto] [--owner-prompt settings.json]
 ///       [--prompt-share n] [--runs n]
-///       Each line of the corpus: audio file, screen text file, expected terms separated by
-///       commas; paths relative to the corpus. Every file is decoded with the app's engine twice:
-///       with the owner's prompt, and with the top n screen terms (default 3) put in front of it.
-///       Each decode is formatted with and without the screen matcher.
+///       Each line of the corpus (Bench/screen-context): audio file, screen text file, expected
+///       terms separated by commas; paths relative to the corpus. Every file is decoded with the
+///       app's engine twice: with the glossary prompt (the dictionary in `--owner-prompt`, then the
+///       built-in terms), and with the top n screen terms (default 3) put in front of it. Each
+///       decode is formatted with and without the screen matcher.
 enum ScreenBench {
     static func run(arguments: [String]) async throws {
         func option(_ name: String) -> String? {
@@ -134,7 +135,7 @@ enum ScreenBench {
             var seconds = 0.0
         }
         var tallies: [String: Tally] = [:]
-        let variants = ["owner prompt", "owner prompt + matcher", "screen share", "screen share + matcher"]
+        let variants = ["glossary", "glossary + matcher", "screen share", "screen share + matcher"]
         var shownScreens = Set<String>()
         for item in items {
             let screenText = (try? String(contentsOfFile: item.screen, encoding: .utf8)) ?? ""
