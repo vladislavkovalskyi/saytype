@@ -114,6 +114,18 @@ import Testing
         #expect(terms == ["DictionaryRewriter"])
     }
 
+    @Test func namesOnlyInTheMiddleOfASentence() {
+        let terms = ScreenTerms.extract(from: ScreenText(visible: [
+            "Refactor ProjectTermsService caching", "Translation Available", "Kovalskyi",
+            "Сегодня Grafeno написал. Mercurio ответил", "ревью от Kovalskyi",
+        ]))
+        #expect(terms.contains("Kovalskyi"))
+        #expect(terms.contains("Grafeno"))
+        for skipped in ["Refactor", "Translation", "Available", "Mercurio"] {
+            #expect(!terms.contains(skipped), "\(skipped)")
+        }
+    }
+
     @Test func handlesAndScopes() {
         let terms = ScreenTerms.extract(from: ScreenText(visible: ["@kirill_dev написал", "@acme/shop-front", "@ab"]))
         #expect(terms.contains("@kirill_dev"))
@@ -135,7 +147,7 @@ import Testing
         let text = ScreenText(
             title: "OrderService",
             focused: "fetchUserProfile",
-            visible: ["InvoiceRecord InvoiceRecord", "CheckoutForm", "Kovalskyi"]
+            visible: ["InvoiceRecord InvoiceRecord", "CheckoutForm", "спроси Kovalskyi"]
         )
         let terms = ScreenTerms.extract(from: text)
         #expect(Array(terms.prefix(2)).sorted() == ["OrderService", "fetchUserProfile"])

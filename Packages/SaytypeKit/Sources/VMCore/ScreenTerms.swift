@@ -126,9 +126,21 @@ public enum ScreenTerms {
                 result.append(contentsOf: pathTerms(String(name)))
                 continue
             }
-            result.append(contentsOf: pathTerms(raw))
+            // A capitalised word opening a line, a label or a sentence is a heading or a button,
+            // not a name: "Refactor …", "Translation Available".
+            let terms = pathTerms(raw)
+            let midSentence = isMidSentence(ns, before: match.range.location)
+            result.append(contentsOf: terms.filter { $0.1 != .name || midSentence })
         }
         return result
+    }
+
+    /// True when a word, not the start of the text or a line or a sentence end, comes before.
+    static func isMidSentence(_ text: NSString, before location: Int) -> Bool {
+        var i = location - 1
+        while i >= 0, let scalar = UnicodeScalar(text.character(at: i)), scalar == " " || scalar == "\t" { i -= 1 }
+        guard i >= 0, let scalar = UnicodeScalar(text.character(at: i)) else { return false }
+        return CharacterSet.letters.contains(scalar) || CharacterSet.decimalDigits.contains(scalar) || scalar == ","
     }
 
     /// src/components/UserProfileCard.tsx → UserProfileCard.tsx, UserProfileCard (and `components`
@@ -181,7 +193,8 @@ public enum ScreenTerms {
         return true
     }
 
-    /// Capitalised, letters only, not an everyday English word: Kovalskyi, Grafana.
+    /// Capitalised, letters only, not an everyday English word: Kovalskyi, Grafana. Taken only
+    /// in the middle of a sentence.
     static func isName(_ word: String) -> Bool {
         guard word.count >= minimumNameLength, word.count <= 30,
               let first = word.first, first.isUppercase, DeveloperText.isASCIILetter(first),
