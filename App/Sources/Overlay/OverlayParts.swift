@@ -531,6 +531,8 @@ struct ModeTag: View {
 /// Left side of the rewrite stage: a highlight runs across the label while the model works.
 struct RewritingLabel: View {
     var ink: Color = .white
+    /// What a voice action works on, "Selection → ES", in place of "Rewriting".
+    var title: String?
 
     var body: some View {
         HStack(spacing: 6) {
@@ -539,16 +541,18 @@ struct RewritingLabel: View {
             Text(Image(systemName: "sparkles"))
                 .font(.system(size: 10.5, weight: .semibold))
                 .foregroundStyle(OverlayPalette.emberHigh)
-            Text("Rewriting")
-                .font(.onest(12, .medium))
-                .foregroundStyle(ink.opacity(0.9))
-                .fixedSize()
-                .modifier(Shimmer())
+            Group {
+                if let title { Text(verbatim: title) } else { Text("Rewriting") }
+            }
+            .font(.onest(12, .medium))
+            .foregroundStyle(ink.opacity(0.9))
+            .fixedSize()
+            .modifier(Shimmer())
         }
     }
 
-    static var width: CGFloat {
-        18 + TextMeasure.width(String(localized: "Rewriting"), size: 12) + 4
+    static func width(title: String? = nil) -> CGFloat {
+        18 + TextMeasure.width(title ?? String(localized: "Rewriting"), size: 12) + 4
     }
 }
 

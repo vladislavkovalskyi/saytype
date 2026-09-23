@@ -119,7 +119,7 @@ struct IslandView: View {
         return max(
             Self.barsWidth + tag,
             Self.timerWidth + (dictation.handsFree ? 30 : 0),
-            rewrite ? max(RewritingLabel.width, SkipRewriteButton.width) : 0
+            rewrite ? max(RewritingLabel.width(title: dictation.actionTag), SkipRewriteButton.width) : 0
         )
     }
 
@@ -191,7 +191,7 @@ struct IslandView: View {
             }
             .transition(.islandContent)
         case .finishing(rewriting: true):
-            RewritingLabel().transition(.islandContent)
+            RewritingLabel(title: dictation.actionTag).transition(.islandContent)
         case .inserted:
             if case .inserted(let target) = dictation.phase {
                 AppIconBadge(icon: target?.icon).transition(.islandContent)

@@ -39,11 +39,18 @@ public enum RewriteValidator {
     public static func check(original: String, candidate: String, request: RewriteRequest, terms: [String] = []) -> Verdict {
         let candidate = candidate.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !candidate.isEmpty else { return .rejected(.empty) }
+        // A snippet's marker lost, doubled or changed would lose or repeat the saved text.
+        if let marker = SnippetMarker.mismatch(original: original, candidate: candidate) {
+            return .rejected(marker.missing ? .dropped(marker.marker) : .invented(marker.marker))
+        }
 
         let length = Double(original.count)
-        let (ratio, slack) = lengthLimit(request.style)
+        // Chinese, Japanese and Korean take a third of the characters English does: a translation
+        // into or out of them is judged by a wide upper bound only.
+        let dense = request.translate && (isDense(original) || isDense(candidate))
+        let (ratio, slack) = dense ? denseLengthLimit : lengthLimit(request.style)
         if Double(candidate.count) > length * ratio + slack { return .rejected(.tooLong) }
-        if let minimum = minimumRatio(request.style), length >= 60, Double(candidate.count) < length * minimum {
+        if !dense, let minimum = minimumRatio(request.style), length >= 60, Double(candidate.count) < length * minimum {
             return .rejected(.tooShort)
         }
         // A selection edit is asked for in words: which words change, and into what language, is
@@ -62,10 +69,19 @@ public enum RewriteValidator {
         // Everything but a plain translation may resolve "не X, а Y" to Y.
         let correctionsAllowed = request.style != .none
 
-        let protected = protectedTokens(in: original, terms: latinTerms)
+        var protected = protectedTokens(in: original, terms: latinTerms)
+        // Translating Latin-script text: "double-check" and "follow-up" are words, not kebab-case.
+        if request.translate, Script.of(original) == .latin {
+            protected.removeAll { $0.kind == .code && $0.key.range(of: #"^[a-z]+(-[a-z]+)+$"#, options: .regularExpression) != nil }
+        }
+        // Units are translated like words: "4 GB" is "4 ГБ" in Russian.
+        if request.translate { protected.removeAll { $0.kind == .acronym && translatedUnits.contains($0.key) } }
+        // A translation may spell a number out: "3 раза" → "three times".
+        let spelledNumbers = request.translate ? NumberWords.values(in: candidateText) : []
         var dropped: [Token] = []
         for token in protected where !token.keys.contains(where: { contains(candidateText, $0) }) {
             if correctionsAllowed, token.wordIndices.allSatisfy({ isNearCorrection(originalWords, at: $0) }) { continue }
+            if token.kind == .number, let value = Double(token.key), spelledNumbers.contains(value) { continue }
             dropped.append(token)
         }
         // A commit message summarizes: it may leave out context such as "SwiftUI" or an old port,
@@ -85,6 +101,8 @@ public enum RewriteValidator {
         return .accepted
     }
 
+    static let translatedUnits: Set<String> = ["kb", "mb", "gb", "tb", "kbps", "mbps", "gbps", "hz", "khz", "mhz", "ghz"]
+
     /// Share of the dictation's code, paths, numbers and terms a commit message may leave out.
     static let commitDroppableShare = 0.5
 
@@ -100,6 +118,21 @@ public enum RewriteValidator {
         case .selection: (3, 240)
         case .none: (1.6, 40)
         }
+    }
+
+    static let denseLengthLimit: (ratio: Double, slack: Double) = (4, 120)
+
+    /// Most letters are Han, kana or Hangul.
+    static func isDense(_ text: String) -> Bool {
+        var dense = 0, letters = 0
+        for scalar in text.unicodeScalars where scalar.properties.isAlphabetic {
+            letters += 1
+            switch scalar.value {
+            case 0x3040...0x30FF, 0x3400...0x4DBF, 0x4E00...0x9FFF, 0xAC00...0xD7AF, 0xF900...0xFAFF: dense += 1
+            default: break
+            }
+        }
+        return letters > 0 && Double(dense) / Double(letters) > 0.3
     }
 
     /// Cleanup and translation keep nearly everything; a much shorter answer lost content.

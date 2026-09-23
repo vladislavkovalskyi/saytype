@@ -70,6 +70,12 @@ extension DictationController {
         return writer.id
     }
 
+    /// The words were a voice action, or only "отправь": no record, and the recording goes at once.
+    func dropRecordingAudio(_ id: UUID?) {
+        guard let id else { return }
+        archive.delete([id])
+    }
+
     /// A dictation that ended without text keeps its recording as a record with no text, so it
     /// can be played and transcribed again. App and mode come from the file, written when the
     /// recording started.
@@ -170,6 +176,7 @@ extension DictationController {
     func retranscribe(_ id: UUID, _ change: RetranscriptionChange = .none) {
         guard retranscription?.isRunning != true,
               let record = records.first(where: { $0.id == id }),
+              canRetranscribe(record),
               let url = audioURL(for: record)
         else { return }
         var value = settings.value
@@ -215,16 +222,21 @@ extension DictationController {
                 retranscription?.state = .transcribing
             }
 
-            let result: PassResult?
+            // The live path without its live parts: no voice gate, no voice action, no delivery.
+            // Snippets are resolved, their variables read now (see `compose`).
+            let pass = makePass(settings: value, mode: mode, readsSelection: false)
+            let transcript: Transcript?
             do {
-                result = try await recognize(samples, engine: engine, settings: value, mode: mode, skippable: false) { stage in
-                    self.retranscription?.state = stage == .rewriting ? .rewriting : .transcribing
-                }
+                transcript = try await hear(samples, engine: engine, pass: pass)
             } catch {
-                result = nil
+                transcript = nil
             }
+            // The other model is done; the language model step doesn't need it.
             if let borrowed { await borrowed.unload() }
-            guard let result else { return fail(id, .recognitionFailed) }
+            guard let transcript else { return fail(id, .recognitionFailed) }
+            let result = await compose(transcript, pass: pass) { stage in
+                self.retranscription?.state = stage == .rewriting ? .rewriting : .transcribing
+            }
             guard !result.text.isEmpty else { return fail(id, .nothingHeard) }
             let text = result.text
             let raw = result.raw
@@ -235,8 +247,14 @@ extension DictationController {
                 record.failure = nil
             }
             retranscription = nil
-            if let updated = records.first(where: { $0.id == id }) { cardRecordChanged(updated) }
+            if let updated = records.first(where: { $0.id == id }) { cardRecordChanged(updated, snippets: result.snippets) }
         }
+    }
+
+    /// Whether this record's recording can be transcribed again: a voice action's text is the
+    /// model's work on a selection or the clipboard, which the recording can't bring back.
+    func canRetranscribe(_ record: DictationRecord) -> Bool {
+        record.audio != nil && record.action == nil
     }
 
     /// Brings back the text the last re-transcription replaced.

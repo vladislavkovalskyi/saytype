@@ -5,25 +5,40 @@ public struct PipelineResult: Equatable, Sendable {
     public var text: String
     /// The dictation ended with "отправь".
     public var send: Bool
+    /// Snippets the text holds as markers: ⟦1⟧ is the first. `SnippetPlacement` puts them in.
+    public var snippets: [Snippet]
 
-    public init(text: String, send: Bool = false) {
+    public init(text: String, send: Bool = false, snippets: [Snippet] = []) {
         self.text = text
         self.send = send
+        self.snippets = snippets
     }
 }
 
 /// The deterministic part of a dictation: voice commands, developer rules and the text
 /// formatter, in the mode's style. Runs in milliseconds; language model steps come after.
 public enum DictationPipeline {
-    public static func format(_ transcript: Transcript, settings: AppSettings, mode: DictationMode, projectTerms: [String] = []) -> PipelineResult {
+    /// - Parameter snippets: phrases to replace with markers. Voice commands are found first, so
+    ///   a command always wins over a snippet with the same words.
+    public static func format(_ transcript: Transcript, settings: AppSettings, mode: DictationMode, projectTerms: [String] = [], snippets: [Snippet] = []) -> PipelineResult {
         let style = settings.applying(mode)
-        let pieces = settings.voiceCommands ? VoiceCommands.parse(transcript.text) : [.text(transcript.text)]
+        var pieces = settings.voiceCommands ? VoiceCommands.parse(transcript.text) : [.text(transcript.text)]
+        var found: [Snippet] = []
+        if !snippets.isEmpty {
+            let matcher = SnippetMatcher(snippets)
+            for index in pieces.indices {
+                guard case .text(let raw) = pieces[index] else { continue }
+                pieces[index] = .text(matcher.replacing(in: raw, found: &found))
+            }
+        }
 
         // Without commands the formatter keeps the segment timings, which place paragraph breaks.
         if pieces.count == 1, case .text(let raw) = pieces[0] {
             let source = mode.developer ? DeveloperFormatter.apply(raw) : raw
-            // Paragraphs fall back to plain text when the segments no longer match the text.
-            return PipelineResult(text: TextFormatter.format(Transcript(text: source, segments: transcript.segments), settings: style, projectTerms: projectTerms))
+            // Paragraphs fall back to plain text when the segments no longer match the text,
+            // which a marker in place of the trigger's words always makes them do.
+            let segments = found.isEmpty ? transcript.segments : []
+            return PipelineResult(text: TextFormatter.format(Transcript(text: source, segments: segments), settings: style, projectTerms: projectTerms), snippets: found)
         }
 
         // A line collects the raw words up to the next break and is formatted as one text, so
@@ -64,7 +79,7 @@ public enum DictationPipeline {
             }
         }
         flushLine()
-        return PipelineResult(text: output.trimmingCharacters(in: .whitespacesAndNewlines), send: send)
+        return PipelineResult(text: output.trimmingCharacters(in: .whitespacesAndNewlines), send: send, snippets: found)
     }
 }
 

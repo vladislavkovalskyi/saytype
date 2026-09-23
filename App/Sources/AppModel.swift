@@ -41,6 +41,8 @@ final class AppModel {
             exit(0)
         }
         refreshPermissions()
+        // Preview settings are defaults and never saved; the Snippets section gets samples to show.
+        if Self.isPreviewLaunch { settings.value.snippets = Snippet.previewSamples }
         let overlayModel = OverlayModel(
             dictation: dictation,
             settings: settings,

@@ -157,6 +157,29 @@ text back.
 Needs a language model (**Model** → Rewrites). With nothing selected, or no model, the overlay says
 so and nothing is touched. Passwords are never read.
 
+## Voice actions
+
+No shortcut needed: select or copy text, hold the record key as usual and say what to do with it.
+
+| Say | What happens |
+|---|---|
+| переведи выделенное на испанский · translate the selection to Spanish | the selection, translated |
+| переведи текст из буфера на английский · translate the clipboard text to English | the copied text, translated |
+| переведи это на английский · can you translate this to English, please | the selection, translated |
+| переведи на испанский, with text selected | the selection, translated |
+| сократи выделенное до двух предложений · fix the typos in the selected text | the language model edits it |
+
+Any of Whisper's 99 languages, named in Russian or English. The result goes where a dictation would:
+over the selection, into the card or onto the clipboard. The clipboard keeps what you copied.
+<kbd>esc</kbd> while the model works leaves everything as it was.
+
+saytype looks for an action before it formats or translates anything, so **Translate everything**
+never translates the instruction itself. Only short instructions over text count: «переведи мне
+деньги на карту» and «поправь вставку из буфера обмена в карточке» are typed as usual. «Это» and
+“this” need text that is really selected; with nothing selected they are just words.
+
+Needs a language model (**Model** → Rewrites). The switch is **Text → Voice actions**.
+
 ## Recordings of recent dictations
 
 The audio of each dictation stays on your Mac for a day, the 20 newest recordings at most. In
@@ -167,8 +190,8 @@ back. The card has the same two buttons, ▶ and ↻.
 
 Audio reaches the disk while you speak. If saytype quits or crashes mid-dictation, the next launch
 lists the recording in History as **Not transcribed**. A dictation that ended in “Nothing heard”
-keeps its audio too. A week, or no recordings at all, is set next to the history's own period at
-the top of **History**.
+keeps its audio too; voice actions and edits of the selection keep none. A week, or no recordings
+at all, is set next to the history's own period at the top of **History**.
 
 ## Languages
 
@@ -262,6 +285,23 @@ saytype checks every rewrite: if a file name, identifier, number or link from yo
 | отправь · send it, at the very end | presses Return after the paste |
 
 Commands work only as separate phrases, so «добавь новую строку в таблицу» and «отправь письмо Васе» stay text.
+
+## Snippets
+
+Save a text once and say its phrase: «мой имейл» pastes your address, «ссылка на репо» the link,
+«шаблон ревью» a ready prompt for Claude Code. Add them in **Snippets**.
+
+| Say | Get |
+|---|---|
+| мой имейл | vlad@example.com |
+| напиши на мой имейл, как будет готово | Напиши на vlad@example.com, как будет готово. |
+| шаблон ревью | the saved prompt, word for word |
+
+- The phrase works alone or inside a sentence. Case, punctuation and hyphens don't matter. Give a snippet several phrases for the ways Whisper hears you: «шаблон ревью», «шаблон review».
+- The saved text goes in exactly as written: no punctuation fixes, no dictionary, no translation. The words around it are formatted, rewritten and translated as usual; if the language model loses the snippet's place, the dictation goes in without the model.
+- `{clipboard}`, `{selection}`, `{date}` and `{time}` are filled in as the text goes in. Anything else in braces stays.
+- Voice commands come first: a snippet can't take «новая строка» or «отправь».
+- With **Translate everything** on and no language model, Whisper translates before saytype sees the words. Add an English phrase too: «review template».
 
 ## Settings
 

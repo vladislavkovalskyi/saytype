@@ -679,6 +679,16 @@
         }
       }
     },
+    "Add phrase" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добавить фразу"
+          }
+        }
+      }
+    },
     "Add to dictionary" : {
       "localizations" : {
         "ru" : {
@@ -1224,6 +1234,16 @@
         }
       }
     },
+    "Clipboard is empty" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Буфер обмена пуст"
+          }
+        }
+      }
+    },
     "Close" : {
       "comment" : "Round button on the last onboarding step",
       "localizations" : {
@@ -1351,6 +1371,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Не удалось распознать"
+          }
+        }
+      }
+    },
+    "Current time" : {
+      "comment" : "Help for the {time} snippet variable",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Текущее время"
           }
         }
       }
@@ -1592,6 +1623,17 @@
         }
       }
     },
+    "duplicate" : {
+      "comment" : "Tag on a snippet phrase that a snippet higher in the list already has",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "повтор"
+          }
+        }
+      }
+    },
     "Edit" : {
       "comment" : "Card action: open the dictation for editing",
       "localizations" : {
@@ -1630,6 +1672,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Письмо"
+          }
+        }
+      }
+    },
+    "Empty" : {
+      "comment" : "A snippet in the list that has no text yet",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пусто"
           }
         }
       }
@@ -2299,6 +2352,16 @@
         }
       }
     },
+    "language model is off" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "языковая модель выключена"
+          }
+        }
+      }
+    },
     "Last Dictation" : {
       "localizations" : {
         "ru" : {
@@ -2693,6 +2756,16 @@
         }
       }
     },
+    "New snippet" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Новый сниппет"
+          }
+        }
+      }
+    },
     "Next" : {
       "comment" : "Round button that moves onboarding forward",
       "localizations" : {
@@ -2794,6 +2867,17 @@
         }
       }
     },
+    "No phrase" : {
+      "comment" : "A snippet in the list that has no trigger phrase yet",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Без фразы"
+          }
+        }
+      }
+    },
     "no punctuation" : {
       "localizations" : {
         "ru" : {
@@ -2810,6 +2894,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Не найдено"
+          }
+        }
+      }
+    },
+    "No snippets" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сниппетов нет"
           }
         }
       }
@@ -3204,6 +3298,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Разрешения"
+          }
+        }
+      }
+    },
+    "Phrases" : {
+      "comment" : "Trigger phrases of a snippet",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Фразы"
+          }
+        }
+      }
+    },
+    "Phrases that insert saved text" : {
+      "comment" : "Subtitle of the Snippets section",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Фразы, которые вставляют сохранённый текст"
           }
         }
       }
@@ -3768,6 +3884,17 @@
         }
       }
     },
+    "Snippets" : {
+      "comment" : "Main window section: phrases that insert saved text",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сниппеты"
+          }
+        }
+      }
+    },
     "so fix use effect in header it flickers on every render" : {
       "comment" : "Raw sample dictation as the speech model hears it, before formatting",
       "localizations" : {
@@ -4028,6 +4155,17 @@
         }
       }
     },
+    "Text on the clipboard" : {
+      "comment" : "Help for the {clipboard} snippet variable",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Текст из буфера обмена"
+          }
+        }
+      }
+    },
     "Text rules for each app" : {
       "localizations" : {
         "ru" : {
@@ -4038,12 +4176,34 @@
         }
       }
     },
+    "Text selected in the app you dictate into" : {
+      "comment" : "Help for the {selection} snippet variable",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выделенный текст в приложении, куда идёт диктовка"
+          }
+        }
+      }
+    },
     "text stays in the spoken language" : {
       "localizations" : {
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "текст останется на языке речи"
+          }
+        }
+      }
+    },
+    "Text to insert" : {
+      "comment" : "Placeholder of a snippet's text",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Текст для вставки"
           }
         }
       }
@@ -4105,6 +4265,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Таймаут"
+          }
+        }
+      }
+    },
+    "Today's date" : {
+      "comment" : "Help for the {date} snippet variable",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сегодняшняя дата"
+          }
+        }
+      }
+    },
+    "too short" : {
+      "comment" : "Tag on a snippet phrase with fewer than two letters; the phrase is feminine in Russian",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "слишком короткая"
           }
         }
       }
@@ -4370,12 +4552,44 @@
         }
       }
     },
+    "Variables" : {
+      "comment" : "Values filled into a snippet: clipboard, selection, date, time",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Переменные"
+          }
+        }
+      }
+    },
     "Version %@ (%@)" : {
       "localizations" : {
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Версия %@ (%@)"
+          }
+        }
+      }
+    },
+    "Voice actions" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Голосовые действия"
+          }
+        }
+      }
+    },
+    "voice command" : {
+      "comment" : "Tag on a snippet phrase that a built-in voice command takes",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "голосовая команда"
           }
         }
       }
@@ -4540,6 +4754,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "«новая строка», «новый абзац», «удали последнее предложение», «открой кавычки … закрой кавычки», «отправь» в конце"
+          }
+        }
+      }
+    },
+    "“translate the selection to Spanish”, “shorten the clipboard text”" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "«переведи выделенное на испанский», «сократи текст из буфера»"
           }
         }
       }

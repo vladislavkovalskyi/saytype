@@ -42,6 +42,8 @@ final class DictationController {
         case modelOff
         /// The model did not answer, or answered with nothing; the selection is untouched.
         case editFailed
+        /// A voice action named the clipboard and it holds no text.
+        case clipboardEmpty
         /// The mode shortcut picked a mode; the title of the mode or of automatic selection.
         case mode(String)
     }
@@ -80,6 +82,8 @@ final class DictationController {
     var cardDraft = ""
     /// What the last edit taught the dictionary, for the readout under the card and its undo.
     private(set) var cardLearned: [DictionaryEntry] = []
+    /// Snippet texts in the card, which it marks.
+    private(set) var cardSnippets: [String] = []
     private(set) var modelState = ModelState.missing
     private(set) var handsFree = false
     private(set) var levels = [Float](repeating: 0, count: 28)
@@ -118,6 +122,10 @@ final class DictationController {
     @ObservationIgnored private(set) var target: TargetApp?
     /// The text selected in another app: this dictation is an instruction over it, not text.
     @ObservationIgnored private(set) var selection: String?
+    /// The voice action this dictation turned out to be, while the model carries it out.
+    private(set) var action: VoiceAction?
+    /// What Accessibility found selected at key press, for a voice action.
+    @ObservationIgnored private var actionSelection: Task<String?, Never>?
     @ObservationIgnored private var silence = SilenceDetector(limit: 0)
     /// Resumes the final pass without the rewrite; set while the model runs.
     @ObservationIgnored private var skipRewriteAction: (() -> Void)?
@@ -327,6 +335,7 @@ final class DictationController {
         rewriter.warmUp(settings.value, mode: selection == nil ? activeMode : nil, translateTo: settings.value.autoTranslate ? settings.value.translateTarget : nil)
         if settings.value.sounds { Sounds.start() }
         runLiveLoop()
+        readSelectionForActions()
     }
 
     private func consume(_ chunk: AudioCapture.Chunk) {
@@ -367,6 +376,7 @@ final class DictationController {
         stopCapture()
         discardRecordingAudio()
         selection = nil
+        actionSelection = nil
         phase = .idle
         handsFree = false
     }
@@ -427,72 +437,127 @@ final class DictationController {
 
     // MARK: Final pass and delivery
 
-    /// What recognition and formatting made of one recording, before it goes anywhere.
+    /// One run of recognition and formatting over a recording, with what it depends on fixed when
+    /// it starts. A live dictation takes the settings and the mode of the moment; a
+    /// re-transcription of a kept recording passes its own. New inputs (the screen's terms, say)
+    /// go here as fields with a default, so no call site has to change.
+    struct Pass {
+        var settings: AppSettings
+        var mode: DictationMode
+        /// Edit selection: the dictation is an instruction over this text. Formatting is its last
+        /// step; the language model runs on the selection afterwards.
+        var selection: String?
+        /// Esc skips the language model and the formatted text is used (live dictations).
+        var skippable = false
+        /// `{selection}` in a snippet reads the app in front. A re-transcription runs from
+        /// saytype's own window, where that would read nothing of use, so it fills in nothing.
+        var readsSelection = true
+        /// Identifiers from the user's code folders, taken once for the glossary and formatting.
+        var projectTerms: [String] = []
+        /// Where the text is translated to; `nil` leaves it in the spoken language.
+        var translateTo: AppSettings.SpeechLanguage?
+        /// Whisper translates on its own, because no language model will.
+        var whisperTranslates = false
+    }
+
+    /// What formatting and the model made of a transcript, before it goes anywhere.
     struct PassResult {
-        /// Formatted and, where the mode asks, rewritten or translated.
+        /// Formatted, rewritten or translated where the mode asks, snippets in place.
         var text: String
         /// What Whisper heard.
         var raw: String
         /// "отправь" was said: Return goes after the text.
         var send: Bool
+        /// The snippets' texts inside `text`, for the card's mark.
+        var snippets: [String] = []
     }
 
-    /// Recognition and formatting of one recording: Whisper with the glossary, the formatting
-    /// pipeline, then the language model or smart structure, then backticks. It delivers nothing,
-    /// saves nothing and reads only its arguments, so a live dictation and a re-transcription of a
-    /// kept recording share it.
-    /// - Parameters:
-    ///   - instruction: the dictation is a spoken instruction over a selection; formatting is the
-    ///     last step, the language model runs on the selection afterwards.
-    ///   - skippable: esc skips the language model and the formatted text is used (live only).
-    ///   - stage: told when the language model starts and ends.
-    func recognize(_ recorded: [Float], engine: WhisperKitEngine, settings value: AppSettings, mode: DictationMode, instruction: Bool = false, skippable: Bool, stage: (FinishingStage) -> Void) async throws -> PassResult {
-        let projectTerms = projects.terms
-        let terms = DictionaryRewriter.promptTerms(entries: value.dictionary, projectTerms: projectTerms)
+    /// A pass over these settings and this mode; the project terms and the translation decision
+    /// are taken now.
+    func makePass(settings value: AppSettings, mode: DictationMode, selection: String? = nil, skippable: Bool = false, readsSelection: Bool = true) -> Pass {
+        let translateTo = translationTarget(mode: mode, settings: value)
         // Whisper translates only when no language model will: the model keeps terms intact.
         // Turbo cannot translate at all; its modes stay in the spoken language without a model.
         // The overlay's switch translates everything; without it the mode decides.
-        let translateTo = translationTarget(mode: mode, settings: value)
-        let whisperTranslates = !instruction && translateTo == .english && !rewriter.isReady(value) && WhisperKitEngine.supportsTranslation(value.whisperModel)
+        let whisperTranslates = selection == nil && translateTo == .english && !rewriter.isReady(value) && WhisperKitEngine.supportsTranslation(value.whisperModel)
+        return Pass(settings: value, mode: mode, selection: selection, skippable: skippable, readsSelection: readsSelection, projectTerms: projects.terms, translateTo: translateTo, whisperTranslates: whisperTranslates)
+    }
+
+    /// Whisper over the recording, with the glossary prompt and the translation the pass decided.
+    func hear(_ recorded: [Float], engine: WhisperKitEngine, pass: Pass) async throws -> Transcript {
+        let value = pass.settings
+        let terms = DictionaryRewriter.promptTerms(entries: value.dictionary, projectTerms: pass.projectTerms)
         let hints = TranscriptionHints(
             language: value.language.whisperCode,
             glossary: terms,
-            translate: whisperTranslates
+            translate: pass.whisperTranslates
         )
-        let transcript = try await engine.transcribe(recorded, hints: hints)
+        return try await engine.transcribe(recorded, hints: hints)
+    }
+
+    /// The text of a transcript: formatting, with snippet phrases as markers; then the language
+    /// model or smart structure; then backticks; then the snippets' text in place of the markers.
+    /// It delivers nothing and saves nothing, so a live dictation and a re-transcription share it.
+    /// - Parameter stage: told when the language model starts and ends.
+    func compose(_ transcript: Transcript, pass: Pass, stage: (FinishingStage) -> Void) async -> PassResult {
+        let value = pass.settings
+        let mode = pass.mode
         let style = value.applying(mode)
-        let formatted = DictationPipeline.format(transcript, settings: value, mode: mode, projectTerms: projectTerms)
+        // Snippet phrases become markers ⟦1⟧, ⟦2⟧…; the snippets' text replaces them at the end, so
+        // no formatter or model ever touches it.
+        let formatted = DictationPipeline.format(transcript, settings: value, mode: mode, projectTerms: pass.projectTerms, snippets: value.snippets)
         var text = formatted.text
-        guard !instruction else { return PassResult(text: text, raw: transcript.text, send: formatted.send) }
-        if mode.usesLanguageModel || (translateTo != nil && !whisperTranslates), !text.isEmpty, rewriter.isReady(value) {
+        if let selection = pass.selection {
+            // The instruction gets the snippets' text; `{selection}` is the text it is about.
+            let instruction = await placingSnippets(formatted.snippets, in: text, selection: selection)
+            return PassResult(text: instruction.text, raw: transcript.text, send: formatted.send, snippets: instruction.snippets)
+        }
+        // Nothing but snippets: no model may see the trigger, and there are no words to rewrite or
+        // structure. A model answer that loses a marker is rejected and the text stays as formatted.
+        let onlySnippets = SnippetMarker.isOnlyMarkers(text)
+        if !onlySnippets, mode.usesLanguageModel || (pass.translateTo != nil && !pass.whisperTranslates), !text.isEmpty, rewriter.isReady(value) {
             stage(.rewriting)
-            let rewritten = skippable
+            let rewritten = pass.skippable
                 ? await rewriteSkippably(text, mode: mode, settings: value)
                 : await rewriter.rewrite(text, mode: mode, target: value.autoTranslate ? value.translateTarget : nil, settings: value)
             if let rewritten, !rewritten.isEmpty {
                 text = rewritten
             }
             stage(.transcribing)
-        } else {
+        } else if !onlySnippets {
             text = await smart.apply(to: text, settings: style)
         }
-        if mode.backticks { text = Backticks.wrap(text, terms: projectTerms + value.dictionary.map(\.written)) }
-        return PassResult(text: text, raw: transcript.text, send: formatted.send)
+        // Markers have no letters, so backticks never wrap one.
+        if mode.backticks { text = Backticks.wrap(text, terms: pass.projectTerms + value.dictionary.map(\.written)) }
+        // Variables are read now: for a live dictation while its app is still in front, for a
+        // re-transcription at that moment ({clipboard} as it is then, {selection} empty).
+        let placed = await placingSnippets(formatted.snippets, in: text, selection: pass.readsSelection ? nil : "")
+        return PassResult(text: placed.text, raw: transcript.text, send: formatted.send, snippets: placed.snippets)
     }
 
-    /// A live dictation's final pass: recognition and formatting, then the edit of a selection, or
-    /// the history record and the delivery into the app. `audio` is the id of its kept recording.
+    /// A live dictation's final pass: Whisper, then a voice action if the words are one, then the
+    /// text; then the edit of a selection, or the history record and the delivery into the app.
+    /// `audio` is the id of its kept recording.
     private func finalize(_ recorded: [Float], duration: Double, engine: WhisperKitEngine, audio: UUID?) async {
         let value = settings.value
         let mode = activeMode
-        let result: PassResult
+        let pass = makePass(settings: value, mode: mode, selection: selection, skippable: true)
+        let transcript: Transcript
         do {
-            result = try await recognize(recorded, engine: engine, settings: value, mode: mode, instruction: selection != nil, skippable: true) { finishingStage = $0 }
+            transcript = try await hear(recorded, engine: engine, pass: pass)
         } catch {
             keepUntranscribed(audio, duration: duration, failure: .recognitionFailed)
             show(.notice(.recognitionFailed), for: 2.5)
             return
         }
+        // An instruction over the selection or the clipboard runs on the model instead of being
+        // typed. It keeps no recording: its source can't be replayed, and the words alone would
+        // only come back as the instruction.
+        if await runVoiceAction(transcript.text, duration: duration, settings: value) {
+            dropRecordingAudio(audio)
+            return
+        }
+        let result = await compose(transcript, pass: pass) { finishingStage = $0 }
         let style = value.applying(mode)
         if let selection {
             await editSelection(selection, instruction: result.text, settings: value, style: style)
@@ -503,6 +568,7 @@ final class DictationController {
                 // Only "отправь": send what is already typed in the field.
                 Paster.pressReturn()
                 show(.inserted(target), for: 1.2)
+                dropRecordingAudio(audio)
             } else {
                 keepUntranscribed(audio, duration: duration, failure: .nothingHeard)
                 show(.notice(.nothingHeard), for: 1.5)
@@ -518,7 +584,7 @@ final class DictationController {
             records = await historyStore.add(record, retentionDays: retention)
             await sweepAudio()
         }
-        await deliver(result.text, settings: style, pressReturn: result.send || mode.pressReturn)
+        await deliver(result.text, settings: style, pressReturn: result.send || mode.pressReturn, snippets: result.snippets)
     }
 
     /// What the overlay's tag says while recording: the selection job, or a mode that is not the
@@ -628,7 +694,9 @@ final class DictationController {
         await deliver(edited, settings: style, pressReturn: false)
     }
 
-    private func deliver(_ text: String, settings value: AppSettings, pressReturn modeReturn: Bool) async {
+    /// - Parameter snippets: snippet texts inside `text`, for the card's mark.
+    private func deliver(_ text: String, settings value: AppSettings, pressReturn modeReturn: Bool, snippets: [String] = []) async {
+        cardSnippets = snippets
         switch value.outputMode {
         case .paste:
             let pressReturn = modeReturn || (target?.bundleID.map(value.autoEnterApps.contains) ?? false)
@@ -661,10 +729,12 @@ final class DictationController {
         return records.first { $0.id == id }
     }
 
-    /// A re-transcription replaced the text of the dictation the card shows.
-    func cardRecordChanged(_ record: DictationRecord) {
+    /// A re-transcription replaced the text of the dictation the card shows. `snippets` are the
+    /// snippet texts in the new text, for the card's mark.
+    func cardRecordChanged(_ record: DictationRecord, snippets: [String] = []) {
         guard cardRecord?.id == record.id, case .card = phase, !cardEditing else { return }
         cardRecord = record
+        cardSnippets = snippets
         phase = .card(record.text)
     }
 
@@ -896,6 +966,14 @@ final class DictationController {
         cardLearned = entries
     }
 
+    func demoCardSnippets(_ texts: [String]) {
+        cardSnippets = texts
+    }
+
+    func demoAction(_ action: VoiceAction?) {
+        self.action = action
+    }
+
     func demoModelReady() {
         modelState = .ready
     }
@@ -930,6 +1008,168 @@ final class DictationController {
     }
 }
 
+// MARK: Snippets
+
+extension DictationController {
+    /// `text` with its snippet markers replaced by the snippets' text, and those texts for the
+    /// card's mark. Text without snippets comes back as it is, and nothing is read.
+    ///
+    /// - Parameter known: the selection an Edit selection dictation already read.
+    fileprivate func placingSnippets(_ snippets: [Snippet], in text: String, selection known: String? = nil) async -> (text: String, snippets: [String]) {
+        guard !snippets.isEmpty else { return (text, []) }
+        let texts = await snippetTexts(snippets, in: text, selection: known)
+        return (SnippetPlacement.resolve(text, texts: texts), texts.filter { !$0.isEmpty })
+    }
+
+    /// The snippets' text as it goes in, variables filled; empty for a snippet whose marker is no
+    /// longer in `text` ("удали последнее предложение" took it). Values are read only for
+    /// variables those snippets use, and while the target app is still in front: the clipboard
+    /// first, since delivery pastes through it, then the selection, whose fallback is a ⌘C that
+    /// puts the clipboard back.
+    private func snippetTexts(_ snippets: [Snippet], in text: String, selection known: String?) async -> [String] {
+        let present = Set(SnippetMarker.numbers(in: text))
+        let snippets = snippets.enumerated().map { present.contains($0.offset + 1) ? $0.element : Snippet() }
+        let used = snippets.reduce(into: Set<SnippetVariable>()) { $0.formUnion(SnippetVariables.used(in: $1.text)) }
+        var values = SnippetValues()
+        if used.contains(.clipboard) {
+            values.clipboard = NSPasteboard.general.string(forType: .string)
+        }
+        if used.contains(.selection) {
+            if let known {
+                values.selection = known
+            } else if !AppModel.isPreviewLaunch {
+                values.selection = await SelectionReader.read()
+            }
+        }
+        return snippets.map { $0.insertion(values) }
+    }
+}
+
+// MARK: Voice actions
+
+extension DictationController {
+    /// Reads what is selected in the app in front, by Accessibility and off the main thread, for
+    /// a voice action; a selection also warms the language model up. Only with the switch on, and
+    /// never for the Edit selection shortcut, which has read its selection already.
+    fileprivate func readSelectionForActions() {
+        actionSelection = nil
+        guard settings.value.voiceActions, selection == nil, !AppModel.isPreviewLaunch,
+              let pid = NSWorkspace.shared.frontmostApplication?.processIdentifier
+        else { return }
+        actionSelection = Task { [weak self] in
+            let text = await Task.detached(priority: .userInitiated) { SelectionReader.focusedSelection(pid: pid) }.value
+            // A loaded model keeps the prompt it has cached, translate everything's for one.
+            if text != nil, let self, !self.rewriter.builtInLoaded { self.rewriter.warmUp(self.settings.value) }
+            return text
+        }
+    }
+
+    /// The branch in `finalize`: when the words are a voice action, carries it out and returns
+    /// true; otherwise returns false and the dictation goes on as usual.
+    fileprivate func runVoiceAction(_ transcript: String, duration: Double, settings value: AppSettings) async -> Bool {
+        let pending = actionSelection
+        actionSelection = nil
+        guard value.voiceActions, selection == nil else { return false }
+        let selectedAtStart = await pending?.value
+        guard let found = VoiceActions.detect(transcript, selectionAtStart: selectedAtStart != nil, sendCommand: value.voiceCommands) else {
+            return false
+        }
+        // "переведи это" with nothing selected that Accessibility could see is taken as words.
+        let unseenPointer = found.source == .selection && found.reference == .pointer && selectedAtStart == nil
+        guard rewriter.isReady(value) else {
+            if unseenPointer { return false }
+            handsFree = false
+            show(.notice(.modelOff), for: 2.5)
+            return true
+        }
+        let text: String
+        switch found.source {
+        case .clipboard:
+            guard let copied = Self.clipboardText() else {
+                handsFree = false
+                show(.notice(.clipboardEmpty), for: 2)
+                return true
+            }
+            text = copied
+        case .selection:
+            if let selectedAtStart {
+                text = selectedAtStart
+            } else if let copied = AppModel.isPreviewLaunch ? nil : await SelectionReader.read() {
+                // Apps that do not answer Accessibility: ⌘C, with the clipboard put back.
+                text = copied
+            } else {
+                if unseenPointer { return false }
+                handsFree = false
+                show(.notice(.nothingSelected), for: 2)
+                return true
+            }
+        }
+        await perform(found, on: text, raw: transcript, duration: duration, settings: value)
+        return true
+    }
+
+    /// Runs the model over the source and delivers the result by the output mode. Esc leaves
+    /// everything as it was.
+    private func perform(_ found: VoiceAction, on text: String, raw: String, duration: Double, settings value: AppSettings) async {
+        let language: AppSettings.SpeechLanguage? = switch found.job {
+        case .translate(let language): language
+        case .translateUnnamed: VoiceActions.defaultTarget(for: text, instruction: found.instruction, translateTarget: value.translateTarget)
+        case .instruct: nil
+        }
+        var shown = found
+        if let language { shown.job = .translate(language) }
+        action = shown
+        defer { action = nil }
+
+        finishingStage = .rewriting
+        let rewriter = rewriter
+        let instruction = found.instruction
+        let result = await skippable {
+            if let language { return await rewriter.translate(text, into: language, settings: value) }
+            return await rewriter.editSelection(text, instruction: instruction, settings: value)
+        }
+        finishingStage = .transcribing
+        handsFree = false
+        guard !skippedRewrite else {
+            phase = .idle
+            return
+        }
+        guard let result, !result.isEmpty else {
+            show(.notice(.editFailed), for: 2.5)
+            return
+        }
+        let record = DictationRecord(
+            text: result, raw: raw, appName: target?.name, bundleID: target?.bundleID, duration: duration, date: Date(),
+            action: DictationRecord.Action(source: found.source, target: language?.rawValue)
+        )
+        cardRecord = record
+        records.insert(record, at: 0)
+        let retention = value.historyRetentionDays
+        Task {
+            records = await historyStore.add(record, retentionDays: retention)
+            await sweepAudio()
+        }
+        await deliver(result, settings: value.applying(activeMode), pressReturn: found.send)
+    }
+
+    /// The clipboard's plain text, up to the selection's limit; `nil` when it holds none.
+    private static func clipboardText() -> String? {
+        guard let text = NSPasteboard.general.string(forType: .string),
+              !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        else { return nil }
+        return String(text.prefix(SelectionReader.limit))
+    }
+
+    /// What the rewrite stage says while a voice action runs: "Selection → ES", "Clipboard".
+    var actionTag: String? {
+        guard let action else { return nil }
+        let source = action.source == .selection
+            ? String(localized: "Selection", comment: "Overlay tag: this dictation edits the text selected in another app")
+            : String(localized: "Clipboard")
+        guard case .translate(let language) = action.job else { return source }
+        return source + " → " + language.rawValue.uppercased()
+    }
+}
 
 enum Sounds {
     static func start() { play("Tink") }

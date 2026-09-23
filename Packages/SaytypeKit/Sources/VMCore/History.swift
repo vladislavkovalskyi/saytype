@@ -33,6 +33,8 @@ public struct DictationRecord: Codable, Equatable, Identifiable, Sendable {
     /// Seconds of speech.
     public var duration: Double
     public var date: Date
+    /// Set when the words were a voice action over the selection or the clipboard.
+    public var action: Action?
     /// File name of the recording in the audio folder, while it is kept.
     public var audio: String?
     /// The mode the dictation ran in; a re-transcription runs in it again.
@@ -42,7 +44,7 @@ public struct DictationRecord: Codable, Equatable, Identifiable, Sendable {
     /// What the last re-transcription replaced, for its undo.
     public var previous: Version?
 
-    public init(id: UUID = UUID(), text: String, raw: String, appName: String?, bundleID: String?, duration: Double, date: Date, audio: String? = nil, modeID: String? = nil, failure: Failure? = nil) {
+    public init(id: UUID = UUID(), text: String, raw: String, appName: String?, bundleID: String?, duration: Double, date: Date, audio: String? = nil, modeID: String? = nil, failure: Failure? = nil, action: Action? = nil) {
         self.id = id
         self.text = text
         self.raw = raw
@@ -53,6 +55,7 @@ public struct DictationRecord: Codable, Equatable, Identifiable, Sendable {
         self.audio = audio
         self.modeID = modeID
         self.failure = failure
+        self.action = action
     }
 
     public init(from decoder: any Decoder) throws {
@@ -64,8 +67,9 @@ public struct DictationRecord: Codable, Equatable, Identifiable, Sendable {
         bundleID = try c.decodeIfPresent(String.self, forKey: .bundleID)
         duration = try c.decode(Double.self, forKey: .duration)
         date = try c.decode(Date.self, forKey: .date)
-        // Added with kept audio. A value this build doesn't know, written by a newer one, is
-        // dropped instead of failing the whole history.
+        // Added after 0.3.0. A value this build doesn't know, written by a newer one, is dropped
+        // instead of failing the whole history.
+        action = try? c.decodeIfPresent(Action.self, forKey: .action)
         audio = try? c.decodeIfPresent(String.self, forKey: .audio)
         modeID = try? c.decodeIfPresent(String.self, forKey: .modeID)
         failure = try? c.decodeIfPresent(Failure.self, forKey: .failure)
@@ -210,7 +214,7 @@ public struct HistoryStats: Equatable, Sendable {
         for record in records where record.isTranscribed {
             let isToday = calendar.isDate(record.date, inSameDayAs: now)
             guard isToday || record.date >= weekStart else { continue }
-            let words = record.wordCount
+            let words = record.spokenWordCount
             let saved = Self.secondsSaved(words: words, duration: record.duration, typingWordsPerMinute: typingWordsPerMinute)
             if record.date >= weekStart {
                 wordsThisWeek += words

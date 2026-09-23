@@ -546,12 +546,14 @@ private struct AudioStrip: View {
                         .buttonStyle(ChipButtonStyle())
                         .help(Text("Restore the previous text", comment: "Tooltip of Undo next to a recording: the text before the last transcription comes back"))
                 }
-                MenuChip(
-                    title: record.isTranscribed ? String(localized: "Transcribe Again", comment: "Menu with the ways to transcribe a kept recording again") : String(localized: "Transcribe", comment: "Menu that transcribes a recording that has no text yet"),
-                    items: RetranscribeMenu.items(for: record, dictation: dictation)
-                )
-                .disabled(job?.isRunning == true)
-                .opacity(job?.isRunning == true ? 0.5 : 1)
+                if dictation.canRetranscribe(record) {
+                    MenuChip(
+                        title: record.isTranscribed ? String(localized: "Transcribe Again", comment: "Menu with the ways to transcribe a kept recording again") : String(localized: "Transcribe", comment: "Menu that transcribes a recording that has no text yet"),
+                        items: RetranscribeMenu.items(for: record, dictation: dictation)
+                    )
+                    .disabled(job?.isRunning == true)
+                    .opacity(job?.isRunning == true ? 0.5 : 1)
+                }
             }
         }
         .padding(.leading, 6)

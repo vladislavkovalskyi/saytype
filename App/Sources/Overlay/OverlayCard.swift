@@ -31,7 +31,7 @@ struct OverlayCard: View {
                     .padding(.top, style == .island ? 8 : 0)
                     .frame(maxHeight: style == .island ? .infinity : nil)
             } else {
-                Text(CodeWords.attributed(text, size: 14))
+                Text(Self.marking(dictation.cardSnippets, in: CodeWords.attributed(text, size: 14), tint: ink))
                     .font(.onest(14))
                     .lineSpacing(3.5)
                     .lineLimit(8)
@@ -113,6 +113,21 @@ struct OverlayCard: View {
     }
 }
 
+extension OverlayCard {
+    /// A faint background behind the text that came from snippets. Found by search, so an edit
+    /// that changes a snippet's text drops its mark.
+    static func marking(_ snippets: [String], in text: AttributedString, tint: Color) -> AttributedString {
+        var result = text
+        var start = result.startIndex
+        for snippet in snippets where !snippet.isEmpty {
+            guard let range = result[start...].range(of: snippet) else { continue }
+            result[range].backgroundColor = tint.opacity(0.16)
+            start = range.upperBound
+        }
+        return result
+    }
+}
+
 /// Play and transcribe-again for the dictation on the card, two icons beside its actions.
 private struct CardAudio: View {
     let model: OverlayModel
@@ -140,7 +155,7 @@ private struct CardAudio: View {
                     .environment(\.colorScheme, light ? .light : .dark)
                     .frame(width: 26, height: 26)
                     .help(Text(dictation.retranscription?.state.readout ?? ""))
-            } else {
+            } else if dictation.canRetranscribe(record) {
                 PopupMenu(items: RetranscribeMenu.items(for: record, dictation: dictation)) {
                     Image(systemName: "arrow.clockwise")
                         .font(.system(size: 26 * 0.44, weight: .semibold))
