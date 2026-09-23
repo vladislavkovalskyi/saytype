@@ -42,6 +42,8 @@ final class DictationController {
         case modelOff
         /// The model did not answer, or answered with nothing; the selection is untouched.
         case editFailed
+        /// A voice action named the clipboard and it holds no text.
+        case clipboardEmpty
         /// The mode shortcut picked a mode; the title of the mode or of automatic selection.
         case mode(String)
     }
@@ -112,6 +114,10 @@ final class DictationController {
     @ObservationIgnored private var target: TargetApp?
     /// The text selected in another app: this dictation is an instruction over it, not text.
     @ObservationIgnored private var selection: String?
+    /// The voice action this dictation turned out to be, while the model carries it out.
+    private(set) var action: VoiceAction?
+    /// What Accessibility found selected at key press, for a voice action.
+    @ObservationIgnored private var actionSelection: Task<String?, Never>?
     @ObservationIgnored private var silence = SilenceDetector(limit: 0)
     /// Resumes the final pass without the rewrite; set while the model runs.
     @ObservationIgnored private var skipRewriteAction: (() -> Void)?
@@ -300,6 +306,7 @@ final class DictationController {
         rewriter.warmUp(settings.value, mode: selection == nil ? activeMode : nil, translateTo: settings.value.autoTranslate ? settings.value.translateTarget : nil)
         if settings.value.sounds { Sounds.start() }
         runLiveLoop()
+        readSelectionForActions()
     }
 
     private func consume(_ chunk: AudioCapture.Chunk) {
@@ -338,6 +345,7 @@ final class DictationController {
         guard phase == .listening else { return }
         stopCapture()
         selection = nil
+        actionSelection = nil
         phase = .idle
         handsFree = false
     }
@@ -414,6 +422,8 @@ final class DictationController {
             show(.notice(.recognitionFailed), for: 2.5)
             return
         }
+        // An instruction over the selection or the clipboard runs on the model instead of being typed.
+        if await runVoiceAction(transcript.text, duration: duration, settings: value) { return }
         let style = value.applying(mode)
         // Snippet phrases become markers ⟦1⟧, ⟦2⟧…; the snippets' text replaces them right before
         // history and delivery, so no formatter or model ever touches it.
@@ -827,6 +837,10 @@ final class DictationController {
         cardSnippets = texts
     }
 
+    func demoAction(_ action: VoiceAction?) {
+        self.action = action
+    }
+
     func demoModelReady() {
         modelState = .ready
     }
@@ -893,6 +907,128 @@ extension DictationController {
     }
 }
 
+// MARK: Voice actions
+
+extension DictationController {
+    /// Reads what is selected in the app in front, by Accessibility and off the main thread, for
+    /// a voice action; a selection also warms the language model up. Only with the switch on, and
+    /// never for the Edit selection shortcut, which has read its selection already.
+    fileprivate func readSelectionForActions() {
+        actionSelection = nil
+        guard settings.value.voiceActions, selection == nil, !AppModel.isPreviewLaunch,
+              let pid = NSWorkspace.shared.frontmostApplication?.processIdentifier
+        else { return }
+        actionSelection = Task { [weak self] in
+            let text = await Task.detached(priority: .userInitiated) { SelectionReader.focusedSelection(pid: pid) }.value
+            // A loaded model keeps the prompt it has cached, translate everything's for one.
+            if text != nil, let self, !self.rewriter.builtInLoaded { self.rewriter.warmUp(self.settings.value) }
+            return text
+        }
+    }
+
+    /// The branch in `finalize`: when the words are a voice action, carries it out and returns
+    /// true; otherwise returns false and the dictation goes on as usual.
+    fileprivate func runVoiceAction(_ transcript: String, duration: Double, settings value: AppSettings) async -> Bool {
+        let pending = actionSelection
+        actionSelection = nil
+        guard value.voiceActions, selection == nil else { return false }
+        let selectedAtStart = await pending?.value
+        guard let found = VoiceActions.detect(transcript, selectionAtStart: selectedAtStart != nil, sendCommand: value.voiceCommands) else {
+            return false
+        }
+        // "переведи это" with nothing selected that Accessibility could see is taken as words.
+        let unseenPointer = found.source == .selection && found.reference == .pointer && selectedAtStart == nil
+        guard rewriter.isReady(value) else {
+            if unseenPointer { return false }
+            handsFree = false
+            show(.notice(.modelOff), for: 2.5)
+            return true
+        }
+        let text: String
+        switch found.source {
+        case .clipboard:
+            guard let copied = Self.clipboardText() else {
+                handsFree = false
+                show(.notice(.clipboardEmpty), for: 2)
+                return true
+            }
+            text = copied
+        case .selection:
+            if let selectedAtStart {
+                text = selectedAtStart
+            } else if let copied = AppModel.isPreviewLaunch ? nil : await SelectionReader.read() {
+                // Apps that do not answer Accessibility: ⌘C, with the clipboard put back.
+                text = copied
+            } else {
+                if unseenPointer { return false }
+                handsFree = false
+                show(.notice(.nothingSelected), for: 2)
+                return true
+            }
+        }
+        await perform(found, on: text, raw: transcript, duration: duration, settings: value)
+        return true
+    }
+
+    /// Runs the model over the source and delivers the result by the output mode. Esc leaves
+    /// everything as it was.
+    private func perform(_ found: VoiceAction, on text: String, raw: String, duration: Double, settings value: AppSettings) async {
+        let language: AppSettings.SpeechLanguage? = switch found.job {
+        case .translate(let language): language
+        case .translateUnnamed: VoiceActions.defaultTarget(for: text, instruction: found.instruction, translateTarget: value.translateTarget)
+        case .instruct: nil
+        }
+        var shown = found
+        if let language { shown.job = .translate(language) }
+        action = shown
+        defer { action = nil }
+
+        finishingStage = .rewriting
+        let rewriter = rewriter
+        let instruction = found.instruction
+        let result = await skippable {
+            if let language { return await rewriter.translate(text, into: language, settings: value) }
+            return await rewriter.editSelection(text, instruction: instruction, settings: value)
+        }
+        finishingStage = .transcribing
+        handsFree = false
+        guard !skippedRewrite else {
+            phase = .idle
+            return
+        }
+        guard let result, !result.isEmpty else {
+            show(.notice(.editFailed), for: 2.5)
+            return
+        }
+        let record = DictationRecord(
+            text: result, raw: raw, appName: target?.name, bundleID: target?.bundleID, duration: duration, date: Date(),
+            action: DictationRecord.Action(source: found.source, target: language?.rawValue)
+        )
+        cardRecord = record
+        history.insert(record, at: 0)
+        let retention = value.historyRetentionDays
+        Task { history = await historyStore.add(record, retentionDays: retention) }
+        await deliver(result, settings: value.applying(activeMode), pressReturn: found.send)
+    }
+
+    /// The clipboard's plain text, up to the selection's limit; `nil` when it holds none.
+    private static func clipboardText() -> String? {
+        guard let text = NSPasteboard.general.string(forType: .string),
+              !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        else { return nil }
+        return String(text.prefix(SelectionReader.limit))
+    }
+
+    /// What the rewrite stage says while a voice action runs: "Selection → ES", "Clipboard".
+    var actionTag: String? {
+        guard let action else { return nil }
+        let source = action.source == .selection
+            ? String(localized: "Selection", comment: "Overlay tag: this dictation edits the text selected in another app")
+            : String(localized: "Clipboard")
+        guard case .translate(let language) = action.job else { return source }
+        return source + " → " + language.rawValue.uppercased()
+    }
+}
 
 enum Sounds {
     static func start() { play("Tink") }

@@ -58,7 +58,7 @@ struct PillView: View {
             let stop: CGFloat = dictation.handsFree ? 33 : 0
             return CGSize(width: max(250, 8 + Self.voiceWidth + tag + 9 + 9 + 34 + stop + 12), height: 44)
         case .finishing(rewriting: true):
-            return CGSize(width: max(250, 16 + RewritingLabel.width + 18 + SkipRewriteButton.width + 10), height: 44)
+            return CGSize(width: max(250, 16 + RewritingLabel.width(title: dictation.actionTag) + 18 + SkipRewriteButton.width + 10), height: 44)
         case .inserted:
             return CGSize(width: min(64 + TextMeasure.width(targetName, size: 12.5) + 40, 260), height: 40)
         case .notice(let notice):
@@ -192,7 +192,7 @@ struct PillView: View {
             .transition(.islandContent)
         case .finishing(rewriting: true):
             HStack(spacing: 9) {
-                RewritingLabel(ink: ink)
+                RewritingLabel(ink: ink, title: dictation.actionTag)
                 Spacer(minLength: 0)
                 SkipRewriteButton(dictation: dictation, ink: ink)
             }
