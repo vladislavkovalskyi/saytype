@@ -302,6 +302,20 @@ import Testing
     }
 }
 
+@Suite struct ScreenContextSettingTests {
+    @Test func onByDefaultAndForOlderSettings() throws {
+        #expect(AppSettings().screenContext)
+        #expect(try JSONDecoder().decode(AppSettings.self, from: Data(#"{"overlayStyle":"pill"}"#.utf8)).screenContext)
+    }
+
+    @Test func offSurvivesARoundTrip() throws {
+        var settings = AppSettings()
+        settings.screenContext = false
+        let decoded = try JSONDecoder().decode(AppSettings.self, from: JSONEncoder().encode(settings))
+        #expect(!decoded.screenContext)
+    }
+}
+
 @Suite struct ScreenContextPipelineTests {
     @Test func theFormatterUsesScreenTermsAfterTheDictionary() {
         var settings = AppSettings()

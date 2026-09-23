@@ -120,15 +120,15 @@ public enum ScreenContextReader {
                 else { continue }
                 let role = Self.value(values[0]) as? String ?? ""
                 let subrole = Self.value(values[1]) as? String
-                if subrole == (kAXSecureTextFieldSubrole as String) || Self.skipped.contains(role) { continue }
+                if subrole == kAXSecureTextFieldSubrole || Self.skipped.contains(role) { continue }
                 add(Self.value(values[2]) as? String)
                 add(Self.value(values[3]) as? String)
 
                 if let focused, CFEqual(element, focused) { continue }
                 switch role {
-                case kAXStaticTextRole as String:
+                case kAXStaticTextRole:
                     add(ScreenContextReader.string(element, kAXValueAttribute))
-                case kAXTextAreaRole as String, kAXTextFieldRole as String, kAXComboBoxRole as String:
+                case kAXTextAreaRole, kAXTextFieldRole, kAXComboBoxRole:
                     add(ScreenContextReader.fieldText(element, limit: limits.focusedCharacters))
                 case "AXWebArea":
                     // A web page gives the text in view in one piece; its elements need not be walked.
@@ -145,7 +145,7 @@ public enum ScreenContextReader {
                     ?? (Self.value(values[5]) as? [AXUIElement]).flatMap { $0.isEmpty ? nil : $0 }
                     ?? (Self.value(values[4]) as? [AXUIElement])
                     ?? []
-                if role == kAXToolbarRole as String {
+                if role == kAXToolbarRole {
                     later.append(contentsOf: children)
                 } else {
                     queue.append(contentsOf: children)
@@ -166,8 +166,8 @@ public enum ScreenContextReader {
 
         /// Elements with no words in them or under them.
         static let skipped: Set<String> = [
-            kAXScrollBarRole as String, kAXImageRole as String, kAXValueIndicatorRole as String,
-            kAXSplitterRole as String, kAXGrowAreaRole as String, kAXMenuBarRole as String, "AXRuler",
+            kAXScrollBarRole, kAXImageRole, kAXValueIndicatorRole,
+            kAXSplitterRole, kAXGrowAreaRole, kAXMenuBarRole, "AXRuler",
         ]
 
         /// A missing attribute comes back as an AXValue holding an error.
@@ -320,6 +320,6 @@ public enum ScreenContextReader {
     }
 
     static func isSecure(_ element: AXUIElement) -> Bool {
-        string(element, kAXSubroleAttribute) == (kAXSecureTextFieldSubrole as String)
+        string(element, kAXSubroleAttribute) == kAXSecureTextFieldSubrole
     }
 }

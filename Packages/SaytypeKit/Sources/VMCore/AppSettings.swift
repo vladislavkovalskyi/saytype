@@ -100,6 +100,8 @@ public struct AppSettings: Codable, Equatable, Sendable {
     public var languageModel = LanguageModel()
     /// Folders of code projects whose identifiers are taught to Whisper.
     public var projectFolders: [String] = []
+    /// Terms from the window in front, read when a dictation starts and used for that one only.
+    public var screenContext = true
 
     public var shortcuts = Shortcuts()
     /// Hands-free recording stops after this many seconds of silence; 0 never stops.
@@ -153,6 +155,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
         fixedModeID = try c.decodeIfPresent(String.self, forKey: .fixedModeID)
         languageModel = try c.decodeIfPresent(LanguageModel.self, forKey: .languageModel) ?? defaults.languageModel
         projectFolders = try c.decodeIfPresent([String].self, forKey: .projectFolders) ?? defaults.projectFolders
+        screenContext = try c.decodeIfPresent(Bool.self, forKey: .screenContext) ?? defaults.screenContext
         shortcuts = try c.decodeIfPresent(Shortcuts.self, forKey: .shortcuts) ?? defaults.shortcuts
         autoStopSilenceSeconds = try c.decodeIfPresent(Double.self, forKey: .autoStopSilenceSeconds) ?? defaults.autoStopSilenceSeconds
         typingWordsPerMinute = try c.decodeIfPresent(Int.self, forKey: .typingWordsPerMinute) ?? defaults.typingWordsPerMinute
