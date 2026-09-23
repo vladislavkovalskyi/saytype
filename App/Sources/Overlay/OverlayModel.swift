@@ -117,6 +117,7 @@ extension DictationController.Notice {
         case .nothingSelected: Text("Nothing selected")
         case .modelOff: Text("Language model is off")
         case .editFailed: Text("Model didn't answer")
+        case .clipboardEmpty: Text("Clipboard is empty")
         // Already localized, or the name the user gave a custom mode.
         case .mode(let title): Text(verbatim: title)
         }
@@ -140,6 +141,7 @@ extension DictationController.Notice {
         case .copied: "doc.on.doc.fill"
         case .nothingSelected: "selection.pin.in.out"
         case .modelOff, .editFailed: "sparkles"
+        case .clipboardEmpty: "doc.on.clipboard"
         case .mode: "square.stack.3d.up.fill"
         }
     }
@@ -157,6 +159,7 @@ extension DictationController.Notice {
         case .nothingSelected: String(localized: "Nothing selected")
         case .modelOff: String(localized: "Language model is off")
         case .editFailed: String(localized: "Model didn't answer")
+        case .clipboardEmpty: String(localized: "Clipboard is empty")
         case .mode(let title): title
         }
     }

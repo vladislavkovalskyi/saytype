@@ -1212,6 +1212,16 @@
         }
       }
     },
+    "Clipboard is empty" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Буфер обмена пуст"
+          }
+        }
+      }
+    },
     "Close" : {
       "comment" : "Round button on the last onboarding step",
       "localizations" : {
@@ -2305,6 +2315,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Языковая модель выключена"
+          }
+        }
+      }
+    },
+    "language model is off" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "языковая модель выключена"
           }
         }
       }
@@ -4347,6 +4367,16 @@
         }
       }
     },
+    "Voice actions" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Голосовые действия"
+          }
+        }
+      }
+    },
     "voice command" : {
       "comment" : "Tag on a snippet phrase that a built-in voice command takes",
       "localizations" : {
@@ -4507,6 +4537,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "«новая строка», «новый абзац», «удали последнее предложение», «открой кавычки … закрой кавычки», «отправь» в конце"
+          }
+        }
+      }
+    },
+    "“translate the selection to Spanish”, “shorten the clipboard text”" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "«переведи выделенное на испанский», «сократи текст из буфера»"
           }
         }
       }

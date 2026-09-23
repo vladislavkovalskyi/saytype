@@ -1,0 +1,11 @@
+Привет! Напоминаю, что созвон по релизу переносится на четверг, 26 сентября, в 15:30 по Москве. До этого нужно закрыть задачи по авторизации и проверить платёжную форму на iPhone. Если не успеваешь, напиши мне до среды, и мы подвинем сроки.
+---
+Поправил useEffect в Header: он срабатывал 3 раза при каждом рендере и сбрасывал состояние формы. Теперь зависимости правильные, а src/app.tsx больше не тянет лишний контекст. Посмотри, пожалуйста, PR до вечера.
+---
+Слушай, я сегодня не смогу, у меня температура и всё болит. Давай перенесём на выходные, если тебе удобно? Могу в субботу после обеда.
+---
+Our new onboarding takes less than two minutes. You pick a microphone, choose a record key and say a few words to try it out. Everything runs on your Mac, so nothing you say ever leaves the device.
+---
+The deploy failed again at 03:12 because the build ran out of memory. I bumped the limit to 4 GB in vercel.json and restarted it; the logs are at https://vercel.com/acme/app/deployments. Can you double-check the preview before we merge?
+---
+Спасибо за подробный отчёт, это очень помогло.

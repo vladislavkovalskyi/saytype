@@ -46,11 +46,16 @@ enum OverlaySnapshots {
             Shot("6-finishing", .finishing, committed: committed, pending: pending),
             Shot("6b-rewriting", .finishing, committed: long, pending: "", mode: DictationMode.commitID, stage: .rewriting),
             Shot("6c-rewriting-no-live-text", .finishing, mode: DictationMode.commitID, stage: .rewriting),
+            Shot("6d-action-clipboard-translate", .finishing, committed: "Переведи текст из буфера обмена на испанский.", stage: .rewriting,
+                 action: VoiceAction(source: .clipboard, reference: .named, job: .translate(AppSettings.SpeechLanguage(rawValue: "es")), instruction: "")),
+            Shot("6e-action-selection", .finishing, committed: "Сократи выделенный текст до двух предложений.", stage: .rewriting,
+                 action: VoiceAction(source: .selection, reference: .named, job: .instruct, instruction: "")),
             Shot("7-inserted", .inserted(terminal)),
             Shot("8-notice", .notice(.passwordField)),
             Shot("8b-notice-mode", .notice(.mode(DictationMode(id: DictationMode.promptID).title))),
             Shot("8c-notice-nothing-selected", .notice(.nothingSelected)),
             Shot("8d-notice-model-off", .notice(.modelOff)),
+            Shot("8e-notice-clipboard-empty", .notice(.clipboardEmpty)),
             Shot("9-card", .card(card)),
             Shot("9b-card-editing", .card(card), editing: card.replacingOccurrences(of: "Next.js", with: "некст джей эс")),
             Shot("9c-card-learned", .card(card), learned: [DictionaryEntry(heard: "некст джей эс", written: "Next.js", source: .history)]),
@@ -104,8 +109,10 @@ enum OverlaySnapshots {
         var learned: [DictionaryEntry] = []
         /// Snippet texts inside the card.
         var snippets: [String] = []
+        /// The voice action the model is carrying out.
+        var action: VoiceAction?
 
-        init(_ name: String, _ phase: DictationController.Phase, hover: OverlayModel.Hover = .none, committed: String = "", pending: String = "", mode: String = DictationMode.standardID, stage: DictationController.FinishingStage = .transcribing, handsFree: Bool = false, fixedMode: String? = nil, translate: Bool = false, editing: String? = nil, learned: [DictionaryEntry] = [], snippets: [String] = []) {
+        init(_ name: String, _ phase: DictationController.Phase, hover: OverlayModel.Hover = .none, committed: String = "", pending: String = "", mode: String = DictationMode.standardID, stage: DictationController.FinishingStage = .transcribing, handsFree: Bool = false, fixedMode: String? = nil, translate: Bool = false, editing: String? = nil, learned: [DictionaryEntry] = [], snippets: [String] = [], action: VoiceAction? = nil) {
             self.name = name
             self.phase = phase
             self.hover = hover
@@ -119,6 +126,7 @@ enum OverlaySnapshots {
             self.editing = editing
             self.learned = learned
             self.snippets = snippets
+            self.action = action
         }
     }
 
@@ -133,6 +141,7 @@ enum OverlaySnapshots {
         model.dictation.demoCardEdit(shot.editing)
         model.dictation.demoLearned(shot.learned)
         model.dictation.demoCardSnippets(shot.snippets)
+        model.dictation.demoAction(shot.action)
         model.setHoverForSnapshot(shot.hover)
     }
 

@@ -207,6 +207,13 @@ final class RewriteService {
         return await run(selection, request: RewriteRequest(style: .selection, instruction: instruction), settings: settings)
     }
 
+    /// Text the user already has — the selection or the clipboard — translated into `target`
+    /// with translate everything's request and checks; `nil` when the engine is off, slow or
+    /// failed, or the answer lost code, numbers or links.
+    func translate(_ text: String, into target: AppSettings.SpeechLanguage, settings: AppSettings) async -> String? {
+        await run(text, request: .translation(into: target), settings: settings)
+    }
+
     private func run(_ text: String, request: RewriteRequest, settings: AppSettings) async -> String? {
         guard !AppModel.isPreviewLaunch, isReady(settings) else { return nil }
 

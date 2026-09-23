@@ -12,8 +12,10 @@ public struct DictationRecord: Codable, Equatable, Identifiable, Sendable {
     /// Seconds of speech.
     public var duration: Double
     public var date: Date
+    /// Set when the words were a voice action over the selection or the clipboard.
+    public var action: Action?
 
-    public init(id: UUID = UUID(), text: String, raw: String, appName: String?, bundleID: String?, duration: Double, date: Date) {
+    public init(id: UUID = UUID(), text: String, raw: String, appName: String?, bundleID: String?, duration: Double, date: Date, action: Action? = nil) {
         self.id = id
         self.text = text
         self.raw = raw
@@ -21,6 +23,7 @@ public struct DictationRecord: Codable, Equatable, Identifiable, Sendable {
         self.bundleID = bundleID
         self.duration = duration
         self.date = date
+        self.action = action
     }
 
     public var wordCount: Int { Words.split(text).count }
@@ -120,7 +123,7 @@ public struct HistoryStats: Equatable, Sendable {
         for record in records {
             let isToday = calendar.isDate(record.date, inSameDayAs: now)
             guard isToday || record.date >= weekStart else { continue }
-            let words = record.wordCount
+            let words = record.spokenWordCount
             let saved = Self.secondsSaved(words: words, duration: record.duration, typingWordsPerMinute: typingWordsPerMinute)
             if record.date >= weekStart {
                 wordsThisWeek += words

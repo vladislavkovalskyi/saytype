@@ -122,6 +122,41 @@ import Testing
         #expect(RewriteValidator.check(original: fragment, candidate: "Поправь хедер в компоненте, он дёргается.", request: translation) == .rejected(.wrongLanguage))
     }
 
+    /// Chinese and Japanese take a fraction of the characters: a translation into or out of them
+    /// is not "too short" or "too long" by a Latin measure.
+    @Test func denseScriptsAreMeasuredLoosely() {
+        let english = "The release moves to Friday because the payment provider needs two more days to approve the new account."
+        let chinese = "发布推迟到星期五，因为支付服务商还需要两天时间来批准新账户。"
+        let toChinese = RewriteRequest.translation(into: AppSettings.SpeechLanguage(rawValue: "zh"))
+        #expect(RewriteValidator.check(original: english, candidate: chinese, request: toChinese) == .accepted)
+        #expect(RewriteValidator.check(original: chinese, candidate: english, request: RewriteRequest.translation(into: .english)) == .accepted)
+        // A Latin translation still has to keep most of the text.
+        let toSpanish = RewriteRequest.translation(into: AppSettings.SpeechLanguage(rawValue: "es"))
+        #expect(RewriteValidator.check(original: english, candidate: "El lanzamiento se mueve.", request: toSpanish) == .rejected(.tooShort))
+        // Not a translation: the usual limits.
+        #expect(RewriteValidator.check(original: english, candidate: chinese, request: RewriteRequest(style: .cleaner, sourceLanguage: "English")) != .accepted)
+    }
+
+    /// Found by the voice actions bench: two answers that were right and were rejected.
+    @Test func translationMaySpellNumbersAndTranslateHyphenatedWords() {
+        let russian = "Поправил useEffect в Header: он срабатывал 3 раза при каждом рендере."
+        let english = "Fixed the useEffect in Header: it was triggering three times on each render."
+        #expect(RewriteValidator.check(original: russian, candidate: english, request: translation) == .accepted)
+        let source = "Can you double-check the preview and send a follow-up before we merge?"
+        let spanish = "¿Puedes verificar nuevamente la vista previa y enviar un seguimiento antes de fusionar?"
+        #expect(RewriteValidator.check(original: source, candidate: spanish, request: RewriteRequest.translation(into: AppSettings.SpeechLanguage(rawValue: "es"))) == .accepted)
+        let deploy = "I bumped the limit to 4 GB in vercel.json and restarted the API."
+        let toRussian = RewriteRequest.translation(into: .russian)
+        #expect(RewriteValidator.check(original: deploy, candidate: "Я увеличил лимит до 4 ГБ в vercel.json и перезапустил API.", request: toRussian) == .accepted)
+        #expect(RewriteValidator.check(original: deploy, candidate: "Я увеличил лимит до 4 ГБ в vercel.json и перезапустил сервис.", request: toRussian) == .rejected(.dropped("API")))
+        // In Russian text a hyphenated Latin word is an identifier and must stay.
+        let flag = "Включи feature-flag для новой формы оплаты."
+        #expect(RewriteValidator.check(original: flag, candidate: "Turn on the flag for the new payment form.", request: translation) == .rejected(.dropped("feature-flag")))
+        // Outside a translation "3" still has to stay a digit.
+        let cleaner = RewriteRequest(style: .cleaner, sourceLanguage: "Russian")
+        #expect(RewriteValidator.check(original: russian, candidate: "Поправил useEffect в Header: он срабатывал три раза при каждом рендере.", request: cleaner) != .accepted)
+    }
+
     @Test func rejectsDroppedCodePathsNumbersAndLinks() {
         let noPath = "Поправь useEffect в хедере, он дёргается 3 раза, и глянь https://github.com/acme/app/issues/42."
         #expect(RewriteValidator.check(original: dictation, candidate: noPath, request: prompt) == .rejected(.dropped("src/components/Header.tsx")))
