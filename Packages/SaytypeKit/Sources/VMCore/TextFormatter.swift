@@ -45,19 +45,20 @@ public enum TextFormatter {
 }
 
 public enum Paragraphs {
-    /// Splits at long pauses that follow sentence-ending punctuation. Falls back to
-    /// the plain text when word timings do not match it (e.g. after hallucination cleanup).
+    /// Splits at long pauses between Whisper's segments that follow sentence-ending punctuation.
+    /// Falls back to the plain text when the segments do not match it (e.g. after the developer
+    /// rules rewrote it). A pause inside one segment does not split it.
     public static func split(_ transcript: Transcript, pause: Double) -> [String] {
-        let words = transcript.words.filter { !$0.text.isEmpty }
-        guard words.count > 1, Words.keys(words.map(\.text).joined(separator: " ")) == Words.keys(transcript.text) else {
+        let segments = transcript.segments.filter { !$0.text.isEmpty }
+        guard segments.count > 1, Words.keys(segments.map(\.text).joined(separator: " ")) == Words.keys(transcript.text) else {
             return [transcript.text]
         }
         var paragraphs: [[String]] = [[]]
-        for (i, word) in words.enumerated() {
-            paragraphs[paragraphs.count - 1].append(word.text)
-            guard i + 1 < words.count else { break }
-            let gap = words[i + 1].start - word.end
-            let endsSentence = word.text.last.map { ".!?…".contains($0) } ?? false
+        for (i, segment) in segments.enumerated() {
+            paragraphs[paragraphs.count - 1].append(segment.text)
+            guard i + 1 < segments.count else { break }
+            let gap = segments[i + 1].start - segment.end
+            let endsSentence = segment.text.last.map { ".!?…".contains($0) } ?? false
             if gap >= pause, endsSentence {
                 paragraphs.append([])
             }
