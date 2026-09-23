@@ -358,6 +358,8 @@ Without Homebrew: quit saytype, move it from Applications to the Trash and run t
 
 **The first launch takes minutes.** Core ML compiles Whisper for your chip once, about 2–3 minutes. Later launches take seconds.
 
+**“Nothing heard”.** The recording had no voice in it: nothing louder than −45 dBFS and 9 dB above the room. Check the microphone in the island's panel. A dictation of only “thank you” in English ends the same way, because that is the phrase Whisper invents on silence.
+
 **Translation doesn't work.** Whisper turbo can't translate, so translation needs a language model: turn on Qwen3 4B, Ollama or LM Studio in **Model**.
 
 **Does it work in my language?** Most likely. Whisper knows 99 languages; saytype is tested in Russian and English. Pick your language in Text → Speech language rather than Auto: short phrases are easier to recognize when the language is known.
