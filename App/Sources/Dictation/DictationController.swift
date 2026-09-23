@@ -833,7 +833,7 @@ extension DictationController {
         let style = value.applying(mode)
         var text = formatted.text
         if let selection {
-            let texts = await snippetTexts(formatted.snippets, selection: selection)
+            let texts = await snippetTexts(formatted.snippets, in: text, selection: selection)
             await editSelection(selection, instruction: SnippetPlacement.resolve(text, texts: texts), settings: value, style: style)
             return true
         }
@@ -851,7 +851,7 @@ extension DictationController {
             }
             if mode.backticks { text = Backticks.wrap(text, terms: projectTerms + value.dictionary.map(\.written)) }
         }
-        let texts = await snippetTexts(formatted.snippets, selection: nil)
+        let texts = await snippetTexts(formatted.snippets, in: text, selection: nil)
         text = SnippetPlacement.resolve(text, texts: texts)
         guard !text.isEmpty else {
             if formatted.send, style.outputMode == .paste {
@@ -872,13 +872,16 @@ extension DictationController {
         return true
     }
 
-    /// The snippets' text as it goes in, variables filled. Values are read only for variables the
-    /// snippets use, and while the target app is still in front: the clipboard first, since
-    /// delivery pastes through it, then the selection, whose fallback is a ⌘C that puts the
-    /// clipboard back.
+    /// The snippets' text as it goes in, variables filled; empty for a snippet whose marker is no
+    /// longer in `text` ("удали последнее предложение" took it). Values are read only for
+    /// variables those snippets use, and while the target app is still in front: the clipboard
+    /// first, since delivery pastes through it, then the selection, whose fallback is a ⌘C that
+    /// puts the clipboard back.
     ///
     /// - Parameter known: the selection an Edit selection dictation already read.
-    private func snippetTexts(_ snippets: [Snippet], selection known: String?) async -> [String] {
+    private func snippetTexts(_ snippets: [Snippet], in text: String, selection known: String?) async -> [String] {
+        let present = Set(SnippetMarker.numbers(in: text))
+        let snippets = snippets.enumerated().map { present.contains($0.offset + 1) ? $0.element : Snippet() }
         let used = snippets.reduce(into: Set<SnippetVariable>()) { $0.formUnion(SnippetVariables.used(in: $1.text)) }
         var values = SnippetValues()
         if used.contains(.clipboard) {
