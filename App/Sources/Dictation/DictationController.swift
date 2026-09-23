@@ -414,24 +414,32 @@ final class DictationController {
             show(.notice(.recognitionFailed), for: 2.5)
             return
         }
-        if await finishWithSnippets(transcript, duration: duration, mode: mode, settings: value, projectTerms: projectTerms, modelTranslates: translateTo != nil && !whisperTranslates) { return }
         let style = value.applying(mode)
-        let formatted = DictationPipeline.format(transcript, settings: value, mode: mode, projectTerms: projectTerms)
+        // Snippet phrases become markers ⟦1⟧, ⟦2⟧…; the snippets' text replaces them right before
+        // history and delivery, so no formatter or model ever touches it.
+        let formatted = DictationPipeline.format(transcript, settings: value, mode: mode, projectTerms: projectTerms, snippets: value.snippets)
         var text = formatted.text
         if let selection {
-            await editSelection(selection, instruction: text, settings: value, style: style)
+            let instruction = await placingSnippets(formatted.snippets, in: text, selection: selection)
+            await editSelection(selection, instruction: instruction.text, settings: value, style: style)
             return
         }
-        if mode.usesLanguageModel || (translateTo != nil && !whisperTranslates), !text.isEmpty, rewriter.isReady(value) {
+        // Nothing but snippets: no model may see the trigger, and there are no words to rewrite or
+        // structure. A model answer that loses a marker is rejected and the text stays as formatted.
+        let onlySnippets = SnippetMarker.isOnlyMarkers(text)
+        if !onlySnippets, mode.usesLanguageModel || (translateTo != nil && !whisperTranslates), !text.isEmpty, rewriter.isReady(value) {
             finishingStage = .rewriting
             if let rewritten = await rewriteSkippably(text, mode: mode, settings: value), !rewritten.isEmpty {
                 text = rewritten
             }
             finishingStage = .transcribing
-        } else {
+        } else if !onlySnippets {
             text = await smart.apply(to: text, settings: style)
         }
+        // Markers have no letters, so backticks never wrap one.
         if mode.backticks { text = Backticks.wrap(text, terms: projectTerms + value.dictionary.map(\.written)) }
+        let placed = await placingSnippets(formatted.snippets, in: text)
+        text = placed.text
         guard !text.isEmpty else {
             if formatted.send, style.outputMode == .paste {
                 // Only "отправь": send what is already typed in the field.
@@ -448,7 +456,7 @@ final class DictationController {
         history.insert(record, at: 0)
         let retention = value.historyRetentionDays
         Task { history = await historyStore.add(record, retentionDays: retention) }
-        await deliver(text, settings: style, pressReturn: formatted.send || mode.pressReturn)
+        await deliver(text, settings: style, pressReturn: formatted.send || mode.pressReturn, snippets: placed.snippets)
     }
 
     /// What the overlay's tag says while recording: the selection job, or a mode that is not the
@@ -848,63 +856,18 @@ final class DictationController {
     }
 }
 
+
 // MARK: Snippets
 
 extension DictationController {
-    /// A dictation that says a snippet phrase, from the transcript to delivery; `false` when it
-    /// says none, and `finalize` goes on as before.
+    /// `text` with its snippet markers replaced by the snippets' text, and those texts for the
+    /// card's mark. Text without snippets comes back as it is, and nothing is read.
     ///
-    /// This is the tail of `finalize` with snippet markers in the text, and has to stay in step
-    /// with it. The differences: a dictation of nothing but snippets skips every model, the
-    /// markers become the snippets' text right before history and delivery, and the Edit
-    /// selection instruction gets the snippets' text in place.
-    ///
-    /// - Parameter modelTranslates: a language model, not Whisper, translates this dictation.
-    private func finishWithSnippets(_ transcript: Transcript, duration: Double, mode: DictationMode, settings value: AppSettings, projectTerms: [String], modelTranslates: Bool) async -> Bool {
-        guard !value.snippets.isEmpty, !SnippetMatcher(value.snippets).matches(in: transcript.text).isEmpty else { return false }
-        let formatted = DictationPipeline.format(transcript, settings: value, mode: mode, projectTerms: projectTerms, snippets: value.snippets)
-        // Every phrase was a voice command's words: nothing for this path to do.
-        guard !formatted.snippets.isEmpty else { return false }
-        let style = value.applying(mode)
-        var text = formatted.text
-        if let selection {
-            let texts = await snippetTexts(formatted.snippets, in: text, selection: selection)
-            await editSelection(selection, instruction: SnippetPlacement.resolve(text, texts: texts), settings: value, style: style)
-            return true
-        }
-        // Only snippets: the model would have nothing to rewrite, and must not see the trigger.
-        if !SnippetMarker.isOnlyMarkers(text) {
-            if mode.usesLanguageModel || modelTranslates, rewriter.isReady(value) {
-                finishingStage = .rewriting
-                // An answer without every marker is rejected, and the text stays as formatted.
-                if let rewritten = await rewriteSkippably(text, mode: mode, settings: value), !rewritten.isEmpty {
-                    text = rewritten
-                }
-                finishingStage = .transcribing
-            } else {
-                text = await smart.apply(to: text, settings: style)
-            }
-            if mode.backticks { text = Backticks.wrap(text, terms: projectTerms + value.dictionary.map(\.written)) }
-        }
-        let texts = await snippetTexts(formatted.snippets, in: text, selection: nil)
-        text = SnippetPlacement.resolve(text, texts: texts)
-        guard !text.isEmpty else {
-            if formatted.send, style.outputMode == .paste {
-                Paster.pressReturn()
-                show(.inserted(target), for: 1.2)
-            } else {
-                show(.notice(.nothingHeard), for: 1.5)
-            }
-            handsFree = false
-            return true
-        }
-        let record = DictationRecord(text: text, raw: transcript.text, appName: target?.name, bundleID: target?.bundleID, duration: duration, date: Date())
-        cardRecord = record
-        history.insert(record, at: 0)
-        let retention = value.historyRetentionDays
-        Task { history = await historyStore.add(record, retentionDays: retention) }
-        await deliver(text, settings: style, pressReturn: formatted.send || mode.pressReturn, snippets: texts.filter { !$0.isEmpty })
-        return true
+    /// - Parameter known: the selection an Edit selection dictation already read.
+    fileprivate func placingSnippets(_ snippets: [Snippet], in text: String, selection known: String? = nil) async -> (text: String, snippets: [String]) {
+        guard !snippets.isEmpty else { return (text, []) }
+        let texts = await snippetTexts(snippets, in: text, selection: known)
+        return (SnippetPlacement.resolve(text, texts: texts), texts.filter { !$0.isEmpty })
     }
 
     /// The snippets' text as it goes in, variables filled; empty for a snippet whose marker is no
@@ -912,8 +875,6 @@ extension DictationController {
     /// variables those snippets use, and while the target app is still in front: the clipboard
     /// first, since delivery pastes through it, then the selection, whose fallback is a ⌘C that
     /// puts the clipboard back.
-    ///
-    /// - Parameter known: the selection an Edit selection dictation already read.
     private func snippetTexts(_ snippets: [Snippet], in text: String, selection known: String?) async -> [String] {
         let present = Set(SnippetMarker.numbers(in: text))
         let snippets = snippets.enumerated().map { present.contains($0.offset + 1) ? $0.element : Snippet() }
@@ -932,6 +893,8 @@ extension DictationController {
         return snippets.map { $0.insertion(values) }
     }
 }
+
+
 
 
 enum Sounds {
