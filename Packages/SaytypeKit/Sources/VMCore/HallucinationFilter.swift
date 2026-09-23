@@ -19,6 +19,26 @@ public enum HallucinationFilter {
         "thanks for watching",
     ]
 
+    /// What Whisper answers to a breath, a click or silence when it decodes one anyway, in any
+    /// case and with any punctuation. Only a whole result counts.
+    static let standalone: Set<String> = [
+        "thank you",
+        "thank you very much",
+        "thank you so much",
+    ]
+
+    /// True when the whole result is one of Whisper's answers to silence. The caller drops it
+    /// and the user sees "Nothing heard"; the cost is that a dictation of only "thank you" in
+    /// English is lost. "Thank you, see you tomorrow" is kept. Not for Whisper's own
+    /// translation, where «спасибо» really is "Thank you."
+    public static func isStandalone(_ text: String) -> Bool {
+        let words = text.lowercased()
+            .components(separatedBy: CharacterSet.letters.inverted)
+            .filter { !$0.isEmpty }
+        return standalone.contains(words.joined(separator: " "))
+    }
+
+    /// Removes the invented phrases wherever they occur in the text.
     public static func clean(_ text: String) -> String {
         var result = text
         for phrase in phrases {

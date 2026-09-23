@@ -44,6 +44,20 @@ import Testing
     @Test func keepsOrdinaryText() {
         #expect(HallucinationFilter.clean("спасибо, поправлю") == "спасибо, поправлю")
     }
+
+    @Test func thankYouAloneIsSilence() {
+        #expect(HallucinationFilter.isStandalone("Thank you."))
+        #expect(HallucinationFilter.isStandalone(" thank you!"))
+        #expect(HallucinationFilter.isStandalone("Thank you very much."))
+        #expect(HallucinationFilter.isStandalone("THANK YOU SO MUCH"))
+    }
+
+    @Test func thankYouWithMoreIsDictation() {
+        #expect(!HallucinationFilter.isStandalone("Thank you, see you tomorrow."))
+        #expect(!HallucinationFilter.isStandalone("Спасибо."))
+        #expect(!HallucinationFilter.isStandalone("Thanks."))
+        #expect(!HallucinationFilter.isStandalone(""))
+    }
 }
 
 @Suite struct PromptBuilderTests {
