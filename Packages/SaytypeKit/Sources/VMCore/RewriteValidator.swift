@@ -45,9 +45,12 @@ public enum RewriteValidator {
         }
 
         let length = Double(original.count)
-        let (ratio, slack) = lengthLimit(request.style)
+        // Chinese, Japanese and Korean take a third of the characters English does: a translation
+        // into or out of them is judged by a wide upper bound only.
+        let dense = request.translate && (isDense(original) || isDense(candidate))
+        let (ratio, slack) = dense ? denseLengthLimit : lengthLimit(request.style)
         if Double(candidate.count) > length * ratio + slack { return .rejected(.tooLong) }
-        if let minimum = minimumRatio(request.style), length >= 60, Double(candidate.count) < length * minimum {
+        if !dense, let minimum = minimumRatio(request.style), length >= 60, Double(candidate.count) < length * minimum {
             return .rejected(.tooShort)
         }
         // A selection edit is asked for in words: which words change, and into what language, is
@@ -104,6 +107,21 @@ public enum RewriteValidator {
         case .selection: (3, 240)
         case .none: (1.6, 40)
         }
+    }
+
+    static let denseLengthLimit: (ratio: Double, slack: Double) = (4, 120)
+
+    /// Most letters are Han, kana or Hangul.
+    static func isDense(_ text: String) -> Bool {
+        var dense = 0, letters = 0
+        for scalar in text.unicodeScalars where scalar.properties.isAlphabetic {
+            letters += 1
+            switch scalar.value {
+            case 0x3040...0x30FF, 0x3400...0x4DBF, 0x4E00...0x9FFF, 0xAC00...0xD7AF, 0xF900...0xFAFF: dense += 1
+            default: break
+            }
+        }
+        return letters > 0 && Double(dense) / Double(letters) > 0.3
     }
 
     /// Cleanup and translation keep nearly everything; a much shorter answer lost content.
