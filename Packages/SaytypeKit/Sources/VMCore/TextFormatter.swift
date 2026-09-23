@@ -6,8 +6,11 @@ public enum TextFormatter {
     /// A pause at least this long after a finished sentence starts a new paragraph.
     public static let paragraphPause: Double = 1.5
 
-    /// - Parameter projectTerms: identifiers from the user's code folders, best first.
-    public static func format(_ transcript: Transcript, settings: AppSettings, projectTerms: [String] = []) -> String {
+    /// - Parameters:
+    ///   - projectTerms: identifiers from the user's code folders, best first.
+    ///   - screen: terms read from the window in front for this dictation. They apply after the
+    ///     dictionary, so the user's own spellings win.
+    public static func format(_ transcript: Transcript, settings: AppSettings, projectTerms: [String] = [], screen: ScreenTermMatcher? = nil) -> String {
         let style = settings.punctuationStyle
         let paragraphs = style == .none
             ? [transcript.text]
@@ -17,13 +20,14 @@ public enum TextFormatter {
             : nil
 
         let keptTerms = settings.letterCase == .lowercase
-            ? settings.dictionary.map(\.written) + (settings.builtInDictionary ? BuiltInDictionary.terms.map(\.written) : []) + projectTerms
+            ? settings.dictionary.map(\.written) + (settings.builtInDictionary ? BuiltInDictionary.terms.map(\.written) : []) + projectTerms + (screen?.terms ?? [])
             : []
 
         var result: [String] = []
         for paragraph in paragraphs {
             var text = paragraph
             if let rewriter { text = rewriter.apply(to: text) }
+            if settings.latinTerms, let screen { text = screen.apply(to: text) }
             text = Cleanup.removeFillers(text, mode: settings.fillerMode)
             if !settings.wordFilters.isEmpty { text = WordFilter.remove(settings.wordFilters, from: text) }
             if settings.censorProfanity { text = WordFilter.censorProfanity(text) }

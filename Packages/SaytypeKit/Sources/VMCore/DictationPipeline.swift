@@ -18,9 +18,11 @@ public struct PipelineResult: Equatable, Sendable {
 /// The deterministic part of a dictation: voice commands, developer rules and the text
 /// formatter, in the mode's style. Runs in milliseconds; language model steps come after.
 public enum DictationPipeline {
-    /// - Parameter snippets: phrases to replace with markers. Voice commands are found first, so
-    ///   a command always wins over a snippet with the same words.
-    public static func format(_ transcript: Transcript, settings: AppSettings, mode: DictationMode, projectTerms: [String] = [], snippets: [Snippet] = []) -> PipelineResult {
+    /// - Parameters:
+    ///   - snippets: phrases to replace with markers. Voice commands are found first, so a
+    ///     command always wins over a snippet with the same words.
+    ///   - screen: terms read from the window in front, for this dictation only.
+    public static func format(_ transcript: Transcript, settings: AppSettings, mode: DictationMode, projectTerms: [String] = [], snippets: [Snippet] = [], screen: ScreenTermMatcher? = nil) -> PipelineResult {
         let style = settings.applying(mode)
         var pieces = settings.voiceCommands ? VoiceCommands.parse(transcript.text) : [.text(transcript.text)]
         var found: [Snippet] = []
@@ -38,7 +40,7 @@ public enum DictationPipeline {
             // Paragraphs fall back to plain text when the segments no longer match the text,
             // which a marker in place of the trigger's words always makes them do.
             let segments = found.isEmpty ? transcript.segments : []
-            return PipelineResult(text: TextFormatter.format(Transcript(text: source, segments: segments), settings: style, projectTerms: projectTerms), snippets: found)
+            return PipelineResult(text: TextFormatter.format(Transcript(text: source, segments: segments), settings: style, projectTerms: projectTerms, screen: screen), snippets: found)
         }
 
         // A line collects the raw words up to the next break and is formatted as one text, so
@@ -50,7 +52,7 @@ public enum DictationPipeline {
         func flushLine() {
             guard !line.isEmpty else { return }
             let source = mode.developer ? DeveloperFormatter.apply(line) : line
-            var text = TextFormatter.format(Transcript(text: source), settings: style, projectTerms: projectTerms)
+            var text = TextFormatter.format(Transcript(text: source), settings: style, projectTerms: projectTerms, screen: screen)
             line = ""
             guard !text.isEmpty else { return }
             let afterBreak = output.last?.isNewline == true
