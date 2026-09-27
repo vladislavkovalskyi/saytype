@@ -16,11 +16,11 @@ struct AccessStep: View {
 
             VStack(alignment: .leading, spacing: 0) {
                 StepTitle("Two permissions")
-                StepSubtitle("saytype does not read the screen or use the network.")
+                StepSubtitle("Screen text is read on this Mac and never saved.")
                     .padding(.top, 12)
 
                 VStack(spacing: 0) {
-                    PermissionRow(permission: .accessibility, title: "Accessibility", detail: "pasting text into the active window")
+                    PermissionRow(permission: .accessibility, title: "Accessibility", detail: "pasting and reading text")
                     RowDivider()
                     PermissionRow(permission: .inputMonitoring, title: "Input Monitoring", detail: "fn in any app")
                 }

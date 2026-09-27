@@ -3334,12 +3334,12 @@
         }
       }
     },
-    "pasting text into the active window" : {
+    "pasting and reading text" : {
       "localizations" : {
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "вставка текста в активное окно"
+            "value" : "вставка и чтение текста"
           }
         }
       }
@@ -3817,12 +3817,12 @@
     "saytype" : {
       "shouldTranslate" : false
     },
-    "saytype does not read the screen or use the network." : {
+    "Screen text is read on this Mac and never saved." : {
       "localizations" : {
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "saytype не читает экран и не ходит в сеть."
+            "value" : "Текст с экрана читается на этом Mac и не сохраняется."
           }
         }
       }

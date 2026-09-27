@@ -56,7 +56,7 @@ struct PermissionsSection: View {
     private func detail(for permission: Permission) -> LocalizedStringKey {
         switch permission {
         case .microphone: "recording speech"
-        case .accessibility: "pasting text into the active window"
+        case .accessibility: "pasting and reading text"
         case .inputMonitoring: "\(model.settings.value.recordKey.inlineName) in any app"
         }
     }
