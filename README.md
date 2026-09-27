@@ -264,7 +264,7 @@ Add a code folder in **Dictionary → Projects**: saytype reads function, compon
 
 ## Screen context
 
-When you press the record key, saytype reads the window in front: its title, the field you are typing in, the text in view. Identifiers, file names, @handles and rare Latin names from it fix the spelling of this one dictation.
+When you press the record key, saytype reads the window in front: its title, the field you are typing in, the text in view. Identifiers, file names, chat usernames and rare Latin names from it fix the spelling of this one dictation.
 
 | On screen | Whisper hears | You get |
 |---|---|---|
