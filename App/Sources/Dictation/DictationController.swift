@@ -33,6 +33,9 @@ final class DictationController {
         case modelMissing
         case modelFailed
         case microphoneUnavailable
+        /// The recording is exact zeros: the microphone gave nothing, usually because another app
+        /// holds it for a call.
+        case noSignal
         case recognitionFailed
         case nothingHeard
         case copied
@@ -421,6 +424,14 @@ final class DictationController {
             return
         }
         let duration = Double(recorded.count) / AudioCapture.sampleRate
+        guard VoiceGate.hasSignal(recorded) else {
+            selection = nil
+            handsFree = false
+            // Zeros say nothing; there is nothing to transcribe again later either.
+            dropRecordingAudio(audio)
+            show(.notice(.noSignal), for: 2.5)
+            return
+        }
         guard VoiceGate.hasVoice(recorded, sampleRate: AudioCapture.sampleRate) else {
             selection = nil
             handsFree = false

@@ -10,6 +10,7 @@ import WhisperKit
 //   vm-bench transcribe <audio>... [--variant v] [--language ru|auto] [--prompt] [--live] [--translate]
 //   vm-bench lab <audio>... [lab options, see `Lab`]
 //   vm-bench codec <audio>... [--variant v] [--language ru|auto] (see `Codec`)
+//   vm-bench capture <seconds> [--uid device] [--rounds n] [--gap s] (the app's AudioCapture)
 //
 // --prompt adds a developer glossary; --live replays the file in
 // one-second steps through LiveAgreement, the way the app does while fn is held;
@@ -116,6 +117,37 @@ case "recover":
             let prefix = Array(full.prefix(samples.count))
             print("  same samples as the original's first \(samples.count): \(prefix.map(\.bitPattern) == samples.map(\.bitPattern))")
             print("  original:  \(try await engine.transcribe(prefix, hints: hints).text)")
+        }
+    }
+
+case "capture":
+    // vm-bench capture <seconds> [--uid device] [--rounds n] [--gap s]: records through the app's
+    // AudioCapture, one instance for every round as in the app, and prints what arrived. Change
+    // the microphone's rate or hold it from another app between rounds to see how it copes.
+    let seconds = Double(arguments[1]) ?? 2
+    let rounds = option("--rounds").flatMap(Int.init) ?? 1
+    let gap = option("--gap").flatMap(Double.init) ?? 0
+    let capture = AudioCapture()
+    capture.deviceUID = option("--uid")
+    for round in 1...rounds {
+        if round > 1, gap > 0 { try await Task.sleep(for: .seconds(gap)) }
+        do {
+            let stream = try capture.start()
+            let collector = Task { () -> (chunks: Int, samples: [Float], peak: Float) in
+                var chunks = 0, samples: [Float] = [], peak: Float = 0
+                for await chunk in stream {
+                    chunks += 1
+                    samples += chunk.samples
+                    peak = max(peak, chunk.level)
+                }
+                return (chunks, samples, peak)
+            }
+            try await Task.sleep(for: .seconds(seconds))
+            capture.stop()
+            let got = await collector.value
+            print(String(format: "round %d: %d chunks, %.2f s of audio in %.2f s, peak level %.2f, signal %@", round, got.chunks, Double(got.samples.count) / AudioCapture.sampleRate, seconds, got.peak, VoiceGate.hasSignal(got.samples) ? "yes" : "no"))
+        } catch {
+            print("round \(round): \(error)")
         }
     }
 

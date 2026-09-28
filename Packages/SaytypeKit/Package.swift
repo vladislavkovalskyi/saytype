@@ -20,7 +20,9 @@ let package = Package(
     ],
     targets: [
         .target(name: "VMCore"),
-        .target(name: "VMAudio", dependencies: ["VMCore"]),
+        // Objective-C: catches the exceptions AVAudioEngine raises, which Swift cannot.
+        .target(name: "VMCatch"),
+        .target(name: "VMAudio", dependencies: ["VMCore", "VMCatch"]),
         .target(
             name: "VMTranscription",
             dependencies: [

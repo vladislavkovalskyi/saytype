@@ -105,3 +105,17 @@ import Testing
         #expect(Loudness.rms([0.5, -0.5][...]) == 0.5)
     }
 }
+
+@Suite struct SignalTests {
+    @Test func exactZerosAreNoSignal() {
+        #expect(!VoiceGate.hasSignal([Float](repeating: 0, count: 16_000)))
+        #expect(!VoiceGate.hasSignal([]))
+    }
+
+    @Test func aQuietRoomIsASignal() {
+        // −80 dBFS of noise: far below the voice gate, but a microphone that works.
+        let room = (0..<16_000).map { Float(($0 % 7) - 3) * 0.00003 }
+        #expect(VoiceGate.hasSignal(room))
+        #expect(!VoiceGate.hasVoice(room))
+    }
+}
