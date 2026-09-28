@@ -2962,6 +2962,16 @@
         }
       }
     },
+    "No microphone signal" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет сигнала микрофона"
+          }
+        }
+      }
+    },
     "No snippets" : {
       "localizations" : {
         "ru" : {

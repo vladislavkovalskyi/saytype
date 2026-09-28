@@ -111,6 +111,7 @@ extension DictationController.Notice {
         case .modelMissing: Text("Model not downloaded")
         case .modelFailed: Text("Model failed to load")
         case .microphoneUnavailable: Text("Microphone unavailable")
+        case .noSignal: Text("No microphone signal")
         case .recognitionFailed: Text("Couldn't transcribe")
         case .nothingHeard: Text("Nothing heard")
         case .copied: Text("Copied")
@@ -136,7 +137,7 @@ extension DictationController.Notice {
         switch self {
         case .passwordField: "lock.fill"
         case .modelMissing, .modelFailed: "cpu"
-        case .microphoneUnavailable: "mic.slash.fill"
+        case .microphoneUnavailable, .noSignal: "mic.slash.fill"
         case .recognitionFailed, .nothingHeard: "waveform.slash"
         case .copied: "doc.on.doc.fill"
         case .nothingSelected: "selection.pin.in.out"
@@ -153,6 +154,7 @@ extension DictationController.Notice {
         case .modelMissing: String(localized: "Model not downloaded")
         case .modelFailed: String(localized: "Model failed to load")
         case .microphoneUnavailable: String(localized: "Microphone unavailable")
+        case .noSignal: String(localized: "No microphone signal")
         case .recognitionFailed: String(localized: "Couldn't transcribe")
         case .nothingHeard: String(localized: "Nothing heard")
         case .copied: String(localized: "Copied")

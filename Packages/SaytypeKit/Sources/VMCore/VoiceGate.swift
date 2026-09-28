@@ -40,6 +40,13 @@ public enum VoiceGate {
         return levels.count(where: { $0 >= threshold }) >= Int((minimumVoiceSeconds / frameSeconds).rounded())
     }
 
+    /// False when every sample is an exact zero: the microphone delivered nothing at all, which
+    /// is what macOS hands every other app while one holds the mic for a voice call. Quiet rooms
+    /// are never exact zeros.
+    public static func hasSignal(_ samples: [Float]) -> Bool {
+        samples.contains { $0 != 0 }
+    }
+
     public static func hasVoice(_ samples: [Float], sampleRate: Double = 16_000) -> Bool {
         hasVoice(levels: levels(of: samples, sampleRate: sampleRate))
     }
