@@ -42,8 +42,8 @@ it has.
 ### Digital silence gets its own notice
 
 A recording whose samples are all exact zeros is a microphone that gave nothing, typically
-because another app holds it for a call. It ends with a new notice, "No signal from the
-microphone" («Нет сигнала с микрофона»), instead of "Nothing heard", and without Whisper.
+because another app holds it for a call. It ends with a new notice, "No microphone signal"
+(«Нет сигнала микрофона»), instead of "Nothing heard", and without Whisper.
 
 ## Not changed
 
